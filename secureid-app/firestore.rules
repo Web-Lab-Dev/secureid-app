@@ -1,0 +1,136 @@
+rules_version = '2';
+
+/**
+ * FIRESTORE SECURITY RULES - SecureID
+ *
+ * Ces règles sécurisent l'accès aux données dans Firestore.
+ * CRITIQUE: Ne jamais exposer les secretToken côté client!
+ *
+ * Documentation: https://firebase.google.com/docs/firestore/security/rules-structure
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================================================
+    // FONCTIONS UTILITAIRES
+    // ============================================================================
+
+    // Vérifie si l'utilisateur est authentifié
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Vérifie si l'utilisateur est le propriétaire de la ressource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Vérifie si l'utilisateur est admin (à implémenter selon votre logique)
+    function isAdmin() {
+      return isAuthenticated() &&
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // ============================================================================
+    // COLLECTION: bracelets
+    // ============================================================================
+
+    match /bracelets/{braceletId} {
+
+      // LECTURE: Seulement pour les utilisateurs authentifiés
+      // IMPORTANT: On ne retourne JAMAIS le secretToken côté client
+      allow read: if isAuthenticated() &&
+                     // L'utilisateur doit être le propriétaire du bracelet
+                     (resource.data.linkedUserId == request.auth.uid ||
+                      // Ou un admin
+                      isAdmin());
+
+      // CRÉATION: INTERDITE côté client
+      // Les bracelets sont créés uniquement via le script de provisioning (Admin SDK)
+      allow create: if false;
+
+      // MISE À JOUR: Seulement certains champs et seulement par le propriétaire
+      allow update: if isAuthenticated() &&
+                       resource.data.linkedUserId == request.auth.uid &&
+                       // Empêcher la modification des champs critiques
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(['id', 'secretToken', 'batchId', 'createdAt']);
+
+      // SUPPRESSION: Seulement par admin
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================================
+    // COLLECTION: users
+    // ============================================================================
+
+    match /users/{userId} {
+
+      // LECTURE: L'utilisateur peut lire ses propres données
+      allow read: if isOwner(userId) || isAdmin();
+
+      // CRÉATION: Seulement lors de la première connexion (auto-création)
+      allow create: if isOwner(userId) &&
+                       request.resource.data.keys().hasAll(['email', 'createdAt']) &&
+                       request.resource.data.createdAt == request.time;
+
+      // MISE À JOUR: L'utilisateur peut modifier ses propres données
+      allow update: if isOwner(userId) &&
+                       // Empêcher la modification de l'email et createdAt
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(['email', 'createdAt']);
+
+      // SUPPRESSION: Seulement par admin
+      allow delete: if isAdmin();
+
+      // Sous-collection: bracelets liés
+      match /linkedBracelets/{braceletId} {
+        allow read: if isOwner(userId);
+        allow write: if isOwner(userId);
+      }
+    }
+
+    // ============================================================================
+    // COLLECTION: admins (liste des administrateurs)
+    // ============================================================================
+
+    match /admins/{adminId} {
+      // Lecture seulement par les admins
+      allow read: if isAdmin();
+
+      // Pas de création/modification/suppression via client
+      allow write: if false;
+    }
+
+    // ============================================================================
+    // COLLECTION: activationLogs (logs d'activation de bracelets)
+    // ============================================================================
+
+    match /activationLogs/{logId} {
+      // Lecture par admin uniquement
+      allow read: if isAdmin();
+
+      // Création automatique lors de l'activation (via Cloud Function)
+      allow create: if isAuthenticated() &&
+                       request.resource.data.keys().hasAll([
+                         'braceletId',
+                         'userId',
+                         'timestamp',
+                         'ipAddress'
+                       ]);
+
+      // Pas de modification ni suppression
+      allow update, delete: if false;
+    }
+
+    // ============================================================================
+    // PAR DÉFAUT: TOUT EST INTERDIT
+    // ============================================================================
+
+    // Toute autre collection non listée est inaccessible
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
