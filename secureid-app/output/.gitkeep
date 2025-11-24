@@ -1,0 +1,2 @@
+# Ce fichier permet de garder le dossier output/ dans Git
+# Les fichiers générés (SVG, JSON) ne seront pas committés (voir .gitignore)
