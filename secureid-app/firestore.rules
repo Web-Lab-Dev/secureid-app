@@ -2,6 +2,7 @@ rules_version = '2';
 
 /**
  * FIRESTORE SECURITY RULES - SecureID
+ * Mis à jour: Phase 3A - Support collection profiles
  *
  * Ces règles sécurisent l'accès aux données dans Firestore.
  * CRITIQUE: Ne jamais exposer les secretToken côté client!
@@ -43,6 +44,9 @@ service cloud.firestore {
       allow read: if isAuthenticated() &&
                      // L'utilisateur doit être le propriétaire du bracelet
                      (resource.data.linkedUserId == request.auth.uid ||
+                      // Ou via linkedProfileId (Phase 3)
+                      exists(/databases/$(database)/documents/profiles/$(resource.data.linkedProfileId)) &&
+                      get(/databases/$(database)/documents/profiles/$(resource.data.linkedProfileId)).data.parentId == request.auth.uid ||
                       // Ou un admin
                       isAdmin());
 
@@ -52,7 +56,10 @@ service cloud.firestore {
 
       // MISE À JOUR: Seulement certains champs et seulement par le propriétaire
       allow update: if isAuthenticated() &&
-                       resource.data.linkedUserId == request.auth.uid &&
+                       (resource.data.linkedUserId == request.auth.uid ||
+                        // Ou via linkedProfileId
+                        exists(/databases/$(database)/documents/profiles/$(resource.data.linkedProfileId)) &&
+                        get(/databases/$(database)/documents/profiles/$(resource.data.linkedProfileId)).data.parentId == request.auth.uid) &&
                        // Empêcher la modification des champs critiques
                        !request.resource.data.diff(resource.data).affectedKeys()
                          .hasAny(['id', 'secretToken', 'batchId', 'createdAt']);
@@ -72,14 +79,14 @@ service cloud.firestore {
 
       // CRÉATION: Seulement lors de la première connexion (auto-création)
       allow create: if isOwner(userId) &&
-                       request.resource.data.keys().hasAll(['email', 'createdAt']) &&
+                       request.resource.data.keys().hasAll(['uid', 'phoneNumber', 'generatedEmail', 'createdAt']) &&
                        request.resource.data.createdAt == request.time;
 
       // MISE À JOUR: L'utilisateur peut modifier ses propres données
       allow update: if isOwner(userId) &&
-                       // Empêcher la modification de l'email et createdAt
+                       // Empêcher la modification des champs critiques
                        !request.resource.data.diff(resource.data).affectedKeys()
-                         .hasAny(['email', 'createdAt']);
+                         .hasAny(['uid', 'phoneNumber', 'generatedEmail', 'createdAt']);
 
       // SUPPRESSION: Seulement par admin
       allow delete: if isAdmin();
@@ -89,6 +96,50 @@ service cloud.firestore {
         allow read: if isOwner(userId);
         allow write: if isOwner(userId);
       }
+    }
+
+    // ============================================================================
+    // COLLECTION: profiles (Phase 3 - Profils enfants)
+    // ============================================================================
+
+    match /profiles/{profileId} {
+
+      // LECTURE: Seulement le parent propriétaire
+      allow read: if isAuthenticated() &&
+                     resource.data.parentId == request.auth.uid;
+
+      // CRÉATION: Seulement par le parent authentifié
+      allow create: if isAuthenticated() &&
+                       request.resource.data.parentId == request.auth.uid &&
+                       request.resource.data.keys().hasAll([
+                         'id',
+                         'parentId',
+                         'fullName',
+                         'medicalInfo',
+                         'doctorPin',
+                         'emergencyContacts',
+                         'status',
+                         'createdAt'
+                       ]) &&
+                       // Valider le statut
+                       request.resource.data.status in ['ACTIVE', 'ARCHIVED'] &&
+                       // Valider le PIN (4 chiffres)
+                       request.resource.data.doctorPin.matches('^[0-9]{4}$') &&
+                       // Vérifier qu'il y a au moins 1 contact d'urgence
+                       request.resource.data.emergencyContacts.size() >= 1 &&
+                       request.resource.data.emergencyContacts.size() <= 5;
+
+      // MISE À JOUR: Seulement par le parent propriétaire
+      allow update: if isAuthenticated() &&
+                       resource.data.parentId == request.auth.uid &&
+                       request.resource.data.parentId == request.auth.uid &&
+                       // Empêcher la modification de l'ID et du parentId
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(['id', 'parentId', 'createdAt']);
+
+      // SUPPRESSION: Archivage seulement (pas de vraie suppression)
+      // On change le statut à ARCHIVED au lieu de supprimer
+      allow delete: if false;
     }
 
     // ============================================================================

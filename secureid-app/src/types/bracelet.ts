@@ -2,6 +2,7 @@ import { Timestamp } from 'firebase/firestore';
 
 /**
  * PHASE 2.1 - OPTIMISATION: TYPES TYPESCRIPT
+ * PHASE 3A - MISE À JOUR: Support liaison avec profils
  *
  * Interface définissant la structure d'un document bracelet dans Firestore
  */
@@ -9,7 +10,7 @@ import { Timestamp } from 'firebase/firestore';
 /**
  * Statuts possibles d'un bracelet
  */
-export type BraceletStatus = 'INACTIVE' | 'ACTIVE' | 'STOLEN';
+export type BraceletStatus = 'INACTIVE' | 'ACTIVE' | 'STOLEN' | 'DEACTIVATED';
 
 /**
  * Structure d'un document bracelet dans Firestore (collection: bracelets)
@@ -32,6 +33,9 @@ export interface BraceletDocument {
 
   /** ID de l'utilisateur lié au bracelet (null si INACTIVE) */
   linkedUserId: string | null;
+
+  /** ID du profil enfant lié au bracelet (null si INACTIVE) - Phase 3 */
+  linkedProfileId: string | null;
 }
 
 /**
