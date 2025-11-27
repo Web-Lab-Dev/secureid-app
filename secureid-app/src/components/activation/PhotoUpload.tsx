@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { Camera, Loader2, X } from 'lucide-react';
 import { uploadProfilePhoto, validateImageFile } from '@/lib/storage-helpers';
+import { logger } from '@/lib/logger';
 
 interface PhotoUploadProps {
   /** ID du profil pour organiser le storage */

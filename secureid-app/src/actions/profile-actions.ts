@@ -2,6 +2,7 @@
 
 import { doc, setDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { logger } from '@/lib/logger';
 import type { ProfileDocument, MedicalInfo, EmergencyContact, BloodType } from '@/types/profile';
 import type { MedicalFormData, EmergencyContactFormData } from '@/schemas/activation';
 

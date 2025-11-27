@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Upload, File, X, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
 import { ref, uploadBytes, listAll, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
+import { logger } from '@/lib/logger';
 
 /**
  * PHASE 4C - UPLOAD DOCUMENTS MÉDICAUX

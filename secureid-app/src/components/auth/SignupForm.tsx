@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { signupSchema, type SignupFormData } from '@/schemas/activation';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Phone, Lock, User, Loader2 } from 'lucide-react';
+import { getErrorMessage } from '@/lib/error-helpers';
 
 /**
  * PHASE 3B - FORMULAIRE D'INSCRIPTION
@@ -49,8 +50,8 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
 
       // Succès
       onSuccess?.();
-    } catch (error: any) {
-      setServerError(error.message || 'Une erreur est survenue lors de l\'inscription');
+    } catch (error: unknown) {
+      setServerError(getErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }

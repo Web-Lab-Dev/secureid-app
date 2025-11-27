@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import Link from 'next/link';
 import { Plus, Loader2, Users } from 'lucide-react';
 import { useProfiles } from '@/hooks/useProfiles';

@@ -1,5 +1,7 @@
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from './firebase';
+import { logger } from './logger';
+import { getErrorMessage, isFirebaseError } from './error-helpers';
 
 /**
  * HELPERS FIREBASE STORAGE
@@ -95,17 +97,17 @@ export async function uploadProfilePhoto(
       throw new Error('La photo est trop volumineuse (max 5MB)');
     }
 
-    console.log('📤 Début compression image...', { size: file.size, type: file.type });
+    logger.debug('Début compression image', { size: file.size, type: file.type });
 
     // Compresser l'image
     const compressedBlob = await compressImage(file);
 
-    console.log('✅ Image compressée', { originalSize: file.size, compressedSize: compressedBlob.size });
+    logger.debug('Image compressée', { originalSize: file.size, compressedSize: compressedBlob.size });
 
     // Créer la référence Storage
     const photoRef = ref(storage, `profiles/${profileId}/photo.webp`);
 
-    console.log('📤 Upload vers Firebase Storage...', { path: `profiles/${profileId}/photo.webp` });
+    logger.debug('Upload vers Firebase Storage', { path: `profiles/${profileId}/photo.webp` });
 
     // Upload
     const snapshot = await uploadBytes(photoRef, compressedBlob, {
@@ -116,27 +118,29 @@ export async function uploadProfilePhoto(
       },
     });
 
-    console.log('✅ Upload terminé, récupération URL...');
+    logger.debug('Upload terminé, récupération URL');
 
     // Récupérer l'URL publique
     const downloadURL = await getDownloadURL(snapshot.ref);
 
-    console.log('✅ URL récupérée:', downloadURL);
+    logger.debug('URL récupérée', { url: downloadURL });
 
     return downloadURL;
-  } catch (error: any) {
-    console.error('❌ Error uploading profile photo:', error);
+  } catch (error: unknown) {
+    console.error('Error uploading profile photo', error);
 
     // Gérer les erreurs Firebase spécifiques
-    if (error.code === 'storage/unauthorized') {
-      throw new Error('Permissions insuffisantes. Vérifiez les règles Firebase Storage.');
-    } else if (error.code === 'storage/canceled') {
-      throw new Error('Upload annulé');
-    } else if (error.code === 'storage/unknown') {
-      throw new Error('Erreur réseau. Vérifiez votre connexion.');
+    if (isFirebaseError(error)) {
+      if (error.code === 'storage/unauthorized') {
+        throw new Error('Permissions insuffisantes. Vérifiez les règles Firebase Storage.');
+      } else if (error.code === 'storage/canceled') {
+        throw new Error('Upload annulé');
+      } else if (error.code === 'storage/unknown') {
+        throw new Error('Erreur réseau. Vérifiez votre connexion.');
+      }
     }
 
-    throw error;
+    throw new Error(getErrorMessage(error));
   }
 }
 

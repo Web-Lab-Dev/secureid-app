@@ -9,6 +9,8 @@ import { updateProfile } from '@/actions/profile-actions';
 import { useAuthContext } from '@/contexts/AuthContext';
 import type { ProfileDocument } from '@/types/profile';
 import { phoneSchema } from '@/schemas/activation';
+import type { RelationshipType } from '@/types/profile';
+import { logger } from '@/lib/logger';
 
 /**
  * PHASE 4B - FORMULAIRE ÉDITION PROFIL
@@ -97,7 +99,7 @@ export function MedicalFormEdit({ profile, onUpdate }: MedicalFormEditProps) {
             {
               name: data.emergencyContactName,
               phone: data.emergencyContactPhone,
-              relationship: data.emergencyContactRelation as any,
+              relationship: data.emergencyContactRelation as RelationshipType,
               email: profile.emergencyContacts[0]?.email || '',
             },
             ...profile.emergencyContacts.slice(1),

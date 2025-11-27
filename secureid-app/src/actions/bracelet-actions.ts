@@ -2,6 +2,7 @@
 
 import { doc, getDoc, updateDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { logger } from '@/lib/logger';
 import type { BraceletDocument, BraceletStatus } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
 

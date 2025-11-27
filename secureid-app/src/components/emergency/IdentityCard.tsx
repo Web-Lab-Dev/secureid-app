@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { User, MessageCircle, Copy, Check } from 'lucide-react';
 import type { ProfileDocument } from '@/types/profile';
+import { logger } from '@/lib/logger';
 import { ScanEffect } from './ScanEffect';
 
 /**

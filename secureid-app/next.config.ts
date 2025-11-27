@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Mode strict React désactivé temporairement pour tests mobile
-  reactStrictMode: false,
+  // Mode strict React activé pour détecter les problèmes en développement
+  reactStrictMode: true,
 
   // Compression automatique des réponses
   compress: true,

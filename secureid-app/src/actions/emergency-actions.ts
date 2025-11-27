@@ -3,6 +3,7 @@
 import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, listAll, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
+import { logger } from '@/lib/logger';
 import type { GeolocationData } from '@/types/scan';
 
 /**

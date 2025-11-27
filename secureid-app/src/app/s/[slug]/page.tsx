@@ -44,9 +44,6 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const { t: token } = await searchParams;
 
-  console.log('🔍 [SCAN] Slug:', slug);
-  console.log('🔑 [SCAN] Token:', token);
-
   // Interroger Firestore pour récupérer le bracelet
   const braceletRef = doc(db, 'bracelets', slug);
   const braceletSnap = await getDoc(braceletRef);

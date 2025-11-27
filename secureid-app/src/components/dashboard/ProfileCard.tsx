@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { User, FileText, AlertCircle } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/badge';
 import type { ProfileDocument } from '@/types/profile';

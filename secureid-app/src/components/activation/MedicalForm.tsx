@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash2, Loader2 } from 'lucide-react';
 import { medicalFormSchema, type MedicalFormData } from '@/schemas/activation';
@@ -68,20 +68,20 @@ export function MedicalForm({
     setValue,
     watch,
     control,
-  } = useForm({
+  } = useForm<MedicalFormData>({
     resolver: zodResolver(medicalFormSchema) as any,
     defaultValues: {
-      fullName: initialData?.fullName || '',
-      dateOfBirth: initialData?.dateOfBirth || undefined,
-      photoUrl: initialData?.photoUrl || '',
-      bloodType: initialData?.bloodType || 'UNKNOWN',
-      allergies: initialData?.allergies,
-      conditions: initialData?.conditions,
-      medications: initialData?.medications,
-      medicalNotes: initialData?.medicalNotes || '',
+      fullName: initialData?.fullName ?? '',
+      dateOfBirth: initialData?.dateOfBirth,
+      photoUrl: initialData?.photoUrl ?? '',
+      bloodType: initialData?.bloodType ?? 'UNKNOWN',
+      allergies: initialData?.allergies ?? [],
+      conditions: initialData?.conditions ?? [],
+      medications: initialData?.medications ?? [],
+      medicalNotes: initialData?.medicalNotes ?? '',
       doctorPin: '',
       confirmDoctorPin: '',
-      emergencyContacts: initialData?.emergencyContacts || [
+      emergencyContacts: initialData?.emergencyContacts ?? [
         {
           name: '',
           relationship: 'MOTHER',
@@ -107,8 +107,8 @@ export function MedicalForm({
     append: appendAllergy,
     remove: removeAllergy,
   } = useFieldArray({
-    control: control as any,
-    name: 'allergies' as any,
+    control,
+    name: 'allergies' as 'emergencyContacts',
   });
 
   const {
@@ -116,8 +116,8 @@ export function MedicalForm({
     append: appendCondition,
     remove: removeCondition,
   } = useFieldArray({
-    control: control as any,
-    name: 'conditions' as any,
+    control,
+    name: 'conditions' as 'emergencyContacts',
   });
 
   const {
@@ -125,8 +125,8 @@ export function MedicalForm({
     append: appendMedication,
     remove: removeMedication,
   } = useFieldArray({
-    control: control as any,
-    name: 'medications' as any,
+    control,
+    name: 'medications' as 'emergencyContacts',
   });
 
   const handleFormSubmit = async (data: MedicalFormData) => {
@@ -139,7 +139,7 @@ export function MedicalForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit as any)} className="w-full max-w-2xl space-y-8">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="w-full max-w-2xl space-y-8">
       {/* En-tête */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold text-white">Créer un profil</h1>
@@ -231,7 +231,7 @@ export function MedicalForm({
             <label className="block text-sm font-medium text-gray-300">Allergies</label>
             <button
               type="button"
-              onClick={() => appendAllergy('')}
+              onClick={() => appendAllergy('' as any)}
               className="flex items-center gap-1 px-3 py-1 text-sm text-brand-orange hover:text-brand-orange/80 transition-colors"
             >
               <Plus className="w-4 h-4" />
@@ -266,7 +266,7 @@ export function MedicalForm({
             <label className="block text-sm font-medium text-gray-300">Conditions médicales</label>
             <button
               type="button"
-              onClick={() => appendCondition('')}
+              onClick={() => appendCondition('' as any)}
               className="flex items-center gap-1 px-3 py-1 text-sm text-brand-orange hover:text-brand-orange/80 transition-colors"
             >
               <Plus className="w-4 h-4" />
@@ -301,7 +301,7 @@ export function MedicalForm({
             <label className="block text-sm font-medium text-gray-300">Médicaments</label>
             <button
               type="button"
-              onClick={() => appendMedication('')}
+              onClick={() => appendMedication('' as any)}
               className="flex items-center gap-1 px-3 py-1 text-sm text-brand-orange hover:text-brand-orange/80 transition-colors"
             >
               <Plus className="w-4 h-4" />

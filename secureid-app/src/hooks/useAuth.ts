@@ -12,6 +12,7 @@ import {
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { generateEmailFromPhone, normalizePhoneNumber } from '@/lib/auth-helpers';
+import { logger } from '@/lib/logger';
 import type { UserDocument, SignupData, LoginData } from '@/types/user';
 import type { FirestoreTimestamp } from '@/types/firebase';
 import { isFirebaseError } from '@/types/error';

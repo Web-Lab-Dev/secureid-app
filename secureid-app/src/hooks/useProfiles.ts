@@ -12,6 +12,7 @@ import type { ProfileDocument } from '@/types/profile';
  * Hook React personnalisé pour gérer les profils enfants d'un parent
  */
 
+import { logger } from '@/lib/logger';
 interface UseProfilesReturn {
   /** Liste des profils enfants du parent connecté */
   profiles: ProfileDocument[];

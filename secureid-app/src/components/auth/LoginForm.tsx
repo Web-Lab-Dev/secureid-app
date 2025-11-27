@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginFormData } from '@/schemas/activation';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Phone, Lock, Loader2 } from 'lucide-react';
+import { getErrorMessage } from '@/lib/error-helpers';
 
 /**
  * PHASE 3B - FORMULAIRE DE CONNEXION
@@ -43,8 +44,8 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
 
       // Succès
       onSuccess?.();
-    } catch (error: any) {
-      setServerError(error.message || 'Une erreur est survenue lors de la connexion');
+    } catch (error: unknown) {
+      setServerError(getErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }

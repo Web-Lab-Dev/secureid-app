@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Eye, EyeOff, Edit2, Check, X, Loader2 } from 'lucide-react';
 import { updateProfile } from '@/actions/profile-actions';
 import type { ProfileDocument } from '@/types/profile';
+import { logger } from '@/lib/logger';
 
 /**
  * PHASE 4C - GESTION CODE PIN MÉDECIN
