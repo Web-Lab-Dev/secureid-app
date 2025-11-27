@@ -93,7 +93,6 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
         <ErrorPage
           type="not-found"
           slug={slug}
-          customMessage="Ce bracelet n'est pas encore associé à un profil."
         />
       );
     }
@@ -106,7 +105,6 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
         <ErrorPage
           type="not-found"
           slug={slug}
-          customMessage="Le profil associé à ce bracelet est introuvable."
         />
       );
     }

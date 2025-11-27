@@ -8,7 +8,7 @@ import type { GeolocationData, GeolocationError } from '@/types/scan';
  * Gère les permissions, erreurs, et états de chargement
  */
 
-interface UseGeolocationReturn {
+export interface UseGeolocationReturn {
   /** Données de géolocalisation (lat, lng, accuracy) */
   data: GeolocationData | null;
 

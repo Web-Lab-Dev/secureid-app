@@ -68,16 +68,16 @@ export function MedicalForm({
     setValue,
     watch,
     control,
-  } = useForm<MedicalFormData>({
-    resolver: zodResolver(medicalFormSchema),
+  } = useForm({
+    resolver: zodResolver(medicalFormSchema) as any,
     defaultValues: {
       fullName: initialData?.fullName || '',
       dateOfBirth: initialData?.dateOfBirth || undefined,
       photoUrl: initialData?.photoUrl || '',
       bloodType: initialData?.bloodType || 'UNKNOWN',
-      allergies: initialData?.allergies || [],
-      conditions: initialData?.conditions || [],
-      medications: initialData?.medications || [],
+      allergies: initialData?.allergies,
+      conditions: initialData?.conditions,
+      medications: initialData?.medications,
       medicalNotes: initialData?.medicalNotes || '',
       doctorPin: '',
       confirmDoctorPin: '',
@@ -107,8 +107,8 @@ export function MedicalForm({
     append: appendAllergy,
     remove: removeAllergy,
   } = useFieldArray({
-    control,
-    name: 'allergies',
+    control: control as any,
+    name: 'allergies' as any,
   });
 
   const {
@@ -116,8 +116,8 @@ export function MedicalForm({
     append: appendCondition,
     remove: removeCondition,
   } = useFieldArray({
-    control,
-    name: 'conditions',
+    control: control as any,
+    name: 'conditions' as any,
   });
 
   const {
@@ -125,8 +125,8 @@ export function MedicalForm({
     append: appendMedication,
     remove: removeMedication,
   } = useFieldArray({
-    control,
-    name: 'medications',
+    control: control as any,
+    name: 'medications' as any,
   });
 
   const handleFormSubmit = async (data: MedicalFormData) => {
@@ -139,7 +139,7 @@ export function MedicalForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="w-full max-w-2xl space-y-8">
+    <form onSubmit={handleSubmit(handleFormSubmit as any)} className="w-full max-w-2xl space-y-8">
       {/* En-tête */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold text-white">Créer un profil</h1>

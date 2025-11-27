@@ -14,7 +14,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthGuard requireAuth>
+    <AuthGuard>
       <div className="min-h-screen bg-brand-black">
         <DashboardNav />
         <main className="container mx-auto px-4 py-6">{children}</main>

@@ -59,7 +59,7 @@ export function EmergencyViewClient({ bracelet, profile }: EmergencyViewClientPr
         delayChildren: 0.2,
       },
     },
-  };
+  } as const;
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -68,10 +68,9 @@ export function EmergencyViewClient({ bracelet, profile }: EmergencyViewClientPr
       y: 0,
       transition: {
         duration: 0.5,
-        ease: 'easeOut',
       },
     },
-  };
+  } as const;
 
   const hasAllergies = profile.medicalInfo.allergies.length > 0;
   const hasMedicalInfo =

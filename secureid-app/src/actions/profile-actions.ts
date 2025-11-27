@@ -2,8 +2,8 @@
 
 import { doc, setDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { ProfileDocument, MedicalInfo, EmergencyContact } from '@/types/profile';
-import type { MedicalFormData } from '@/schemas/activation';
+import type { ProfileDocument, MedicalInfo, EmergencyContact, BloodType } from '@/types/profile';
+import type { MedicalFormData, EmergencyContactFormData } from '@/schemas/activation';
 
 /**
  * PHASE 3D - SERVER ACTIONS PROFILES
@@ -45,7 +45,7 @@ export async function createProfile(
         name: contact.name,
         relationship: contact.relationship,
         phone: contact.phone,
-        email: contact.email || null,
+        email: contact.email || undefined,
         priority: index + 1, // Ordre dans le formulaire = priorité
       })
     );
@@ -56,7 +56,7 @@ export async function createProfile(
       allergies: formData.allergies.filter((a) => a.trim() !== ''),
       conditions: formData.conditions.filter((c) => c.trim() !== ''),
       medications: formData.medications.filter((m) => m.trim() !== ''),
-      notes: formData.medicalNotes || null,
+      notes: formData.medicalNotes || undefined,
     };
 
     // Convertir la date de naissance en Timestamp Firestore
@@ -135,7 +135,7 @@ export async function updateProfile(
   try {
     const { profileId, updates } = input;
 
-    const updateData: Partial<ProfileDocument> & { updatedAt: unknown } = {
+    const updateData: Record<string, unknown> = {
       updatedAt: serverTimestamp(),
     };
 
@@ -185,7 +185,7 @@ export async function updateProfile(
     if (updates.medicalNotes !== undefined) {
       updateData.medicalInfo = {
         ...(updateData.medicalInfo || {}),
-        notes: updates.medicalNotes || null,
+        notes: updates.medicalNotes || undefined,
       } as MedicalInfo;
     }
 
@@ -198,7 +198,7 @@ export async function updateProfile(
         name: contact.name,
         relationship: contact.relationship,
         phone: contact.phone,
-        email: contact.email || null,
+        email: contact.email || undefined,
         priority: index + 1,
       }));
     }

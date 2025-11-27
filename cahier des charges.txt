@@ -1,0 +1,84 @@
+Excellent travail.
+Validation Phase 4 : ✅ APPROUVÉE. C'est propre, c'est sombre, et l'information est hiérarchisée. Le statut "Actif" en vert ressort bien. Les statistiques en bas sont un bon ajout pour rassurer le parent d'un coup d'œil.
+
+Maintenant, nous attaquons la Phase Finale de l'UI et la plus critique : celle que verra le monde extérieur en cas de crise.
+
+Voici le cahier des charges pour la Phase 5. C'est le moment de sortir le design "Iron Man" (HUD).
+
+📋 CAHIER DES CHARGES TECHNIQUE - PHASE 5
+Module : LE HUD SECOURISTE & LE COFFRE-FORT MÉDECIN Objectif : Créer l'interface publique qui s'affiche au scan. Elle doit charger instantanément, afficher les données vitales, permettre de contacter les parents, et offrir un accès sécurisé aux documents médicaux via le PIN.
+
+1. ARCHITECTURE HYBRIDE (SERVER + CLIENT)
+Fichier Cible : src/app/s/[slug]/page.tsx (On remplace le placeholder rouge de la Phase 2).
+
+Stratégie :
+
+Server Component (La Coquille) : Récupère les données publiques (Nom, Allergies, Tél Parents) pour un affichage immédiat (SSR).
+
+Client Component (L'Intéractivité) : Gère la géolocalisation, le chatbot (plus tard) et la modale du PIN Médecin.
+
+2. PARTIE A : LE HUD SECOURISTE (VUE PUBLIQUE)
+Le design doit être "Tactique" : sombre, contrasté, lisible en plein soleil.
+
+🎨 Interface UI (Mobile First)
+En-tête : Logo SecureID + Statut "SÉCURISÉ" (Vert) ou "ALERTE MÉDICALE" (Rouge clignotant si allergies).
+
+Identité :
+
+Photo de l'enfant (Grande, circulaire, bordure brillante).
+
+Prénom + Année de naissance (Calculer l'âge automatiquement : "5 ans").
+
+Groupe Sanguin (Badge très visible).
+
+Bloc "Alerte Vitale" :
+
+Si le champ medicalInfo n'est pas vide, l'afficher dans un encadré rouge/orange avec une icône d'alerte.
+
+Actions Rapides (Sticky Bottom ou Gros Boutons) :
+
+Bouton 1 (Primaire) : "APPELER PARENT 1" (href="tel:+226...").
+
+Bouton 2 : "ENVOYER POSITION GPS" (Déclenche le script de géolocalisation).
+
+Bouton 3 : "MESSAGE VOCAL MAMAN" (Lecteur audio simple).
+
+📍 Logique de Géolocalisation (Invisible)
+Au chargement de la page (ou au clic sur un bouton "Scanner ma position"), utiliser navigator.geolocation.getCurrentPosition.
+
+Action : Écrire dans une nouvelle collection Firestore scans :
+
+braceletId, timestamp, lat, lng, userAgent.
+
+Note : C'est cette écriture qui déclenchera plus tard l'alerte n8n vers le parent.
+
+3. PARTIE B : LE PORTAIL MÉDECIN (LE COFFRE-FORT)
+Accès aux documents uploadés en Phase 4.
+
+🔐 Le Mécanisme de Sécurité
+Le Déclencheur : Un bouton discret en bas de page : "Accès Personnel Médical ⚕️".
+
+L'Interaction : Ouvre une "Drawer" (Tiroir du bas) ou une Modale.
+
+Demande le Code PIN à 4 chiffres.
+
+Clavier numérique : Utiliser un input type="tel" pour faire apparaître le gros clavier du téléphone.
+
+📄 L'Affichage des Documents
+Validation : Vérifier le PIN côté serveur (via une Server Action ou API Route). Ne jamais envoyer le vrai PIN au client pour comparaison !
+
+Si PIN OK :
+
+Afficher la liste des fichiers (Ordonnances, Radios) stockés dans Firebase Storage.
+
+Permettre le téléchargement/visualisation directe (PDF/Image).
+
+Sécurité : Les URLs de téléchargement doivent être générées à la volée (Signed URLs) et expirer après 15 minutes.
+
+4. DÉTAILS DE DESIGN "BLUFFANT"
+Animations : Utiliser framer-motion pour que les cartes d'information apparaissent en cascade (Slide up).
+
+Effet de Scan : Au chargement, faire passer une petite ligne lumineuse sur la photo de l'enfant (effet "Analyse biométrique").
+
+💡 Note pour le développeur  :
+"Pour la partie Médecin, crée un composant séparé <DoctorPortal profileId={...} />. Pour la géolocalisation, gère bien les cas où l'utilisateur refuse (Permission Denied) : affiche un message 'Impossible de localiser, veuillez appeler'."
