@@ -1,5 +1,7 @@
 'use client';
 
+import React from 'react';
+import Image from 'next/image';
 import { UserPlus, Users, Loader2, AlertCircle } from 'lucide-react';
 import { useProfiles } from '@/hooks/useProfiles';
 import type { ProfileDocument } from '@/types/profile';
@@ -23,7 +25,7 @@ interface ProfileSelectorProps {
   parentName?: string;
 }
 
-export function ProfileSelector({
+export const ProfileSelector = React.memo(function ProfileSelector({
   onNewProfile,
   onSelectProfile,
   parentName,
@@ -118,10 +120,13 @@ export function ProfileSelector({
                   {/* Photo ou initiale */}
                   <div className="flex-shrink-0 w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden">
                     {profile.photoUrl ? (
-                      <img
+                      <Image
                         src={profile.photoUrl}
                         alt={profile.fullName}
+                        width={48}
+                        height={48}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     ) : (
                       <span className="text-lg font-bold text-white">
@@ -172,4 +177,4 @@ export function ProfileSelector({
       </div>
     </div>
   );
-}
+});

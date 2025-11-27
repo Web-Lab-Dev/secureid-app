@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   User,
   onAuthStateChanged,
@@ -13,6 +13,8 @@ import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { generateEmailFromPhone, normalizePhoneNumber } from '@/lib/auth-helpers';
 import type { UserDocument, SignupData, LoginData } from '@/types/user';
+import type { FirestoreTimestamp } from '@/types/firebase';
+import { isFirebaseError } from '@/types/error';
 
 /**
  * PHASE 3A - HOOK AUTHENTIFICATION
@@ -53,6 +55,24 @@ export function useAuth(): UseAuthReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Charger les données utilisateur depuis Firestore
+   */
+  const loadUserData = useCallback(async (uid: string): Promise<void> => {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', uid));
+
+      if (userDoc.exists()) {
+        setUserData(userDoc.data() as UserDocument);
+      } else {
+        setUserData(null);
+      }
+    } catch (err) {
+      console.error('Erreur lors du chargement des données utilisateur:', err);
+      setUserData(null);
+    }
+  }, []);
+
   // Écouter les changements d'état d'authentification
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -69,30 +89,12 @@ export function useAuth(): UseAuthReturn {
     });
 
     return () => unsubscribe();
-  }, []);
-
-  /**
-   * Charger les données utilisateur depuis Firestore
-   */
-  async function loadUserData(uid: string): Promise<void> {
-    try {
-      const userDoc = await getDoc(doc(db, 'users', uid));
-
-      if (userDoc.exists()) {
-        setUserData(userDoc.data() as UserDocument);
-      } else {
-        setUserData(null);
-      }
-    } catch (err) {
-      console.error('Erreur lors du chargement des données utilisateur:', err);
-      setUserData(null);
-    }
-  }
+  }, [loadUserData]);
 
   /**
    * Créer un nouveau compte utilisateur
    */
-  async function signUp(data: SignupData): Promise<User> {
+  const signUp = useCallback(async (data: SignupData): Promise<User> => {
     try {
       setError(null);
       setLoading(true);
@@ -116,13 +118,16 @@ export function useAuth(): UseAuthReturn {
       });
 
       // Créer le document utilisateur dans Firestore
-      const userDocument: UserDocument = {
+      const userDocument: Omit<UserDocument, 'createdAt' | 'lastLoginAt'> & {
+        createdAt: FirestoreTimestamp;
+        lastLoginAt: FirestoreTimestamp;
+      } = {
         uid: firebaseUser.uid,
         phoneNumber: normalizedPhone,
         generatedEmail: generatedEmail,
         displayName: data.displayName,
-        createdAt: serverTimestamp() as any,
-        lastLoginAt: serverTimestamp() as any,
+        createdAt: serverTimestamp(),
+        lastLoginAt: serverTimestamp(),
         profileCount: 0,
       };
 
@@ -132,28 +137,30 @@ export function useAuth(): UseAuthReturn {
       await loadUserData(firebaseUser.uid);
 
       return firebaseUser;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erreur lors de l\'inscription:', err);
 
       // Messages d'erreur en français
-      if (err.code === 'auth/email-already-in-use') {
-        throw new Error('Ce numéro de téléphone est déjà utilisé');
-      } else if (err.code === 'auth/weak-password') {
-        throw new Error('Le mot de passe est trop faible');
-      } else if (err.code === 'auth/invalid-email') {
-        throw new Error('Numéro de téléphone invalide');
-      } else {
+      if (isFirebaseError(err)) {
+        if (err.code === 'auth/email-already-in-use') {
+          throw new Error('Ce numéro de téléphone est déjà utilisé');
+        } else if (err.code === 'auth/weak-password') {
+          throw new Error('Le mot de passe est trop faible');
+        } else if (err.code === 'auth/invalid-email') {
+          throw new Error('Numéro de téléphone invalide');
+        }
         throw new Error('Erreur lors de la création du compte: ' + err.message);
       }
+      throw new Error('Erreur lors de la création du compte');
     } finally {
       setLoading(false);
     }
-  }
+  }, [loadUserData]);
 
   /**
    * Connexion avec numéro + mot de passe
    */
-  async function signIn(data: LoginData): Promise<User> {
+  const signIn = useCallback(async (data: LoginData): Promise<User> => {
     try {
       setError(null);
       setLoading(true);
@@ -184,47 +191,49 @@ export function useAuth(): UseAuthReturn {
       await loadUserData(firebaseUser.uid);
 
       return firebaseUser;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erreur lors de la connexion:', err);
 
       // Messages d'erreur en français
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        throw new Error('Numéro ou mot de passe incorrect');
-      } else if (err.code === 'auth/invalid-email') {
-        throw new Error('Numéro de téléphone invalide');
-      } else if (err.code === 'auth/too-many-requests') {
-        throw new Error('Trop de tentatives. Réessayez plus tard');
-      } else {
+      if (isFirebaseError(err)) {
+        if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+          throw new Error('Numéro ou mot de passe incorrect');
+        } else if (err.code === 'auth/invalid-email') {
+          throw new Error('Numéro de téléphone invalide');
+        } else if (err.code === 'auth/too-many-requests') {
+          throw new Error('Trop de tentatives. Réessayez plus tard');
+        }
         throw new Error('Erreur lors de la connexion: ' + err.message);
       }
+      throw new Error('Erreur lors de la connexion');
     } finally {
       setLoading(false);
     }
-  }
+  }, [loadUserData]);
 
   /**
    * Déconnexion
    */
-  async function signOut(): Promise<void> {
+  const signOut = useCallback(async (): Promise<void> => {
     try {
       setError(null);
       await firebaseSignOut(auth);
       setUser(null);
       setUserData(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erreur lors de la déconnexion:', err);
       throw new Error('Erreur lors de la déconnexion');
     }
-  }
+  }, []);
 
   /**
    * Recharger les données utilisateur
    */
-  async function refreshUserData(): Promise<void> {
+  const refreshUserData = useCallback(async (): Promise<void> => {
     if (user) {
       await loadUserData(user.uid);
     }
-  }
+  }, [user, loadUserData]);
 
   return {
     user,

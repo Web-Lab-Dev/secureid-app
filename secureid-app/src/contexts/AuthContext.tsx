@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo } from 'react';
 import { User } from 'firebase/auth';
 import { useAuth } from '@/hooks/useAuth';
 import type { UserDocument, SignupData, LoginData } from '@/types/user';
@@ -35,7 +35,32 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const auth = useAuth();
 
-  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+  // Mémoiser la valeur du context pour éviter les re-renders inutiles
+  // Ne re-créer l'objet que si les valeurs réellement utilisées changent
+  const value = useMemo(
+    () => ({
+      user: auth.user,
+      userData: auth.userData,
+      loading: auth.loading,
+      error: auth.error,
+      signUp: auth.signUp,
+      signIn: auth.signIn,
+      signOut: auth.signOut,
+      refreshUserData: auth.refreshUserData,
+    }),
+    [
+      auth.user,
+      auth.userData,
+      auth.loading,
+      auth.error,
+      auth.signUp,
+      auth.signIn,
+      auth.signOut,
+      auth.refreshUserData,
+    ]
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 /**
@@ -54,6 +79,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
  */
 export function useAuthContext() {
   const context = useContext(AuthContext);
+
+  // En SSR, retourner un contexte vide au lieu de throw
+  // Le composant client va se re-rendre côté client avec le bon contexte
+  if (typeof window === 'undefined') {
+    return {
+      user: null,
+      userData: null,
+      loading: true,
+      error: null,
+      signUp: async () => { throw new Error('SSR') },
+      signIn: async () => { throw new Error('SSR') },
+      signOut: async () => {},
+      refreshUserData: async () => {},
+    } as AuthContextType;
+  }
 
   if (context === undefined) {
     throw new Error('useAuthContext doit être utilisé dans un AuthProvider');

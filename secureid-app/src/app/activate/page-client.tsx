@@ -1,12 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import { Shield } from 'lucide-react';
-import { SignupForm } from '@/components/auth/SignupForm';
-import { LoginForm } from '@/components/auth/LoginForm';
-import { ProfileSelector } from '@/components/activation/ProfileSelector';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { Shield, Loader2 } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import type { ProfileDocument } from '@/types/profile';
+import type { MedicalFormData } from '@/schemas/activation';
+import { createProfile } from '@/actions/profile-actions';
+import { linkBraceletToProfile, transferBracelet, validateBraceletToken } from '@/actions/bracelet-actions';
+
+// Lazy loading des composants lourds
+const SignupForm = lazy(() => import('@/components/auth/SignupForm').then(mod => ({ default: mod.SignupForm })));
+const LoginForm = lazy(() => import('@/components/auth/LoginForm').then(mod => ({ default: mod.LoginForm })));
+const ProfileSelector = lazy(() => import('@/components/activation/ProfileSelector').then(mod => ({ default: mod.ProfileSelector })));
+const MedicalForm = lazy(() => import('@/components/activation/MedicalForm').then(mod => ({ default: mod.MedicalForm })));
+const ActivationSuccess = lazy(() => import('@/components/activation/ActivationSuccess').then(mod => ({ default: mod.ActivationSuccess })));
 
 /**
  * PHASE 3C - PAGE D'ACTIVATION (CLIENT COMPONENT)
@@ -20,18 +27,172 @@ interface ActivatePageClientProps {
   token: string;
 }
 
-type ActivationStep = 'auth' | 'select-profile' | 'new-profile' | 'transfer-profile';
+type ActivationStep = 'auth' | 'select-profile' | 'new-profile' | 'transfer-profile' | 'success';
 
 export function ActivatePageClient({ braceletId, token }: ActivatePageClientProps) {
   const { user, userData } = useAuthContext();
   const [showLogin, setShowLogin] = useState(false);
   const [step, setStep] = useState<ActivationStep>('auth');
   const [selectedProfile, setSelectedProfile] = useState<ProfileDocument | null>(null);
+  const [createdProfileName, setCreatedProfileName] = useState<string>('');
+  const [activationMode, setActivationMode] = useState<'new' | 'transfer'>('new');
+  const [error, setError] = useState<string | null>(null);
+  const [validatingToken, setValidatingToken] = useState(true);
+  const [tokenValid, setTokenValid] = useState(false);
+
+  // Valider le token au chargement
+  useEffect(() => {
+    const validateToken = async () => {
+      try {
+        setValidatingToken(true);
+        const result = await validateBraceletToken({ braceletId, token });
+
+        if (result.valid) {
+          setTokenValid(true);
+        } else {
+          setTokenValid(false);
+          setError(result.error || 'Token invalide');
+        }
+      } catch (err) {
+        setTokenValid(false);
+        setError('Erreur lors de la validation du bracelet');
+      } finally {
+        setValidatingToken(false);
+      }
+    };
+
+    validateToken();
+  }, [braceletId, token]);
+
+  // Dériver l'étape directement de l'état user au lieu d'utiliser useEffect
+  // Évite les setState synchrones dans useEffect
+  const currentStep = user && step === 'auth' ? 'select-profile' : step;
+
+  // Callbacks mémorisés pour éviter les re-renders inutiles
+  const handleNewProfile = useCallback(() => {
+    setActivationMode('new');
+    setStep('new-profile');
+    setError(null);
+  }, []);
+
+  const handleSelectProfile = useCallback((profile: ProfileDocument) => {
+    setSelectedProfile(profile);
+    setActivationMode('transfer');
+    setStep('transfer-profile');
+    setError(null);
+  }, []);
+
+  const handleBackToSelection = useCallback(() => {
+    setStep('select-profile');
+    setSelectedProfile(null);
+    setError(null);
+  }, []);
+
+  const handleBackToSelectionSimple = useCallback(() => {
+    setStep('select-profile');
+    setError(null);
+  }, []);
+
+  // Handler pour création de nouveau profil + liaison bracelet
+  const handleCreateProfile = useCallback(async (formData: MedicalFormData) => {
+    if (!user) return;
+
+    try {
+      setError(null);
+
+      // Étape 1: Créer le profil
+      const profileResult = await createProfile({
+        formData,
+        parentId: user.uid,
+      });
+
+      if (!profileResult.success || !profileResult.profileId) {
+        throw new Error(profileResult.error || 'Erreur lors de la création du profil');
+      }
+
+      // Étape 2: Lier le bracelet au profil
+      const linkResult = await linkBraceletToProfile({
+        braceletId,
+        profileId: profileResult.profileId,
+        token,
+        userId: user.uid,
+      });
+
+      if (!linkResult.success) {
+        throw new Error(linkResult.error || 'Erreur lors de la liaison du bracelet');
+      }
+
+      // Succès! Passer à l'écran de confirmation
+      setCreatedProfileName(formData.fullName);
+      setStep('success');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+    }
+  }, [user, braceletId, token]);
+
+  // Handler pour transfert de bracelet
+  const handleTransferBracelet = useCallback(async () => {
+    if (!user || !selectedProfile || !selectedProfile.currentBraceletId) return;
+
+    try {
+      setError(null);
+
+      const transferResult = await transferBracelet({
+        oldBraceletId: selectedProfile.currentBraceletId,
+        newBraceletId: braceletId,
+        profileId: selectedProfile.id,
+        newBraceletToken: token,
+        userId: user.uid,
+      });
+
+      if (!transferResult.success) {
+        throw new Error(transferResult.error || 'Erreur lors du transfert');
+      }
+
+      // Succès! Passer à l'écran de confirmation
+      setCreatedProfileName(selectedProfile.fullName);
+      setStep('success');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+    }
+  }, [user, selectedProfile, braceletId, token]);
+
+  // Afficher le loader pendant la validation du token
+  if (validatingToken) {
+    return (
+      <div className="min-h-screen bg-brand-black text-white flex items-center justify-center p-4">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-brand-orange animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Validation du bracelet...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si le token n'est pas valide, afficher l'erreur
+  if (!tokenValid) {
+    return (
+      <div className="min-h-screen bg-brand-black text-white flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          <div className="bg-red-900/20 border border-red-500 rounded-lg p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/10 mb-4">
+              <Shield className="w-10 h-10 text-red-500" />
+            </div>
+            <h1 className="text-2xl font-bold text-red-500 mb-4">⚠️ Bracelet invalide</h1>
+            <p className="text-gray-300 mb-2">{error || 'Ce bracelet ne peut pas être activé.'}</p>
+            <p className="text-sm text-gray-500">
+              Bracelet: <span className="font-mono text-white">{braceletId}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Si l'utilisateur est connecté, gérer les étapes d'activation
   if (user) {
     // ÉTAPE: Sélection profil
-    if (step === 'select-profile') {
+    if (currentStep === 'select-profile') {
       return (
         <div className="min-h-screen bg-brand-black text-white flex items-center justify-center p-4">
           {/* Info bracelet en haut */}
@@ -41,102 +202,155 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
             </p>
           </div>
 
-          <ProfileSelector
-            parentName={userData?.displayName}
-            onNewProfile={() => {
-              setStep('new-profile');
-            }}
-            onSelectProfile={(profile) => {
-              setSelectedProfile(profile);
-              setStep('transfer-profile');
-            }}
-          />
+          <Suspense fallback={
+            <div className="flex items-center justify-center">
+              <Loader2 className="w-12 h-12 text-brand-orange animate-spin" />
+            </div>
+          }>
+            <ProfileSelector
+              parentName={userData?.displayName}
+              onNewProfile={handleNewProfile}
+              onSelectProfile={handleSelectProfile}
+            />
+          </Suspense>
         </div>
       );
     }
 
     // ÉTAPE: Nouveau profil (Phase 3D)
-    if (step === 'new-profile') {
+    if (currentStep === 'new-profile') {
       return (
         <div className="min-h-screen bg-brand-black text-white flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full text-center">
-            <div className="bg-slate-900 rounded-lg border border-slate-800 p-8">
-              <Shield className="w-16 h-16 text-tactical-green mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Nouveau profil</h2>
-              <p className="text-gray-400 mb-6">
-                Bracelet: <span className="font-mono text-brand-orange">{braceletId}</span>
-              </p>
+          {/* Info bracelet en haut */}
+          <div className="fixed top-4 right-4 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-xs z-10">
+            <p className="text-gray-400">
+              Bracelet: <span className="text-brand-orange font-mono">{braceletId}</span>
+            </p>
+          </div>
 
-              <div className="bg-tactical-green/10 border border-tactical-green/30 rounded-lg p-4">
-                <p className="text-sm text-tactical-green font-semibold mb-1">
-                  ✅ Phase 3C Complétée!
-                </p>
-                <p className="text-xs text-gray-400">
-                  Le formulaire de création de profil sera implémenté en Phase 3D.
-                </p>
+          <div className="w-full max-w-2xl py-8">
+            {/* Bouton retour */}
+            <button
+              onClick={handleBackToSelectionSimple}
+              className="mb-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors"
+            >
+              ← Retour à la sélection
+            </button>
+
+            {/* Message d'erreur global */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
+                <p className="text-red-500 text-sm">{error}</p>
               </div>
+            )}
 
-              <button
-                onClick={() => setStep('select-profile')}
-                className="mt-6 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm"
-              >
-                ← Retour
-              </button>
-            </div>
+            {/* Formulaire médical */}
+            <Suspense fallback={
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-12 h-12 text-brand-orange animate-spin" />
+              </div>
+            }>
+              <MedicalForm
+                profileId={`temp_${Date.now()}`}
+                onSubmit={handleCreateProfile}
+                submitButtonText="Créer le profil et activer le bracelet"
+              />
+            </Suspense>
           </div>
         </div>
       );
     }
 
     // ÉTAPE: Transfert profil existant (Phase 3E)
-    if (step === 'transfer-profile' && selectedProfile) {
+    if (currentStep === 'transfer-profile' && selectedProfile) {
       return (
         <div className="min-h-screen bg-brand-black text-white flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full text-center">
+          <div className="max-w-2xl w-full">
             <div className="bg-slate-900 rounded-lg border border-slate-800 p-8">
-              <Shield className="w-16 h-16 text-tactical-green mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Transfert de bracelet</h2>
-              <p className="text-gray-400 mb-6">
-                Profil sélectionné: <span className="font-semibold text-white">{selectedProfile.fullName}</span>
+              <Shield className="w-16 h-16 text-brand-orange mx-auto mb-4" />
+              <h2 className="text-2xl font-bold mb-2 text-center">Confirmer le transfert</h2>
+              <p className="text-gray-400 mb-6 text-center">
+                Profil: <span className="font-semibold text-white">{selectedProfile.fullName}</span>
               </p>
 
-              <div className="bg-brand-orange/10 border border-brand-orange/30 rounded-lg p-4 mb-6">
-                <p className="text-sm text-brand-orange mb-2">
-                  Nouveau bracelet: <span className="font-mono">{braceletId}</span>
-                </p>
-                {selectedProfile.currentBraceletId && (
-                  <p className="text-xs text-yellow-500">
-                    ⚠️ L&apos;ancien bracelet ({selectedProfile.currentBraceletId}) sera désactivé
+              {/* Informations du transfert */}
+              <div className="space-y-4 mb-6">
+                <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
+                  <p className="text-xs text-gray-400 mb-1">Ancien bracelet</p>
+                  <p className="text-lg font-mono text-red-400">
+                    {selectedProfile.currentBraceletId || 'Aucun'}
                   </p>
-                )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    {selectedProfile.currentBraceletId ? 'Sera désactivé' : ''}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-center">
+                  <svg className="w-6 h-6 text-brand-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                </div>
+
+                <div className="bg-slate-800 rounded-lg p-4 border border-brand-orange">
+                  <p className="text-xs text-gray-400 mb-1">Nouveau bracelet</p>
+                  <p className="text-lg font-mono text-brand-orange">{braceletId}</p>
+                  <p className="text-xs text-green-500 mt-1">Sera activé</p>
+                </div>
               </div>
 
-              <div className="bg-tactical-green/10 border border-tactical-green/30 rounded-lg p-4">
-                <p className="text-sm text-tactical-green font-semibold mb-1">
-                  ✅ Phase 3C Complétée!
-                </p>
-                <p className="text-xs text-gray-400">
-                  La logique de transfert sera implémentée en Phase 3E.
+              {/* Message d'avertissement */}
+              <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4 mb-6">
+                <p className="text-sm text-yellow-500">
+                  ⚠️ Cette action est irréversible. L'ancien bracelet ne pourra plus être utilisé.
                 </p>
               </div>
 
-              <button
-                onClick={() => {
-                  setStep('select-profile');
-                  setSelectedProfile(null);
-                }}
-                className="mt-6 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm"
-              >
-                ← Retour
-              </button>
+              {/* Message d'erreur */}
+              {error && (
+                <div className="mb-6 p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
+                  <p className="text-red-500 text-sm">{error}</p>
+                </div>
+              )}
+
+              {/* Boutons d'action */}
+              <div className="flex gap-4">
+                <button
+                  onClick={handleBackToSelection}
+                  className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors"
+                >
+                  ← Annuler
+                </button>
+                <button
+                  onClick={handleTransferBracelet}
+                  className="flex-1 px-4 py-3 bg-brand-orange hover:bg-brand-orange/90 rounded-lg text-sm font-semibold transition-colors"
+                >
+                  Confirmer le transfert
+                </button>
+              </div>
             </div>
           </div>
         </div>
       );
     }
 
-    // Par défaut, afficher la sélection de profil
-    setStep('select-profile');
+    // ÉTAPE: Succès
+    if (currentStep === 'success') {
+      return (
+        <Suspense fallback={
+          <div className="min-h-screen bg-brand-black flex items-center justify-center">
+            <Loader2 className="w-12 h-12 text-brand-orange animate-spin" />
+          </div>
+        }>
+          <ActivationSuccess
+            childName={createdProfileName}
+            braceletId={braceletId}
+            mode={activationMode}
+          />
+        </Suspense>
+      );
+    }
+
+    // Si aucune condition ne correspond, ne rien afficher (évite l'erreur)
     return null;
   }
 
@@ -159,21 +373,27 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
 
         {/* Formulaires */}
         <div className="bg-slate-900 rounded-lg border border-slate-800 p-6 md:p-8">
-          {showLogin ? (
-            <LoginForm
-              onSuccess={() => {
-                // L'utilisateur est maintenant connecté, le composant va se re-render
-              }}
-              onSwitchToSignup={() => setShowLogin(false)}
-            />
-          ) : (
-            <SignupForm
-              onSuccess={() => {
-                // L'utilisateur est maintenant connecté, le composant va se re-render
-              }}
-              onSwitchToLogin={() => setShowLogin(true)}
-            />
-          )}
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 text-brand-orange animate-spin" />
+            </div>
+          }>
+            {showLogin ? (
+              <LoginForm
+                onSuccess={() => {
+                  // L'utilisateur est maintenant connecté, le composant va se re-render
+                }}
+                onSwitchToSignup={() => setShowLogin(false)}
+              />
+            ) : (
+              <SignupForm
+                onSuccess={() => {
+                  // L'utilisateur est maintenant connecté, le composant va se re-render
+                }}
+                onSwitchToLogin={() => setShowLogin(true)}
+              />
+            )}
+          </Suspense>
         </div>
 
         {/* Footer */}

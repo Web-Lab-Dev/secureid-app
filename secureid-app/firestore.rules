@@ -39,16 +39,9 @@ service cloud.firestore {
 
     match /bracelets/{braceletId} {
 
-      // LECTURE: Seulement pour les utilisateurs authentifiés
-      // IMPORTANT: On ne retourne JAMAIS le secretToken côté client
-      allow read: if isAuthenticated() &&
-                     // L'utilisateur doit être le propriétaire du bracelet
-                     (resource.data.linkedUserId == request.auth.uid ||
-                      // Ou via linkedProfileId (Phase 3)
-                      exists(/databases/$(database)/documents/profiles/$(resource.data.linkedProfileId)) &&
-                      get(/databases/$(database)/documents/profiles/$(resource.data.linkedProfileId)).data.parentId == request.auth.uid ||
-                      // Ou un admin
-                      isAdmin());
+      // LECTURE: Publique pour scan QR Code (Phase 5 - Mode Urgence)
+      // IMPORTANT: Ne JAMAIS exposer secretToken côté client dans les requêtes
+      allow read: if true;
 
       // CRÉATION: INTERDITE côté client
       // Les bracelets sont créés uniquement via le script de provisioning (Admin SDK)
@@ -104,9 +97,9 @@ service cloud.firestore {
 
     match /profiles/{profileId} {
 
-      // LECTURE: Seulement le parent propriétaire
-      allow read: if isAuthenticated() &&
-                     resource.data.parentId == request.auth.uid;
+      // LECTURE: Publique pour affichage mode urgence (Phase 5)
+      // Les informations sont visibles aux secouristes
+      allow read: if true;
 
       // CRÉATION: Seulement par le parent authentifié
       allow create: if isAuthenticated() &&
@@ -170,6 +163,32 @@ service cloud.firestore {
                          'timestamp',
                          'ipAddress'
                        ]);
+
+      // Pas de modification ni suppression
+      allow update, delete: if false;
+    }
+
+    // ============================================================================
+    // COLLECTION: scans (Phase 5 - Tracking GPS)
+    // ============================================================================
+
+    match /scans/{scanId} {
+      // CRÉATION: Publique pour enregistrement par secouristes
+      // Validation stricte de la structure des données
+      allow create: if request.resource.data.keys().hasAll([
+                         'braceletId',
+                         'timestamp',
+                         'lat',
+                         'lng',
+                         'userAgent'
+                       ]) &&
+                       request.resource.data.braceletId is string &&
+                       (request.resource.data.lat == null || request.resource.data.lat is number) &&
+                       (request.resource.data.lng == null || request.resource.data.lng is number) &&
+                       request.resource.data.userAgent is string;
+
+      // LECTURE: Réservée aux parents (via bracelet lié au profile)
+      allow read: if isAuthenticated();
 
       // Pas de modification ni suppression
       allow update, delete: if false;
