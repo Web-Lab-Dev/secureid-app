@@ -75,12 +75,17 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
 
   const status: BraceletStatus | string = braceletData.status;
 
-  // CAS A: Bracelet INACTIVE (neuf) → Rediriger vers activation
+  // CAS A: Bracelet FACTORY_LOCKED (en transit usine) → Afficher message maintenance
+  if (status === 'FACTORY_LOCKED') {
+    return <ErrorPage type="factory-locked" slug={slug} />;
+  }
+
+  // CAS B: Bracelet INACTIVE (neuf) → Rediriger vers activation
   if (status === 'INACTIVE') {
     redirect(`/activate?id=${slug}&token=${token}`);
   }
 
-  // CAS B: Bracelet ACTIVE → Afficher mode urgence complet
+  // CAS C: Bracelet ACTIVE → Afficher mode urgence complet
   if (status === 'ACTIVE') {
     // Récupérer le profil lié au bracelet
     const profileId = braceletData.linkedProfileId;
@@ -118,7 +123,7 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
     return <EmergencyViewClient bracelet={serializedBracelet} profile={profileData} />;
   }
 
-  // CAS C: Bracelet STOLEN → Afficher message piège
+  // CAS D: Bracelet STOLEN → Afficher message piège
   if (status === 'STOLEN') {
     return <ErrorPage type="stolen" slug={slug} token={token} />;
   }

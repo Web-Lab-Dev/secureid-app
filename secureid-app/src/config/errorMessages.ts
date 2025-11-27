@@ -1,4 +1,4 @@
-import { ShieldAlert, AlertTriangle, ShieldX, LucideIcon } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, ShieldX, Settings, LucideIcon } from 'lucide-react';
 
 /**
  * PHASE 2.1 - OPTIMISATION: CONFIGURATION EXTERNALISÉE
@@ -7,7 +7,7 @@ import { ShieldAlert, AlertTriangle, ShieldX, LucideIcon } from 'lucide-react';
  * la maintenance et les traductions futures
  */
 
-export type ErrorType = 'not-found' | 'counterfeit' | 'stolen';
+export type ErrorType = 'not-found' | 'counterfeit' | 'stolen' | 'factory-locked';
 
 export interface ErrorConfig {
   /** Icône Lucide React à afficher */
@@ -82,5 +82,18 @@ export const ERROR_CONFIGS: Record<ErrorType, ErrorConfig> = {
     iconColor: 'text-orange-500',
     animation: 'animate-pulse',
     contextualMessage: '📍 Localisation et horodatage enregistrés pour la sécurité du propriétaire.',
+  },
+
+  'factory-locked': {
+    icon: Settings,
+    emoji: '🔧',
+    title: 'MAINTENANCE',
+    subtitle: 'Ce bracelet n\'est pas encore disponible',
+    description: 'Ce produit est en cours de préparation et sera bientôt activable.',
+    bgColor: 'bg-slate-900/20',
+    borderColor: 'border-slate-500',
+    iconColor: 'text-slate-400',
+    animation: '',
+    contextualMessage: '🏭 Ce bracelet fait partie d\'un lot en transit. Il sera débloqué prochainement.',
   },
 };

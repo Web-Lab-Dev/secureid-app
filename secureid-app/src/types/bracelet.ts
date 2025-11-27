@@ -9,13 +9,14 @@ import { Timestamp } from 'firebase/firestore';
 
 /**
  * Statuts possibles d'un bracelet
+ * FACTORY_LOCKED: Bracelet en transit usine (verrouillé)
  * INACTIVE: Bracelet non activé
  * ACTIVE: Bracelet activé et lié à un profil
  * LOST: Bracelet déclaré perdu par le parent
  * STOLEN: Bracelet déclaré volé
  * DEACTIVATED: Bracelet désactivé (transfert ou archivage)
  */
-export type BraceletStatus = 'INACTIVE' | 'ACTIVE' | 'LOST' | 'STOLEN' | 'DEACTIVATED';
+export type BraceletStatus = 'FACTORY_LOCKED' | 'INACTIVE' | 'ACTIVE' | 'LOST' | 'STOLEN' | 'DEACTIVATED';
 
 /**
  * Structure d'un document bracelet dans Firestore (collection: bracelets)
