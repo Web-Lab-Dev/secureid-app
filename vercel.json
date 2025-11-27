@@ -1,7 +1,0 @@
-{
-  "buildCommand": "cd secureid-app && npm run build",
-  "devCommand": "cd secureid-app && npm run dev",
-  "installCommand": "cd secureid-app && npm install",
-  "framework": "nextjs",
-  "outputDirectory": "secureid-app/.next"
-}
