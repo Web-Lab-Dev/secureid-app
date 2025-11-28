@@ -35,14 +35,17 @@ interface PageProps {
     slug: string;
   }>;
   searchParams: Promise<{
-    t?: string; // Token de sécurité
+    t?: string; // Token de sécurité (ancienne version)
+    token?: string; // Token de sécurité (nouvelle version)
   }>;
 }
 
 export default async function ScanPage({ params, searchParams }: PageProps) {
   // Récupération des paramètres (await pour Next.js 16)
   const { slug } = await params;
-  const { t: token } = await searchParams;
+  const searchParamsResolved = await searchParams;
+  // Accepter à la fois 't' et 'token' pour compatibilité
+  const token = searchParamsResolved.token || searchParamsResolved.t;
 
   // Interroger Firestore pour récupérer le bracelet
   const braceletRef = doc(db, 'bracelets', slug);
