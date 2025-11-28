@@ -1,0 +1,48 @@
+{
+  "batchId": "LOT_TEST_001",
+  "generatedAt": "2025-11-28T11:46:37.049Z",
+  "configuration": {
+    "BATCH_ID": "LOT_TEST_001",
+    "QUANTITY": 3,
+    "PRODUCTION_URL": "https://secureid-app.vercel.app",
+    "ID_PREFIX": "TEST",
+    "QR_ERROR_CORRECTION": "M",
+    "QR_SIZE": 800,
+    "QR_MARGIN": 2
+  },
+  "bracelets": [
+    {
+      "id": "TEST-001",
+      "secretToken": "45d81dee0327614b58b4b399da5cc001c551376ab279806885ff403c6b902965",
+      "status": "FACTORY_LOCKED",
+      "batchId": "LOT_TEST_001",
+      "createdAt": {},
+      "linkedUserId": null,
+      "linkedProfileId": null,
+      "url": "https://secureid-app.vercel.app/s/TEST-001?token=45d81dee0327614b58b4b399da5cc001c551376ab279806885ff403c6b902965",
+      "qrCodePath": "C:\\Users\\X1 Carbon\\Desktop\\QR-CODE\\secureid-app\\output\\LOT_TEST_001\\qr-codes\\TEST-001.png"
+    },
+    {
+      "id": "TEST-002",
+      "secretToken": "8b227fc45db388566e67a1d39936a51b698cabac7798daa19c87811383e13219",
+      "status": "FACTORY_LOCKED",
+      "batchId": "LOT_TEST_001",
+      "createdAt": {},
+      "linkedUserId": null,
+      "linkedProfileId": null,
+      "url": "https://secureid-app.vercel.app/s/TEST-002?token=8b227fc45db388566e67a1d39936a51b698cabac7798daa19c87811383e13219",
+      "qrCodePath": "C:\\Users\\X1 Carbon\\Desktop\\QR-CODE\\secureid-app\\output\\LOT_TEST_001\\qr-codes\\TEST-002.png"
+    },
+    {
+      "id": "TEST-003",
+      "secretToken": "c44b514e480af25db8d818e850683596c5a1471bcc4c1de8f08ceeb3a48537a2",
+      "status": "FACTORY_LOCKED",
+      "batchId": "LOT_TEST_001",
+      "createdAt": {},
+      "linkedUserId": null,
+      "linkedProfileId": null,
+      "url": "https://secureid-app.vercel.app/s/TEST-003?token=c44b514e480af25db8d818e850683596c5a1471bcc4c1de8f08ceeb3a48537a2",
+      "qrCodePath": "C:\\Users\\X1 Carbon\\Desktop\\QR-CODE\\secureid-app\\output\\LOT_TEST_001\\qr-codes\\TEST-003.png"
+    }
+  ]
+}
