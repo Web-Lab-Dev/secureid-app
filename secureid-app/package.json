@@ -9,7 +9,8 @@
     "lint": "eslint",
     "provision": "node scripts/generate-batch.js",
     "generate-china": "tsx scripts/generate-china-batch.js",
-    "test-china": "tsx scripts/test-china-batch.js"
+    "test-china": "tsx scripts/test-china-batch.js",
+    "unlock-batch": "tsx scripts/unlock-batch.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
