@@ -104,6 +104,7 @@ service cloud.firestore {
       // CRÉATION: Seulement par le parent authentifié
       allow create: if isAuthenticated() &&
                        request.resource.data.parentId == request.auth.uid &&
+                       // Vérifier que les champs obligatoires sont présents
                        request.resource.data.keys().hasAll([
                          'id',
                          'parentId',
@@ -112,7 +113,23 @@ service cloud.firestore {
                          'doctorPin',
                          'emergencyContacts',
                          'status',
-                         'createdAt'
+                         'createdAt',
+                         'updatedAt'
+                       ]) &&
+                       // Vérifier que seuls les champs autorisés sont présents
+                       request.resource.data.keys().hasOnly([
+                         'id',
+                         'parentId',
+                         'fullName',
+                         'dateOfBirth',
+                         'photoUrl',
+                         'medicalInfo',
+                         'doctorPin',
+                         'emergencyContacts',
+                         'currentBraceletId',
+                         'status',
+                         'createdAt',
+                         'updatedAt'
                        ]) &&
                        // Valider le statut
                        request.resource.data.status in ['ACTIVE', 'ARCHIVED'] &&
