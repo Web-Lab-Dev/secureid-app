@@ -1,6 +1,7 @@
 'use server';
 
-import { adminDb, admin } from '@/lib/firebase-admin';
+import { doc, getDoc, updateDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { logger } from '@/lib/logger';
 import type { BraceletDocument, BraceletStatus } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
@@ -37,10 +38,10 @@ export async function validateBraceletToken(
     const { braceletId, token } = input;
 
     // Récupérer le bracelet depuis Firestore
-    const braceletRef = adminDb.collection('bracelets').doc(braceletId);
-    const braceletSnap = await braceletRef.get();
+    const braceletRef = doc(db, 'bracelets', braceletId);
+    const braceletSnap = await getDoc(braceletRef);
 
-    if (!braceletSnap.exists) {
+    if (!braceletSnap.exists()) {
       return {
         valid: false,
         error: 'Bracelet introuvable',
@@ -124,19 +125,19 @@ export async function linkBraceletToProfile(
     }
 
     // Transaction atomique pour éviter les race conditions
-    const result = await adminDb.runTransaction(async (transaction) => {
-      const braceletRef = adminDb.collection('bracelets').doc(braceletId);
-      const profileRef = adminDb.collection('profiles').doc(profileId);
+    const result = await runTransaction(db, async (transaction) => {
+      const braceletRef = doc(db, 'bracelets', braceletId);
+      const profileRef = doc(db, 'profiles', profileId);
 
       // Récupérer le bracelet et le profil
       const braceletSnap = await transaction.get(braceletRef);
       const profileSnap = await transaction.get(profileRef);
 
-      if (!braceletSnap.exists) {
+      if (!braceletSnap.exists()) {
         throw new Error('Bracelet introuvable');
       }
 
-      if (!profileSnap.exists) {
+      if (!profileSnap.exists()) {
         throw new Error('Profil introuvable');
       }
 
@@ -170,7 +171,7 @@ export async function linkBraceletToProfile(
       // Mettre à jour le profil
       transaction.update(profileRef, {
         currentBraceletId: braceletId,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
 
       return { success: true };
@@ -237,10 +238,10 @@ export async function transferBracelet(
     }
 
     // Transaction atomique pour éviter les incohérences
-    const result = await adminDb.runTransaction(async (transaction) => {
-      const oldBraceletRef = adminDb.collection('bracelets').doc(oldBraceletId);
-      const newBraceletRef = adminDb.collection('bracelets').doc(newBraceletId);
-      const profileRef = adminDb.collection('profiles').doc(profileId);
+    const result = await runTransaction(db, async (transaction) => {
+      const oldBraceletRef = doc(db, 'bracelets', oldBraceletId);
+      const newBraceletRef = doc(db, 'bracelets', newBraceletId);
+      const profileRef = doc(db, 'profiles', profileId);
 
       // Récupérer tous les documents
       const [oldBraceletSnap, newBraceletSnap, profileSnap] = await Promise.all([
@@ -249,15 +250,15 @@ export async function transferBracelet(
         transaction.get(profileRef),
       ]);
 
-      if (!oldBraceletSnap.exists) {
+      if (!oldBraceletSnap.exists()) {
         throw new Error('Ancien bracelet introuvable');
       }
 
-      if (!newBraceletSnap.exists) {
+      if (!newBraceletSnap.exists()) {
         throw new Error('Nouveau bracelet introuvable');
       }
 
-      if (!profileSnap.exists) {
+      if (!profileSnap.exists()) {
         throw new Error('Profil introuvable');
       }
 
@@ -299,7 +300,7 @@ export async function transferBracelet(
       // Étape 3: Mettre à jour le profil avec le nouveau bracelet
       transaction.update(profileRef, {
         currentBraceletId: newBraceletId,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
 
       return { success: true };
@@ -342,20 +343,20 @@ export async function unlinkBracelet(
   try {
     const { braceletId, profileId, userId } = input;
 
-    const result = await adminDb.runTransaction(async (transaction) => {
-      const braceletRef = adminDb.collection('bracelets').doc(braceletId);
-      const profileRef = adminDb.collection('profiles').doc(profileId);
+    const result = await runTransaction(db, async (transaction) => {
+      const braceletRef = doc(db, 'bracelets', braceletId);
+      const profileRef = doc(db, 'profiles', profileId);
 
       const [braceletSnap, profileSnap] = await Promise.all([
         transaction.get(braceletRef),
         transaction.get(profileRef),
       ]);
 
-      if (!braceletSnap.exists) {
+      if (!braceletSnap.exists()) {
         throw new Error('Bracelet introuvable');
       }
 
-      if (!profileSnap.exists) {
+      if (!profileSnap.exists()) {
         throw new Error('Profil introuvable');
       }
 
@@ -376,7 +377,7 @@ export async function unlinkBracelet(
       // Mettre à jour le profil
       transaction.update(profileRef, {
         currentBraceletId: null,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
 
       return { success: true };
@@ -424,10 +425,10 @@ export async function updateBraceletStatus(
     const { braceletId, status, userId } = input;
 
     // Récupérer le bracelet
-    const braceletRef = adminDb.collection('bracelets').doc(braceletId);
-    const braceletSnap = await braceletRef.get();
+    const braceletRef = doc(db, 'bracelets', braceletId);
+    const braceletSnap = await getDoc(braceletRef);
 
-    if (!braceletSnap.exists) {
+    if (!braceletSnap.exists()) {
       return {
         success: false,
         error: 'Bracelet introuvable',
@@ -445,7 +446,7 @@ export async function updateBraceletStatus(
     }
 
     // Mettre à jour le statut
-    await braceletRef.update({
+    await updateDoc(braceletRef, {
       status,
     });
 
