@@ -42,13 +42,18 @@ export async function createProfile(
 
     // Convertir les contacts d'urgence avec priorités
     const emergencyContacts: EmergencyContact[] = formData.emergencyContacts.map(
-      (contact, index) => ({
-        name: contact.name,
-        relationship: contact.relationship,
-        phone: contact.phone,
-        email: contact.email || undefined,
-        priority: index + 1, // Ordre dans le formulaire = priorité
-      })
+      (contact, index) => {
+        const ec: EmergencyContact = {
+          name: contact.name,
+          relationship: contact.relationship,
+          phone: contact.phone,
+          priority: index + 1,
+        };
+        if (contact.email && contact.email.trim()) {
+          ec.email = contact.email;
+        }
+        return ec;
+      }
     );
 
     // Construire les informations médicales
@@ -57,8 +62,10 @@ export async function createProfile(
       allergies: formData.allergies.filter((a) => a.trim() !== ''),
       conditions: formData.conditions.filter((c) => c.trim() !== ''),
       medications: formData.medications.filter((m) => m.trim() !== ''),
-      notes: formData.medicalNotes || undefined,
     };
+    if (formData.medicalNotes && formData.medicalNotes.trim()) {
+      medicalInfo.notes = formData.medicalNotes;
+    }
 
     // Convertir la date de naissance en Timestamp Firestore
     let dateOfBirthTimestamp: Timestamp | null = null;
@@ -67,10 +74,11 @@ export async function createProfile(
     }
 
     // Construire le document profil
-    const profileDocument: Omit<ProfileDocument, 'id' | 'createdAt' | 'updatedAt'> & {
+    const profileDocument: Omit<ProfileDocument, 'createdAt' | 'updatedAt'> & {
       createdAt: unknown;
       updatedAt: unknown;
     } = {
+      id: profileId,
       parentId,
       fullName: formData.fullName,
       dateOfBirth: dateOfBirthTimestamp,
