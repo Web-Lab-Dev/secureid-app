@@ -20,9 +20,21 @@ if (!admin.apps.length) {
   const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
   const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
 
-  if (!projectId || !clientEmail || !privateKey) {
+  if (!projectId) {
     throw new Error(
-      'Missing Firebase Admin credentials. Please set FIREBASE_ADMIN_CLIENT_EMAIL and FIREBASE_ADMIN_PRIVATE_KEY in environment variables.'
+      '🔥 FIREBASE ADMIN ERROR: Missing NEXT_PUBLIC_FIREBASE_PROJECT_ID environment variable.'
+    );
+  }
+
+  if (!clientEmail) {
+    throw new Error(
+      '🔥 FIREBASE ADMIN ERROR: Missing FIREBASE_ADMIN_CLIENT_EMAIL environment variable. Please add it in Vercel Dashboard > Settings > Environment Variables.'
+    );
+  }
+
+  if (!privateKey) {
+    throw new Error(
+      '🔥 FIREBASE ADMIN ERROR: Missing FIREBASE_ADMIN_PRIVATE_KEY environment variable. Please add it in Vercel Dashboard > Settings > Environment Variables.'
     );
   }
 
