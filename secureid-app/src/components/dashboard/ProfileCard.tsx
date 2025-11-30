@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { User, FileText, AlertCircle } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { getBraceletBadgeVariant, getBraceletStatusLabel } from '@/lib/bracelet-helpers';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/badge';
 import type { ProfileDocument } from '@/types/profile';
@@ -34,36 +35,6 @@ export function ProfileCard({ profile, bracelet, onStatusChange }: ProfileCardPr
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [localStatus, setLocalStatus] = useState(bracelet?.status || 'ACTIVE');
 
-  const getBraceletBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'ACTIVE':
-        return 'active';
-      case 'LOST':
-        return 'lost';
-      case 'STOLEN':
-        return 'stolen';
-      case 'INACTIVE':
-        return 'inactive';
-      default:
-        return 'inactive';
-    }
-  };
-
-  const getBraceletStatusLabel = (status: string) => {
-    switch (status) {
-      case 'ACTIVE':
-        return 'Actif';
-      case 'LOST':
-        return 'Perdu';
-      case 'STOLEN':
-        return 'Volé';
-      case 'INACTIVE':
-        return 'Inactif';
-      default:
-        return status;
-    }
-  };
-
   const handleToggleLost = async () => {
     if (!bracelet || !user) return;
 
@@ -90,7 +61,7 @@ export function ProfileCard({ profile, bracelet, onStatusChange }: ProfileCardPr
     } catch (error) {
       // Revert en cas d'erreur
       setLocalStatus(localStatus);
-      console.error('Error toggling status:', error);
+      logger.error('Error toggling bracelet status', { error, braceletId: bracelet?.id });
       alert('Une erreur est survenue');
     } finally {
       setIsTogglingStatus(false);

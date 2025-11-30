@@ -69,7 +69,7 @@ export function MedicalForm({
     watch,
     control,
   } = useForm<MedicalFormData>({
-    resolver: zodResolver(medicalFormSchema) as any,
+    resolver: zodResolver(medicalFormSchema),
     defaultValues: {
       fullName: initialData?.fullName ?? '',
       dateOfBirth: initialData?.dateOfBirth,
@@ -231,7 +231,7 @@ export function MedicalForm({
             <label className="block text-sm font-medium text-gray-300">Allergies</label>
             <button
               type="button"
-              onClick={() => appendAllergy('' as any)}
+              onClick={() => appendAllergy('')}
               className="flex items-center gap-1 px-3 py-1 text-sm text-brand-orange hover:text-brand-orange/80 transition-colors"
             >
               <Plus className="w-4 h-4" />
@@ -266,7 +266,7 @@ export function MedicalForm({
             <label className="block text-sm font-medium text-gray-300">Conditions médicales</label>
             <button
               type="button"
-              onClick={() => appendCondition('' as any)}
+              onClick={() => appendCondition('')}
               className="flex items-center gap-1 px-3 py-1 text-sm text-brand-orange hover:text-brand-orange/80 transition-colors"
             >
               <Plus className="w-4 h-4" />
@@ -301,7 +301,7 @@ export function MedicalForm({
             <label className="block text-sm font-medium text-gray-300">Médicaments</label>
             <button
               type="button"
-              onClick={() => appendMedication('' as any)}
+              onClick={() => appendMedication('')}
               className="flex items-center gap-1 px-3 py-1 text-sm text-brand-orange hover:text-brand-orange/80 transition-colors"
             >
               <Plus className="w-4 h-4" />
