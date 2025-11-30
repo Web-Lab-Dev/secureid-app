@@ -2,6 +2,7 @@
 
 import { adminDb, admin } from '@/lib/firebase-admin';
 import { logger } from '@/lib/logger';
+import { isRateLimited, recordAttempt, resetAttempts, getTimeRemaining } from '@/lib/rate-limit';
 import type { GeolocationData } from '@/types/scan';
 
 /**
@@ -32,6 +33,10 @@ interface VerifyPinResult {
  * Vérifie le code PIN médecin d'un profil
  * CRITIQUE: Validation TOUJOURS côté serveur, jamais côté client
  *
+ * SÉCURITÉ P1:
+ * - Rate limiting: Max 5 tentatives par 15 minutes
+ * - Prévention brute-force des PINs à 4 chiffres
+ *
  * @param input - ID profil et PIN à vérifier
  * @returns Résultat de la validation
  */
@@ -55,11 +60,26 @@ export async function verifyDoctorPin(input: VerifyPinInput): Promise<VerifyPinR
       };
     }
 
+    // RATE LIMITING: Vérifier si trop de tentatives
+    const rateLimitKey = `pin_verify_${profileId}`;
+    const isLimited = await isRateLimited(rateLimitKey);
+
+    if (isLimited) {
+      const timeRemaining = await getTimeRemaining(rateLimitKey);
+      const minutes = Math.ceil(timeRemaining / 60);
+      return {
+        success: false,
+        error: `Trop de tentatives. Réessayez dans ${minutes} minute${minutes > 1 ? 's' : ''}.`,
+      };
+    }
+
     // Récupérer le profil via Admin SDK
     const profileRef = adminDb.collection('profiles').doc(profileId);
     const profileSnap = await profileRef.get();
 
     if (!profileSnap.exists) {
+      // Enregistrer tentative même si profil introuvable (prévention énumération)
+      await recordAttempt(rateLimitKey);
       return {
         success: false,
         error: 'Profil introuvable',
@@ -71,11 +91,16 @@ export async function verifyDoctorPin(input: VerifyPinInput): Promise<VerifyPinR
     // Comparer les PINs
     // TODO P1: Hasher les PINs avec bcrypt pour meilleure sécurité
     if (profile?.doctorPin !== pin) {
+      // PIN incorrect - enregistrer tentative
+      await recordAttempt(rateLimitKey);
       return {
         success: false,
         error: 'Code PIN incorrect',
       };
     }
+
+    // PIN correct - réinitialiser le compteur
+    await resetAttempts(rateLimitKey);
 
     return {
       success: true,

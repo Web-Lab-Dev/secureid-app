@@ -44,23 +44,37 @@ export function DashboardPageClient() {
           return;
         }
 
-        // Query Firestore pour récupérer les bracelets
-        const braceletsQuery = query(
-          collection(db, 'bracelets'),
-          where('id', 'in', braceletIds)
-        );
-
-        const braceletsSnap = await getDocs(braceletsQuery);
         const braceletsMap: Record<string, BraceletDocument> = {};
 
-        braceletsSnap.forEach((doc) => {
-          const data = doc.data() as BraceletDocument;
-          braceletsMap[data.id] = data;
-        });
+        // FIX P1: Firestore 'in' query limitée à 10 items max
+        // Diviser en batches de 10 pour supporter 11+ profils
+        const BATCH_SIZE = 10;
+        const batches = [];
+
+        for (let i = 0; i < braceletIds.length; i += BATCH_SIZE) {
+          batches.push(braceletIds.slice(i, i + BATCH_SIZE));
+        }
+
+        // Exécuter toutes les queries en parallèle
+        await Promise.all(
+          batches.map(async (batch) => {
+            const braceletsQuery = query(
+              collection(db, 'bracelets'),
+              where('id', 'in', batch)
+            );
+
+            const braceletsSnap = await getDocs(braceletsQuery);
+
+            braceletsSnap.forEach((doc) => {
+              const data = doc.data() as BraceletDocument;
+              braceletsMap[data.id] = data;
+            });
+          })
+        );
 
         setBracelets(braceletsMap);
       } catch (error) {
-        console.error('Error loading bracelets:', error);
+        logger.error('Error loading bracelets', { error, profileCount: profiles.length });
       } finally {
         setLoadingBracelets(false);
       }

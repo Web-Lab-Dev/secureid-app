@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -35,7 +36,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${robotoMono.variable} antialiased`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>{children}</AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
