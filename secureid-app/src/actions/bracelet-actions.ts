@@ -77,7 +77,7 @@ export async function validateBraceletToken(
       braceletStatus: bracelet.status,
     };
   } catch (error) {
-    console.error('Error validating bracelet token:', error);
+    logger.error('Error validating bracelet token', { error, braceletId: input.braceletId });
     return {
       valid: false,
       error: error instanceof Error ? error.message : 'Erreur lors de la validation',
@@ -178,7 +178,7 @@ export async function linkBraceletToProfile(
 
     return result;
   } catch (error) {
-    console.error('Error linking bracelet to profile:', error);
+    logger.error('Error linking bracelet to profile', { error, braceletId: input.braceletId, profileId: input.profileId });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Erreur lors de la liaison',
@@ -307,7 +307,7 @@ export async function transferBracelet(
 
     return result;
   } catch (error) {
-    console.error('Error transferring bracelet:', error);
+    logger.error('Error transferring bracelet', { error, oldBraceletId: input.oldBraceletId, newBraceletId: input.newBraceletId });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Erreur lors du transfert',
@@ -384,7 +384,7 @@ export async function unlinkBracelet(
 
     return result;
   } catch (error) {
-    console.error('Error unlinking bracelet:', error);
+    logger.error('Error unlinking bracelet', { error, braceletId: input.braceletId, profileId: input.profileId });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Erreur lors de la déliaison',
@@ -451,7 +451,7 @@ export async function updateBraceletStatus(
 
     return { success: true };
   } catch (error) {
-    console.error('Error updating bracelet status:', error);
+    logger.error('Error updating bracelet status', { error, braceletId: input.braceletId, status: input.status });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Erreur lors de la mise à jour',

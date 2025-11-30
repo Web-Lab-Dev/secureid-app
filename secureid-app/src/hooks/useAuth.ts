@@ -69,7 +69,7 @@ export function useAuth(): UseAuthReturn {
         setUserData(null);
       }
     } catch (err) {
-      console.error('Erreur lors du chargement des données utilisateur:', err);
+      logger.error('Error loading user data', { error: err, uid });
       setUserData(null);
     }
   }, []);
@@ -139,7 +139,7 @@ export function useAuth(): UseAuthReturn {
 
       return firebaseUser;
     } catch (err: unknown) {
-      console.error('Erreur lors de l\'inscription:', err);
+      logger.error('Error during signup', { error: err, phone: data.phone });
 
       // Messages d'erreur en français
       if (isFirebaseError(err)) {
@@ -193,7 +193,7 @@ export function useAuth(): UseAuthReturn {
 
       return firebaseUser;
     } catch (err: unknown) {
-      console.error('Erreur lors de la connexion:', err);
+      logger.error('Error during signin', { error: err, phone: data.phone });
 
       // Messages d'erreur en français
       if (isFirebaseError(err)) {
@@ -222,7 +222,7 @@ export function useAuth(): UseAuthReturn {
       setUser(null);
       setUserData(null);
     } catch (err: unknown) {
-      console.error('Erreur lors de la déconnexion:', err);
+      logger.error('Error during signout', { error: err });
       throw new Error('Erreur lors de la déconnexion');
     }
   }, []);

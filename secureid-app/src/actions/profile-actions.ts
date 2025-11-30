@@ -102,7 +102,7 @@ export async function createProfile(
       profileId,
     };
   } catch (error) {
-    console.error('Error creating profile:', error);
+    logger.error('Error creating profile', { error, parentId: input.parentId });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Erreur lors de la création du profil',
@@ -220,7 +220,7 @@ export async function updateProfile(
       success: true,
     };
   } catch (error) {
-    console.error('Error updating profile:', error);
+    logger.error('Error updating profile', { error, profileId: input.profileId });
     return {
       success: false,
       error:
@@ -262,7 +262,7 @@ export async function archiveProfile(
       success: true,
     };
   } catch (error) {
-    console.error('Error archiving profile:', error);
+    logger.error('Error archiving profile', { error, profileId: input.profileId });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Erreur lors de l\'archivage du profil',

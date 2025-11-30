@@ -1,8 +1,6 @@
 'use server';
 
-import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, listAll, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/lib/firebase';
+import { adminDb, admin } from '@/lib/firebase-admin';
 import { logger } from '@/lib/logger';
 import type { GeolocationData } from '@/types/scan';
 
@@ -13,6 +11,11 @@ import type { GeolocationData } from '@/types/scan';
  * - Validation PIN médecin
  * - Enregistrement scans GPS
  * - Génération URLs documents médicaux
+ *
+ * MIGRATION: Utilise Admin SDK au lieu du Client SDK pour:
+ * - Meilleures performances (accès direct serveur)
+ * - Contournement des règles Firestore
+ * - Cohérence avec profile-actions et bracelet-actions
  */
 
 interface VerifyPinInput {
@@ -36,7 +39,15 @@ export async function verifyDoctorPin(input: VerifyPinInput): Promise<VerifyPinR
   try {
     const { profileId, pin } = input;
 
-    // Validation basique
+    // Validation des entrées AVANT requête DB
+    if (!profileId || typeof profileId !== 'string' || profileId.trim().length === 0) {
+      return {
+        success: false,
+        error: 'ID de profil invalide',
+      };
+    }
+
+    // Validation basique du PIN
     if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
       return {
         success: false,
@@ -44,11 +55,11 @@ export async function verifyDoctorPin(input: VerifyPinInput): Promise<VerifyPinR
       };
     }
 
-    // Récupérer le profil
-    const profileRef = doc(db, 'profiles', profileId);
-    const profileSnap = await getDoc(profileRef);
+    // Récupérer le profil via Admin SDK
+    const profileRef = adminDb.collection('profiles').doc(profileId);
+    const profileSnap = await profileRef.get();
 
-    if (!profileSnap.exists()) {
+    if (!profileSnap.exists) {
       return {
         success: false,
         error: 'Profil introuvable',
@@ -58,7 +69,8 @@ export async function verifyDoctorPin(input: VerifyPinInput): Promise<VerifyPinR
     const profile = profileSnap.data();
 
     // Comparer les PINs
-    if (profile.doctorPin !== pin) {
+    // TODO P1: Hasher les PINs avec bcrypt pour meilleure sécurité
+    if (profile?.doctorPin !== pin) {
       return {
         success: false,
         error: 'Code PIN incorrect',
@@ -69,7 +81,7 @@ export async function verifyDoctorPin(input: VerifyPinInput): Promise<VerifyPinR
       success: true,
     };
   } catch (error) {
-    console.error('Error verifying PIN:', error);
+    logger.error('Error verifying PIN', { error, profileId: input.profileId });
     return {
       success: false,
       error: 'Erreur lors de la vérification du code',
@@ -100,23 +112,32 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
   try {
     const { braceletId, geolocation, userAgent } = input;
 
+    // Validation des entrées
+    if (!braceletId || typeof braceletId !== 'string') {
+      return {
+        success: false,
+        error: 'ID de bracelet invalide',
+      };
+    }
+
     const scanData = {
       braceletId,
-      timestamp: serverTimestamp(),
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
       lat: geolocation?.lat || null,
       lng: geolocation?.lng || null,
-      userAgent,
+      userAgent: userAgent || 'unknown',
     };
 
-    const scansCollection = collection(db, 'scans');
-    const scanDoc = await addDoc(scansCollection, scanData);
+    // Utiliser Admin SDK pour ajouter le document
+    const scansCollection = adminDb.collection('scans');
+    const scanDoc = await scansCollection.add(scanData);
 
     return {
       success: true,
       scanId: scanDoc.id,
     };
   } catch (error) {
-    console.error('Error recording scan:', error);
+    logger.error('Error recording scan', { error, braceletId: input.braceletId });
     return {
       success: false,
       error: 'Erreur lors de l\'enregistrement du scan',
@@ -146,6 +167,9 @@ interface GetDocumentsResult {
  * Récupère la liste des documents médicaux après validation PIN
  * Génère des URLs de téléchargement signées (sécurité Firebase Storage)
  *
+ * NOTE: Firebase Storage nécessite toujours le Client SDK même dans Server Actions
+ * car l'Admin SDK Storage a une API différente (bucket.file() au lieu de ref())
+ *
  * @param input - ID profil et PIN validé
  * @returns Liste des documents avec URLs signées
  */
@@ -154,6 +178,14 @@ export async function getMedicalDocuments(
 ): Promise<GetDocumentsResult> {
   try {
     const { profileId, pin } = input;
+
+    // Validation des entrées
+    if (!profileId || typeof profileId !== 'string' || profileId.trim().length === 0) {
+      return {
+        success: false,
+        error: 'ID de profil invalide',
+      };
+    }
 
     // Vérifier le PIN d'abord
     const pinResult = await verifyDoctorPin({ profileId, pin });
@@ -164,45 +196,47 @@ export async function getMedicalDocuments(
       };
     }
 
-    // Récupérer les documents depuis Storage
-    const docsRef = ref(storage, `medical_docs/${profileId}`);
+    // Pour Firebase Storage, utiliser Admin SDK Storage
+    // Note: Nécessite configuration différente - bucket() au lieu de ref()
+    const bucket = admin.storage().bucket();
+    const [files] = await bucket.getFiles({
+      prefix: `medical_docs/${profileId}/`,
+    });
 
-    try {
-      const result = await listAll(docsRef);
-
-      const documents: MedicalDocument[] = await Promise.all(
-        result.items.map(async (item) => {
-          const url = await getDownloadURL(item);
-          const name = item.name;
-          const type = name.endsWith('.pdf') ? 'pdf' : 'image';
-
-          return {
-            name,
-            url,
-            type,
-          };
-        })
-      );
-
+    if (!files || files.length === 0) {
       return {
         success: true,
-        documents,
+        documents: [],
       };
-    } catch (storageError: unknown) {
-      // Si le dossier n'existe pas, retourner liste vide
-      if (storageError && typeof storageError === 'object' && 'code' in storageError) {
-        const error = storageError as { code: string };
-        if (error.code === 'storage/object-not-found') {
-          return {
-            success: true,
-            documents: [],
-          };
-        }
-      }
-      throw storageError;
     }
+
+    // Générer les URLs signées pour chaque document
+    const documents: MedicalDocument[] = await Promise.all(
+      files.map(async (file) => {
+        // Générer URL signée valide 1 heure
+        const [url] = await file.getSignedUrl({
+          action: 'read',
+          expires: Date.now() + 60 * 60 * 1000, // 1 heure
+        });
+
+        const name = file.name.split('/').pop() || file.name;
+        const type = name.endsWith('.pdf') ? 'pdf' : 'image';
+
+        return {
+          name,
+          url,
+          type,
+          size: file.metadata.size ? parseInt(file.metadata.size, 10) : undefined,
+        };
+      })
+    );
+
+    return {
+      success: true,
+      documents,
+    };
   } catch (error) {
-    console.error('Error fetching medical documents:', error);
+    logger.error('Error fetching medical documents', { error, profileId: input.profileId });
     return {
       success: false,
       error: 'Erreur lors de la récupération des documents',

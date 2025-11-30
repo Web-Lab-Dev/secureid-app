@@ -70,7 +70,7 @@ export function useProfiles(): UseProfilesReturn {
 
       setProfiles(fetchedProfiles);
     } catch (err: unknown) {
-      console.error('Erreur lors du chargement des profils:', err);
+      logger.error('Error loading profiles', { error: err, userId: user?.uid });
       setError('Impossible de charger les profils');
     } finally {
       setLoading(false);

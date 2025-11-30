@@ -127,7 +127,7 @@ export async function uploadProfilePhoto(
 
     return downloadURL;
   } catch (error: unknown) {
-    console.error('Error uploading profile photo', error);
+    logger.error('Error uploading profile photo', { error });
 
     // Gérer les erreurs Firebase spécifiques
     if (isFirebaseError(error)) {
@@ -164,7 +164,7 @@ export async function deleteProfilePhoto(photoUrl: string): Promise<void> {
     const photoRef = ref(storage, path);
     await deleteObject(photoRef);
   } catch (error) {
-    console.error('Error deleting profile photo:', error);
+    logger.error('Error deleting profile photo', { error });
     // Ne pas throw - la suppression peut échouer si le fichier n'existe plus
   }
 }
