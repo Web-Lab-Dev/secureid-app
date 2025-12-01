@@ -192,8 +192,8 @@ interface GetDocumentsResult {
  * Récupère la liste des documents médicaux après validation PIN
  * Génère des URLs de téléchargement signées (sécurité Firebase Storage)
  *
- * NOTE: Firebase Storage nécessite toujours le Client SDK même dans Server Actions
- * car l'Admin SDK Storage a une API différente (bucket.file() au lieu de ref())
+ * NOTE: Firebase Storage Admin SDK utilise bucket.getFiles() et getSignedUrl()
+ * au lieu de l'API Client SDK (ref() + getDownloadURL())
  *
  * @param input - ID profil et PIN validé
  * @returns Liste des documents avec URLs signées
