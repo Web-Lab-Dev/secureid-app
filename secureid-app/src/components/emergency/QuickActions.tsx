@@ -1,15 +1,17 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Phone, MapPin, Stethoscope, Loader2, AlertCircle } from 'lucide-react';
+import { ShareLocationModal } from './ShareLocationModal';
 import type { ProfileDocument } from '@/types/profile';
 import type { UseGeolocationReturn } from '@/hooks/useGeolocation';
 
 /**
- * PHASE 5 - QUICK ACTIONS
+ * PHASE 5 + 6.5 - QUICK ACTIONS
  *
  * Boutons d'action rapide sticky en bas de page:
  * - Appeler le contact d'urgence principal
- * - Envoyer position GPS
+ * - Envoyer position GPS (PHASE 6.5: multi-canal avec modal)
  * - Accès Portail Médecin
  */
 
@@ -25,20 +27,36 @@ export function QuickActions({
   onOpenMedicalPortal,
 }: QuickActionsProps) {
   const primaryContact = profile.emergencyContacts[0];
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const handleRequestLocation = () => {
     if (geolocation.isLoading) return;
-    geolocation.requestLocation();
+
+    // Si on a déjà la position, ouvrir le modal
+    if (geolocation.data) {
+      setShowShareModal(true);
+    } else {
+      // Sinon, récupérer la position d'abord
+      geolocation.requestLocation();
+    }
   };
 
+  // Ouvrir automatiquement le modal quand la position est récupérée
+  useEffect(() => {
+    if (geolocation.data && !geolocation.isLoading && !geolocation.error) {
+      setShowShareModal(true);
+    }
+  }, [geolocation.data, geolocation.isLoading, geolocation.error]);
+
   return (
+    <>
     <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-800 bg-brand-black/95 backdrop-blur-sm">
       <div className="container mx-auto max-w-2xl px-4 py-4">
         {/* Message GPS si succès */}
         {geolocation.data && (
           <div className="mb-3 rounded-lg bg-green-500/10 border border-green-500/30 p-2 text-center">
             <p className="text-sm text-green-500">
-              ✓ Position GPS enregistrée - Les parents seront notifiés
+              ✓ Position GPS trouvée - Choisissez comment la transmettre
             </p>
           </div>
         )}
@@ -68,10 +86,10 @@ export function QuickActions({
             </a>
           )}
 
-          {/* Bouton 2: Position GPS */}
+          {/* Bouton 2: Position GPS (PHASE 6.5) */}
           <button
             onClick={handleRequestLocation}
-            disabled={geolocation.isLoading || !!geolocation.data}
+            disabled={geolocation.isLoading}
             className="flex flex-col items-center justify-center gap-2 rounded-lg bg-brand-orange px-4 py-4 font-semibold text-white transition-colors hover:bg-brand-orange/90 active:bg-brand-orange/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {geolocation.isLoading ? (
@@ -80,7 +98,7 @@ export function QuickActions({
               <MapPin className="h-6 w-6" />
             )}
             <span className="text-sm">
-              {geolocation.data ? 'Position Envoyée' : 'Envoyer Position'}
+              {geolocation.data ? 'Partager Position' : 'Envoyer Position'}
             </span>
           </button>
 
@@ -95,5 +113,16 @@ export function QuickActions({
         </div>
       </div>
     </div>
+
+    {/* Modal de partage (PHASE 6.5) */}
+    {geolocation.data && primaryContact && (
+      <ShareLocationModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        location={geolocation.data}
+        contactPhone={primaryContact.phone}
+      />
+    )}
+    </>
   );
 }

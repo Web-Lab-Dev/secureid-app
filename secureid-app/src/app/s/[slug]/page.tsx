@@ -3,7 +3,9 @@ import { doc, getDoc } from 'firebase/firestore';
 import { redirect } from 'next/navigation';
 import { ErrorPage } from '@/components/ErrorPage';
 import { UnknownStatusPage } from '@/components/UnknownStatusPage';
+import { LostModeView } from '@/components/LostModeView';
 import { EmergencyViewClient } from './page-client';
+import { getOwnerContact } from '@/actions/bracelet-actions';
 import type { BraceletDocument, BraceletStatus } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
 
@@ -126,7 +128,18 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
     return <EmergencyViewClient bracelet={serializedBracelet} profile={profileData} />;
   }
 
-  // CAS D: Bracelet STOLEN → Afficher message piège
+  // CAS D: Bracelet LOST → Afficher écran de restitution (PHASE 6.5)
+  if (status === 'LOST') {
+    // Récupérer le numéro du propriétaire
+    const ownerContactResult = await getOwnerContact({ braceletId: slug });
+    const ownerPhone = ownerContactResult.success ? ownerContactResult.phone : undefined;
+
+    const serializedBracelet = serializeFirestoreData(braceletData) as BraceletDocument;
+
+    return <LostModeView bracelet={serializedBracelet} ownerPhone={ownerPhone} />;
+  }
+
+  // CAS E: Bracelet STOLEN → Afficher message piège
   if (status === 'STOLEN') {
     return <ErrorPage type="stolen" slug={slug} token={token} />;
   }

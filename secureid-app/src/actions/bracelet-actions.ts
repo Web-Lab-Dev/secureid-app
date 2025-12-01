@@ -515,3 +515,86 @@ export async function reactivateBracelet(
     status: 'ACTIVE',
   });
 }
+
+/**
+ * PHASE 6.5 - GET OWNER CONTACT
+ */
+
+interface GetOwnerContactInput {
+  braceletId: string;
+}
+
+interface GetOwnerContactResult {
+  success: boolean;
+  phone?: string;
+  error?: string;
+}
+
+/**
+ * Récupère le numéro de téléphone du propriétaire d'un bracelet
+ * Utilisé pour LOST mode (restitution)
+ *
+ * @param input - ID du bracelet
+ * @returns Numéro de téléphone du parent
+ */
+export async function getOwnerContact(
+  input: GetOwnerContactInput
+): Promise<GetOwnerContactResult> {
+  try {
+    const { braceletId } = input;
+
+    // Validation
+    if (!braceletId || typeof braceletId !== 'string') {
+      return {
+        success: false,
+        error: 'ID bracelet invalide',
+      };
+    }
+
+    // Récupérer le bracelet
+    const braceletRef = adminDb.collection('bracelets').doc(braceletId);
+    const braceletSnap = await braceletRef.get();
+
+    if (!braceletSnap.exists) {
+      return {
+        success: false,
+        error: 'Bracelet introuvable',
+      };
+    }
+
+    const bracelet = braceletSnap.data() as BraceletDocument;
+
+    // Récupérer l'utilisateur propriétaire
+    const userId = bracelet.linkedUserId;
+
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Bracelet non lié à un utilisateur',
+      };
+    }
+
+    const userRef = adminDb.collection('users').doc(userId);
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      return {
+        success: false,
+        error: 'Utilisateur introuvable',
+      };
+    }
+
+    const userData = userSnap.data();
+
+    return {
+      success: true,
+      phone: userData?.phone || undefined,
+    };
+  } catch (error) {
+    logger.error('Error getting owner contact', { error, braceletId: input.braceletId });
+    return {
+      success: false,
+      error: 'Erreur lors de la récupération du contact',
+    };
+  }
+}
