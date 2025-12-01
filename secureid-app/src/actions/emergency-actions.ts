@@ -247,11 +247,19 @@ export async function getMedicalDocuments(
         const name = file.name.split('/').pop() || file.name;
         const type = name.endsWith('.pdf') ? 'pdf' : 'image';
 
+        // Gérer le type de size qui peut être string | number | undefined
+        let size: number | undefined;
+        if (file.metadata.size) {
+          size = typeof file.metadata.size === 'string'
+            ? parseInt(file.metadata.size, 10)
+            : file.metadata.size;
+        }
+
         return {
           name,
           url,
           type,
-          size: file.metadata.size ? parseInt(file.metadata.size, 10) : undefined,
+          size,
         };
       })
     );
