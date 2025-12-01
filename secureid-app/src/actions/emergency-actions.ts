@@ -248,11 +248,16 @@ export async function getMedicalDocuments(
         const type = name.endsWith('.pdf') ? 'pdf' : 'image';
 
         // Gérer le type de size qui peut être string | number | undefined
+        // Fix TypeScript: Forcer le type avant parseInt
+        const rawSize = file.metadata.size;
         let size: number | undefined;
-        if (file.metadata.size) {
-          size = typeof file.metadata.size === 'string'
-            ? parseInt(file.metadata.size, 10)
-            : file.metadata.size;
+        if (rawSize !== undefined && rawSize !== null) {
+          if (typeof rawSize === 'string') {
+            const parsed = parseInt(rawSize, 10);
+            size = isNaN(parsed) ? undefined : parsed;
+          } else {
+            size = rawSize as number;
+          }
         }
 
         return {
