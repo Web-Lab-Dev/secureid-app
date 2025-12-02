@@ -128,11 +128,11 @@ export const medicalFormSchema = z.object({
     message: 'Sélectionnez un groupe sanguin valide',
   }),
 
-  allergies: z.array(z.string()).min(0),
+  allergies: z.array(z.string()).default([]),
 
-  conditions: z.array(z.string()).min(0),
+  conditions: z.array(z.string()).default([]),
 
-  medications: z.array(z.string()).min(0),
+  medications: z.array(z.string()).default([]),
 
   medicalNotes: z
     .string()
@@ -169,6 +169,9 @@ export const quickProfileSchema = z.object({
  */
 export type SignupFormData = z.infer<typeof signupSchema>;
 export type LoginFormData = z.infer<typeof loginSchema>;
-export type MedicalFormData = z.infer<typeof medicalFormSchema>;
+
+// Type MedicalFormData avec arrays requis (fix pour zodResolver TypeScript strict)
+export type MedicalFormData = z.output<typeof medicalFormSchema>;
+
 export type QuickProfileFormData = z.infer<typeof quickProfileSchema>;
 export type EmergencyContactFormData = z.infer<typeof emergencyContactSchema>;
