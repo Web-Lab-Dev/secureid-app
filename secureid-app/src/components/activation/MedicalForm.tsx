@@ -69,29 +69,27 @@ export function MedicalForm({
     watch,
     control,
   } = useForm<MedicalFormData>({
-    resolver: zodResolver(medicalFormSchema) as any,
+    resolver: zodResolver(medicalFormSchema),
     defaultValues: {
       fullName: initialData?.fullName ?? '',
-      dateOfBirth: initialData?.dateOfBirth ?? undefined,
+      dateOfBirth: initialData?.dateOfBirth,
       photoUrl: initialData?.photoUrl ?? '',
       bloodType: initialData?.bloodType ?? 'UNKNOWN',
-      allergies: initialData?.allergies ? [...initialData.allergies] : [],
-      conditions: initialData?.conditions ? [...initialData.conditions] : [],
-      medications: initialData?.medications ? [...initialData.medications] : [],
+      allergies: initialData?.allergies ?? [],
+      conditions: initialData?.conditions ?? [],
+      medications: initialData?.medications ?? [],
       medicalNotes: initialData?.medicalNotes ?? '',
       doctorPin: '',
       confirmDoctorPin: '',
-      emergencyContacts: initialData?.emergencyContacts?.length
-        ? initialData.emergencyContacts
-        : [
-            {
-              name: '',
-              relationship: 'MOTHER' as const,
-              phone: '',
-              email: '',
-            },
-          ],
-    } as MedicalFormData,
+      emergencyContacts: initialData?.emergencyContacts ?? [
+        {
+          name: '',
+          relationship: 'MOTHER',
+          phone: '',
+          email: '',
+        },
+      ],
+    },
   });
 
   // Gestion dynamique des tableaux
@@ -110,7 +108,7 @@ export function MedicalForm({
     remove: removeAllergy,
   } = useFieldArray({
     control,
-    name: 'allergies' as 'emergencyContacts',
+    name: 'allergies',
   });
 
   const {
@@ -119,7 +117,7 @@ export function MedicalForm({
     remove: removeCondition,
   } = useFieldArray({
     control,
-    name: 'conditions' as 'emergencyContacts',
+    name: 'conditions',
   });
 
   const {
@@ -128,7 +126,7 @@ export function MedicalForm({
     remove: removeMedication,
   } = useFieldArray({
     control,
-    name: 'medications' as 'emergencyContacts',
+    name: 'medications',
   });
 
   const handleFormSubmit = async (data: MedicalFormData) => {
