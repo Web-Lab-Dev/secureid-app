@@ -69,7 +69,7 @@ export function MedicalForm({
     watch,
     control,
   } = useForm<MedicalFormData>({
-    resolver: zodResolver(medicalFormSchema),
+    resolver: zodResolver(medicalFormSchema) as any,
     defaultValues: {
       fullName: initialData?.fullName ?? '',
       dateOfBirth: initialData?.dateOfBirth ?? undefined,
