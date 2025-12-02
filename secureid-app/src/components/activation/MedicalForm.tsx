@@ -72,24 +72,26 @@ export function MedicalForm({
     resolver: zodResolver(medicalFormSchema),
     defaultValues: {
       fullName: initialData?.fullName ?? '',
-      dateOfBirth: initialData?.dateOfBirth,
+      dateOfBirth: initialData?.dateOfBirth ?? undefined,
       photoUrl: initialData?.photoUrl ?? '',
       bloodType: initialData?.bloodType ?? 'UNKNOWN',
-      allergies: initialData?.allergies ?? [],
-      conditions: initialData?.conditions ?? [],
-      medications: initialData?.medications ?? [],
+      allergies: initialData?.allergies ? [...initialData.allergies] : [],
+      conditions: initialData?.conditions ? [...initialData.conditions] : [],
+      medications: initialData?.medications ? [...initialData.medications] : [],
       medicalNotes: initialData?.medicalNotes ?? '',
       doctorPin: '',
       confirmDoctorPin: '',
-      emergencyContacts: initialData?.emergencyContacts ?? [
-        {
-          name: '',
-          relationship: 'MOTHER',
-          phone: '',
-          email: '',
-        },
-      ],
-    },
+      emergencyContacts: initialData?.emergencyContacts?.length
+        ? initialData.emergencyContacts
+        : [
+            {
+              name: '',
+              relationship: 'MOTHER' as const,
+              phone: '',
+              email: '',
+            },
+          ],
+    } as MedicalFormData,
   });
 
   // Gestion dynamique des tableaux

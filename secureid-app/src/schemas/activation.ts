@@ -128,11 +128,11 @@ export const medicalFormSchema = z.object({
     message: 'Sélectionnez un groupe sanguin valide',
   }),
 
-  allergies: z.array(z.string()).default([]),
+  allergies: z.array(z.string()).min(0).default([]),
 
-  conditions: z.array(z.string()).default([]),
+  conditions: z.array(z.string()).min(0).default([]),
 
-  medications: z.array(z.string()).default([]),
+  medications: z.array(z.string()).min(0).default([]),
 
   medicalNotes: z
     .string()
