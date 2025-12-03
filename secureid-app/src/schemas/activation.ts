@@ -171,7 +171,13 @@ export type SignupFormData = z.infer<typeof signupSchema>;
 export type LoginFormData = z.infer<typeof loginSchema>;
 
 // Type MedicalFormData avec arrays requis (fix pour zodResolver TypeScript strict)
-export type MedicalFormData = z.output<typeof medicalFormSchema>;
+// Utiliser un type manuel car z.output ne résout pas correctement avec .default()
+type MedicalFormDataBase = z.infer<typeof medicalFormSchema>;
+export type MedicalFormData = Omit<MedicalFormDataBase, 'allergies' | 'conditions' | 'medications'> & {
+  allergies: string[];
+  conditions: string[];
+  medications: string[];
+};
 
 export type QuickProfileFormData = z.infer<typeof quickProfileSchema>;
 export type EmergencyContactFormData = z.infer<typeof emergencyContactSchema>;
