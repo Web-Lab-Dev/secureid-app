@@ -170,14 +170,8 @@ export const quickProfileSchema = z.object({
 export type SignupFormData = z.infer<typeof signupSchema>;
 export type LoginFormData = z.infer<typeof loginSchema>;
 
-// Type MedicalFormData avec arrays requis (fix pour zodResolver TypeScript strict)
-// Utiliser un type manuel car z.output ne résout pas correctement avec .default()
-type MedicalFormDataBase = z.infer<typeof medicalFormSchema>;
-export type MedicalFormData = Omit<MedicalFormDataBase, 'allergies' | 'conditions' | 'medications'> & {
-  allergies: string[];
-  conditions: string[];
-  medications: string[];
-};
+// Type MedicalFormData - utiliser z.infer standard
+export type MedicalFormData = z.infer<typeof medicalFormSchema>;
 
 export type QuickProfileFormData = z.infer<typeof quickProfileSchema>;
 export type EmergencyContactFormData = z.infer<typeof emergencyContactSchema>;

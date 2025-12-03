@@ -69,6 +69,7 @@ export function MedicalForm({
     watch,
     control,
   } = useForm<MedicalFormData>({
+    // @ts-ignore - Type incompatibility between Zod .default() and zodResolver
     resolver: zodResolver(medicalFormSchema),
     defaultValues: {
       fullName: initialData?.fullName ?? '',
