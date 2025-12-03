@@ -107,7 +107,7 @@ export function MedicalForm({
     append: appendAllergy,
     remove: removeAllergy,
   } = useFieldArray({
-    control,
+    control: control as any,
     name: 'allergies',
   });
 
@@ -116,7 +116,7 @@ export function MedicalForm({
     append: appendCondition,
     remove: removeCondition,
   } = useFieldArray({
-    control,
+    control: control as any,
     name: 'conditions',
   });
 
@@ -125,7 +125,7 @@ export function MedicalForm({
     append: appendMedication,
     remove: removeMedication,
   } = useFieldArray({
-    control,
+    control: control as any,
     name: 'medications',
   });
 
