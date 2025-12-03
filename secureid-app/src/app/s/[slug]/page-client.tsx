@@ -7,7 +7,7 @@ import type { ProfileDocument } from '@/types/profile';
 import { EmergencyHeader } from '@/components/emergency/EmergencyHeader';
 import { IdentityCard } from '@/components/emergency/IdentityCard';
 import { MedicalCard } from '@/components/emergency/MedicalCard';
-import { ActionsFooter } from '@/components/emergency/ActionsFooter';
+import { QuickActions } from '@/components/emergency/QuickActions';
 import { PinDialog } from '@/components/emergency/PinDialog';
 import { AIChatFab } from '@/components/emergency/AIChatFab';
 import { AIChatSheet } from '@/components/emergency/AIChatSheet';
@@ -114,14 +114,16 @@ export function EmergencyViewClient({ bracelet, profile }: EmergencyViewClientPr
           </motion.div>
         )}
 
-        {/* Footer: Actions Secondaires */}
-        <motion.div variants={cardVariants}>
-          <ActionsFooter
-            geolocation={geolocation}
-            onOpenMedicalPortal={() => setIsPinDialogOpen(true)}
-          />
-        </motion.div>
+        {/* Spacer pour laisser de l'espace pour le footer sticky */}
+        <div className="h-32" />
       </motion.div>
+
+      {/* QuickActions sticky en bas avec ShareLocationModal */}
+      <QuickActions
+        profile={profile}
+        geolocation={geolocation}
+        onOpenMedicalPortal={() => setIsPinDialogOpen(true)}
+      />
 
       {/* Dialog PIN Médecin */}
       <PinDialog
