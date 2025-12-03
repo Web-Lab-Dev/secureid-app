@@ -116,7 +116,7 @@ export function ShareLocationModal({
           {/* Options */}
           <div className="space-y-3">
             {/* Option: Web Share (si disponible) */}
-            {navigator.share && (
+            {navigator.share !== undefined && (
               <button
                 onClick={handleNativeShare}
                 className="w-full flex items-center gap-4 rounded-xl bg-slate-800 hover:bg-slate-700 px-5 py-4 text-left transition-all transform hover:scale-[1.02]"

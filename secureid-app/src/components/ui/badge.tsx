@@ -29,6 +29,10 @@ const badgeVariants = cva(
           "border-transparent bg-red-600 text-white animate-pulse",
         lost:
           "border-transparent bg-orange-500 text-white",
+        factory:
+          "border-transparent bg-gray-500 text-white",
+        deactivated:
+          "border-transparent bg-gray-400 text-white",
       },
     },
     defaultVariants: {

@@ -139,7 +139,7 @@ export function useAuth(): UseAuthReturn {
 
       return firebaseUser;
     } catch (err: unknown) {
-      logger.error('Error during signup', { error: err, phone: data.phone });
+      logger.error('Error during signup', { error: err, phoneNumber: data.phoneNumber });
 
       // Messages d'erreur en français
       if (isFirebaseError(err)) {
@@ -193,7 +193,7 @@ export function useAuth(): UseAuthReturn {
 
       return firebaseUser;
     } catch (err: unknown) {
-      logger.error('Error during signin', { error: err, phone: data.phone });
+      logger.error('Error during signin', { error: err, phoneNumber: data.phoneNumber });
 
       // Messages d'erreur en français
       if (isFirebaseError(err)) {
