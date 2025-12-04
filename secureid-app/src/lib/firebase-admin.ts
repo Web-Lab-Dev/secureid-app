@@ -13,8 +13,11 @@
 
 import * as admin from 'firebase-admin';
 
+// Déterminer si on est en mode build
+const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
+
 // Initialiser Admin SDK une seule fois (singleton pattern)
-if (!admin.apps.length) {
+if (!admin.apps.length && !isBuildTime) {
   // Vérifier que les credentials sont présents
   const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
@@ -48,9 +51,13 @@ if (!admin.apps.length) {
   });
 }
 
-// Exporter les services Admin
-export const adminDb = admin.firestore();
-export const adminAuth = admin.auth();
+// Exporter les services Admin (ou mocks pendant le build)
+export const adminDb: FirebaseFirestore.Firestore = isBuildTime
+  ? ({} as any)
+  : admin.firestore();
+export const adminAuth: admin.auth.Auth = isBuildTime
+  ? ({} as any)
+  : admin.auth();
 
 // Exporter admin pour les types et utilitaires
 export { admin };

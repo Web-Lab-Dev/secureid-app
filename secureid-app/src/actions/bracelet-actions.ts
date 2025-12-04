@@ -124,7 +124,7 @@ export async function linkBraceletToProfile(
     }
 
     // Transaction atomique pour éviter les race conditions
-    const result = await adminDb.runTransaction(async (transaction) => {
+    const result = await adminDb.runTransaction(async (transaction: FirebaseFirestore.Transaction) => {
       const braceletRef = adminDb.collection('bracelets').doc(braceletId);
       const profileRef = adminDb.collection('profiles').doc(profileId);
 

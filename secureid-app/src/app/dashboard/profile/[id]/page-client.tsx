@@ -11,6 +11,7 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MedicalFormEdit } from '@/components/dashboard/MedicalFormEdit';
 import { ConfidentialZone } from '@/components/dashboard/ConfidentialZone';
+import { SchoolSection } from '@/components/dashboard/SchoolSection';
 import type { ProfileDocument } from '@/types/profile';
 
 /**
@@ -125,11 +126,12 @@ export function ProfileDetailClient({ profileId }: ProfileDetailClientProps) {
         </div>
       </div>
 
-      {/* Tabs: Infos Publiques | Zone Confidentielle */}
+      {/* Tabs: Infos Publiques | Zone Confidentielle | École & Sorties */}
       <Tabs defaultValue="public" className="w-full">
         <TabsList className="mb-6 w-full sm:w-auto">
           <TabsTrigger value="public">Infos Publiques</TabsTrigger>
           <TabsTrigger value="confidential">Zone Confidentielle</TabsTrigger>
+          <TabsTrigger value="school">École & Sorties</TabsTrigger>
         </TabsList>
 
         {/* Onglet 1: Infos Publiques */}
@@ -158,6 +160,11 @@ export function ProfileDetailClient({ profileId }: ProfileDetailClientProps) {
 
             <ConfidentialZone profile={profile} />
           </div>
+        </TabsContent>
+
+        {/* Onglet 3: École & Sorties */}
+        <TabsContent value="school">
+          <SchoolSection profile={profile} />
         </TabsContent>
       </Tabs>
     </div>

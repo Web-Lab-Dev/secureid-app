@@ -1,9 +1,8 @@
 'use server';
 
-import { db, storage } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { logger } from '@/lib/logger';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import type { PickupDocument, CreatePickupData } from '@/types/profile';
+import type { PickupDocument } from '@/types/profile';
 
 /**
  * PHASE 8 - SCHOOL ACTIONS
@@ -19,7 +18,7 @@ export async function verifySchoolPin(data: {
   pin: string;
 }): Promise<{ success: boolean; message?: string }> {
   try {
-    const profileRef = db.collection('profiles').doc(data.profileId);
+    const profileRef = adminDb.collection('profiles').doc(data.profileId);
     const profileDoc = await profileRef.get();
 
     if (!profileDoc.exists) {
@@ -54,7 +53,7 @@ export async function getAuthorizedPickups(data: {
 }): Promise<{ success: boolean; pickups?: PickupDocument[]; message?: string }> {
   try {
     const now = new Date();
-    const pickupsRef = db
+    const pickupsRef = adminDb
       .collection('profiles')
       .doc(data.profileId)
       .collection('pickups');
@@ -91,32 +90,29 @@ export async function getAuthorizedPickups(data: {
 
 /**
  * Ajouter un récupérateur autorisé
+ * Note: La photo doit être uploadée côté client avant d'appeler cette action
  */
 export async function addPickup(data: {
   profileId: string;
-  pickup: CreatePickupData;
+  name: string;
+  relation: string;
+  photoUrl: string;
+  type: 'PERMANENT' | 'TEMPORARY';
+  expiresAt?: string; // ISO string
 }): Promise<{ success: boolean; pickupId?: string; message?: string }> {
   try {
-    // 1. Upload de la photo
-    const photoFile = data.pickup.photoFile;
-    const storageRef = ref(storage, `pickup_photos/${data.profileId}/${Date.now()}_${photoFile.name}`);
-
-    const uploadResult = await uploadBytes(storageRef, photoFile);
-    const photoUrl = await getDownloadURL(uploadResult.ref);
-
-    // 2. Créer le document pickup
-    const pickupRef = db
+    const pickupRef = adminDb
       .collection('profiles')
       .doc(data.profileId)
       .collection('pickups')
       .doc();
 
     const pickupData = {
-      name: data.pickup.name,
-      relation: data.pickup.relation,
-      photoUrl,
-      type: data.pickup.type,
-      expiresAt: data.pickup.expiresAt ? new Date(data.pickup.expiresAt) : null,
+      name: data.name,
+      relation: data.relation,
+      photoUrl: data.photoUrl,
+      type: data.type,
+      expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
       createdAt: new Date(),
     };
 
@@ -139,7 +135,7 @@ export async function deletePickup(data: {
   pickupId: string;
 }): Promise<{ success: boolean; message?: string }> {
   try {
-    await db
+    await adminDb
       .collection('profiles')
       .doc(data.profileId)
       .collection('pickups')
@@ -164,7 +160,7 @@ export async function updateSchoolPin(data: {
   parentId: string;
 }): Promise<{ success: boolean; message?: string }> {
   try {
-    const profileRef = db.collection('profiles').doc(data.profileId);
+    const profileRef = adminDb.collection('profiles').doc(data.profileId);
     const profileDoc = await profileRef.get();
 
     if (!profileDoc.exists) {
