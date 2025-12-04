@@ -31,6 +31,26 @@ service firebase.storage {
       allow delete: if isProfileOwner();
     }
 
+    // PHASE 8 - Règles pour les photos des anges gardiens (récupérateurs école)
+    match /pickup_photos/{profileId}/{fileName} {
+      // Helper function pour vérifier ownership du profil
+      function isProfileOwner() {
+        let profile = firestore.get(/databases/(default)/documents/profiles/$(profileId));
+        return request.auth != null && profile.data.parentId == request.auth.uid;
+      }
+
+      // Lecture publique (pour affichage dans portail école)
+      allow read: if true;
+
+      // Écriture uniquement pour le parent propriétaire
+      allow write: if isProfileOwner()
+                   && request.resource.size < 5 * 1024 * 1024  // Max 5MB
+                   && request.resource.contentType.matches('image/.*');  // Seulement des images
+
+      // Suppression autorisée pour le propriétaire
+      allow delete: if isProfileOwner();
+    }
+
     // Bloquer tout accès par défaut
     match /{allPaths=**} {
       allow read, write: if false;

@@ -49,3 +49,4 @@ scripts/.env.provisioning
 # output du provisioning
 output/*
 !output/.gitkeep
+VERCEL-PRIVATE-KEY.txt

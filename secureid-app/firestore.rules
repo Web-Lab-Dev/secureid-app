@@ -150,6 +150,36 @@ service cloud.firestore {
       // SUPPRESSION: Archivage seulement (pas de vraie suppression)
       // On change le statut à ARCHIVED au lieu de supprimer
       allow delete: if false;
+
+      // SOUS-COLLECTION: pickups (Phase 8 - Récupérateurs école)
+      match /pickups/{pickupId} {
+        // LECTURE: Publique pour affichage dans portail école
+        allow read: if true;
+
+        // CRÉATION: Seulement par le parent propriétaire du profil
+        allow create: if isAuthenticated() &&
+                         get(/databases/$(database)/documents/profiles/$(profileId)).data.parentId == request.auth.uid &&
+                         // Vérifier les champs obligatoires
+                         request.resource.data.keys().hasAll([
+                           'name',
+                           'relation',
+                           'photoUrl',
+                           'type',
+                           'createdAt'
+                         ]) &&
+                         // Vérifier le type
+                         request.resource.data.type in ['PERMANENT', 'TEMPORARY'] &&
+                         // Si TEMPORARY, expiresAt doit être présent
+                         (request.resource.data.type == 'PERMANENT' ||
+                          (request.resource.data.type == 'TEMPORARY' && 'expiresAt' in request.resource.data.keys()));
+
+        // MISE À JOUR: Interdite (supprimer et recréer si besoin)
+        allow update: if false;
+
+        // SUPPRESSION: Seulement par le parent propriétaire
+        allow delete: if isAuthenticated() &&
+                         get(/databases/$(database)/documents/profiles/$(profileId)).data.parentId == request.auth.uid;
+      }
     }
 
     // ============================================================================
