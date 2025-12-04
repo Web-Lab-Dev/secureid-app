@@ -20,6 +20,7 @@ interface BeforeInstallPromptEvent extends Event {
 export function InstallBanner() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showBanner, setShowBanner] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
     // Vérifier si l'utilisateur a déjà fermé la bannière
@@ -29,6 +30,7 @@ export function InstallBanner() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
     if (bannerDismissed || isStandalone) {
+      setIsInstalled(true);
       return;
     }
 
@@ -42,29 +44,42 @@ export function InstallBanner() {
       setShowBanner(true);
     };
 
+    // Écouter l'événement appinstalled
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setShowBanner(false);
+      localStorage.setItem('pwa-banner-dismissed', 'true');
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
 
-    // Afficher le prompt d'installation natif
-    await deferredPrompt.prompt();
+    try {
+      // Afficher le prompt d'installation natif
+      await deferredPrompt.prompt();
 
-    // Attendre la réponse de l'utilisateur
-    const { outcome } = await deferredPrompt.userChoice;
+      // Attendre la réponse de l'utilisateur
+      const { outcome } = await deferredPrompt.userChoice;
 
-    if (outcome === 'accepted') {
-      console.log('PWA installée avec succès');
+      if (outcome === 'accepted') {
+        console.log('PWA installée avec succès');
+        setIsInstalled(true);
+        localStorage.setItem('pwa-banner-dismissed', 'true');
+      }
+
+      // Ne pas cacher la bannière si refusé, garder visible pour réessayer
+    } catch (error) {
+      console.error('Erreur lors de l\'installation PWA:', error);
     }
-
-    // Réinitialiser le prompt
-    setDeferredPrompt(null);
-    setShowBanner(false);
   };
 
   const handleDismiss = () => {
@@ -73,7 +88,8 @@ export function InstallBanner() {
     setShowBanner(false);
   };
 
-  if (!showBanner || !deferredPrompt) {
+  // Ne pas afficher si l'app est installée ou la bannière fermée
+  if (!showBanner || isInstalled) {
     return null;
   }
 

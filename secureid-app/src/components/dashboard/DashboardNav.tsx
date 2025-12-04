@@ -22,7 +22,10 @@ export function DashboardNav() {
   };
 
   return (
-    <nav className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
+    <nav className="sticky top-0 z-50 border-b border-slate-800 bg-slate-900/95 backdrop-blur-sm">
+      {/* Safe area pour notch iOS/Android */}
+      <div className="h-2 bg-slate-900/95" style={{ paddingTop: 'env(safe-area-inset-top)' }} />
+
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo & Brand */}
