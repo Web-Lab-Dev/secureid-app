@@ -8,6 +8,7 @@ import { useProfiles } from '@/hooks/useProfiles';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { ProfileCard } from '@/components/dashboard/ProfileCard';
 import { EmptyState } from '@/components/ui/empty-state';
+import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { BraceletDocument } from '@/types/bracelet';
@@ -100,9 +101,10 @@ export function DashboardPageClient() {
   }
 
   return (
-    <div className="py-8">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+    <>
+      <div className="py-8">
+        {/* Header */}
+        <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Mes Enfants</h1>
           <p className="mt-2 text-slate-400">
@@ -172,6 +174,10 @@ export function DashboardPageClient() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+
+      {/* PWA Install Banner (PHASE 7) */}
+      <InstallBanner />
+    </>
   );
 }
