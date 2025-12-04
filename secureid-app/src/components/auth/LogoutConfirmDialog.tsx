@@ -33,7 +33,7 @@ export function LogoutConfirmDialog({
       />
 
       {/* Dialog */}
-      <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 p-4">
+      <div className="fixed left-1/2 top-[55%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 p-4 sm:top-1/2">
         <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
           {/* Header */}
           <div className="mb-6 flex items-center justify-between">

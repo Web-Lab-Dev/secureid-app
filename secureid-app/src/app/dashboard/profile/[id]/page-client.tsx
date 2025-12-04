@@ -101,7 +101,7 @@ export function ProfileDetailClient({ profileId }: ProfileDetailClientProps) {
   }
 
   return (
-    <div className="py-8">
+    <div className="space-y-6 py-6 sm:py-8">
       {/* Header */}
       <div className="mb-8">
         <Link
@@ -126,47 +126,62 @@ export function ProfileDetailClient({ profileId }: ProfileDetailClientProps) {
         </div>
       </div>
 
-      {/* Tabs: Infos Publiques | Zone Confidentielle | École & Sorties */}
-      <Tabs defaultValue="public" className="w-full">
-        <TabsList className="mb-6 w-full sm:w-auto">
-          <TabsTrigger value="public">Infos Publiques</TabsTrigger>
-          <TabsTrigger value="confidential">Zone Confidentielle</TabsTrigger>
-          <TabsTrigger value="school">École & Sorties</TabsTrigger>
-        </TabsList>
+      {/* Dossier Médical - Tabs: Infos Publiques | Zone Confidentielle */}
+      <div className="rounded-lg border border-slate-800 bg-slate-900/30 p-4 sm:p-6">
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-white">Dossier Médical</h2>
+          <p className="text-sm text-slate-400">
+            Informations de santé et documents confidentiels
+          </p>
+        </div>
 
-        {/* Onglet 1: Infos Publiques */}
-        <TabsContent value="public">
-          <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-6">
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-white">Informations Médicales</h2>
-              <p className="text-sm text-slate-400">
-                Ces informations sont visibles par les secouristes lors du scan du bracelet
-              </p>
+        <Tabs defaultValue="public" className="w-full">
+          <TabsList className="mb-6 grid w-full grid-cols-2 sm:w-auto sm:flex">
+            <TabsTrigger value="public">Infos Publiques</TabsTrigger>
+            <TabsTrigger value="confidential">Zone Confidentielle</TabsTrigger>
+          </TabsList>
+
+          {/* Onglet 1: Infos Publiques */}
+          <TabsContent value="public">
+            <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4 sm:p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-white">Informations Médicales</h3>
+                <p className="text-sm text-slate-400">
+                  Ces informations sont visibles par les secouristes lors du scan du bracelet
+                </p>
+              </div>
+
+              <MedicalFormEdit profile={profile} onUpdate={() => router.refresh()} />
             </div>
+          </TabsContent>
 
-            <MedicalFormEdit profile={profile} onUpdate={() => router.refresh()} />
-          </div>
-        </TabsContent>
+          {/* Onglet 2: Zone Confidentielle */}
+          <TabsContent value="confidential">
+            <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4 sm:p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-white">Documents Confidentiels</h3>
+                <p className="text-sm text-slate-400">
+                  Documents protégés par code PIN médecin (ordonnances, radios, carnet de vaccination)
+                </p>
+              </div>
 
-        {/* Onglet 2: Zone Confidentielle */}
-        <TabsContent value="confidential">
-          <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-6">
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-white">Documents Confidentiels</h2>
-              <p className="text-sm text-slate-400">
-                Documents protégés par code PIN médecin (ordonnances, radios, carnet de vaccination)
-              </p>
+              <ConfidentialZone profile={profile} />
             </div>
+          </TabsContent>
+        </Tabs>
+      </div>
 
-            <ConfidentialZone profile={profile} />
-          </div>
-        </TabsContent>
+      {/* Section École & Sorties - En dehors du dossier médical */}
+      <div className="rounded-lg border border-indigo-800 bg-indigo-950/30 p-4 sm:p-6">
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-white">École & Sorties 🎓</h2>
+          <p className="text-sm text-slate-400">
+            Gestion des personnes autorisées à récupérer l'enfant à l'école
+          </p>
+        </div>
 
-        {/* Onglet 3: École & Sorties */}
-        <TabsContent value="school">
-          <SchoolSection profile={profile} />
-        </TabsContent>
-      </Tabs>
+        <SchoolSection profile={profile} />
+      </div>
     </div>
   );
 }

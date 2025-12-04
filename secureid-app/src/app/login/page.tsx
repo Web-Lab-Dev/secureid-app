@@ -117,7 +117,7 @@ export default function LoginPage() {
                   type="tel"
                   value={phone}
                   onChange={(e) => handlePhoneChange(e.target.value)}
-                  placeholder="Ex: +33 6 12 34 56 78"
+                  placeholder="Ex: 70 12 34 56 ou +226 70 12 34 56"
                   className="w-full rounded-lg border border-slate-700 bg-slate-800 py-3 pl-10 pr-4 text-white placeholder-slate-500 transition-colors focus:border-brand-orange focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
                   disabled={loading}
                   required
