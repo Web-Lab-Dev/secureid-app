@@ -1,12 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Home, User, LogOut, Shield } from 'lucide-react';
 import Link from 'next/link';
+import { LogoutConfirmDialog } from '@/components/auth/LogoutConfirmDialog';
 
 /**
  * PHASE 4 - NAVIGATION DASHBOARD
+ * PHASE 9 - Ajout de la confirmation de déconnexion
  *
  * Barre de navigation pour le dashboard parent
  * Affiche : Accueil, Mon Compte, Déconnexion
@@ -15,10 +18,21 @@ import Link from 'next/link';
 export function DashboardNav() {
   const { user, userData, signOut } = useAuthContext();
   const router = useRouter();
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push('/');
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+      // Fermer le dialog avant la redirection
+      setIsLogoutDialogOpen(false);
+      // Redirection forcée vers /login
+      router.replace('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -60,7 +74,7 @@ export function DashboardNav() {
               </div>
 
               <button
-                onClick={handleSignOut}
+                onClick={() => setIsLogoutDialogOpen(true)}
                 className="flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
               >
                 <LogOut className="h-4 w-4" />
@@ -70,6 +84,14 @@ export function DashboardNav() {
           </div>
         </div>
       </div>
+
+      {/* Dialog de confirmation de déconnexion */}
+      <LogoutConfirmDialog
+        isOpen={isLogoutDialogOpen}
+        onClose={() => setIsLogoutDialogOpen(false)}
+        onConfirm={handleSignOut}
+        loading={isLoggingOut}
+      />
     </nav>
   );
 }

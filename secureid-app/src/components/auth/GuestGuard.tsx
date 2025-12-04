@@ -6,25 +6,24 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { Shield } from 'lucide-react';
 
 /**
- * PHASE 9 - AUTH GUARD
+ * PHASE 9 - GUEST GUARD
  *
- * Composant de protection des routes authentifiées
- * Empêche l'accès au dashboard si l'utilisateur n'est pas connecté
- * Affiche un loader pendant la vérification et redirige vers /login
+ * Composant de protection pour les pages publiques (login, activate)
+ * Redirige vers /dashboard si l'utilisateur est déjà connecté
  */
 
-interface AuthGuardProps {
+interface GuestGuardProps {
   children: React.ReactNode;
 }
 
-export function AuthGuard({ children }: AuthGuardProps) {
+export function GuestGuard({ children }: GuestGuardProps) {
   const { user, loading } = useAuthContext();
   const router = useRouter();
 
   useEffect(() => {
-    // Si le chargement est terminé et qu'il n'y a pas d'utilisateur, rediriger
-    if (!loading && !user) {
-      router.replace('/login');
+    // Si l'utilisateur est connecté, rediriger vers le dashboard
+    if (!loading && user) {
+      router.replace('/dashboard');
     }
   }, [user, loading, router]);
 
@@ -42,11 +41,11 @@ export function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
-  // Si pas d'utilisateur, ne rien afficher (la redirection est en cours)
-  if (!user) {
+  // Si utilisateur connecté, ne rien afficher (redirection en cours)
+  if (user) {
     return null;
   }
 
-  // Utilisateur authentifié, afficher le contenu
+  // Utilisateur non connecté, afficher le contenu
   return <>{children}</>;
 }
