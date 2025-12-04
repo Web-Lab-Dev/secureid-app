@@ -6,6 +6,7 @@ import { Shield, Phone, Lock, Loader2 } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { logger } from '@/lib/logger';
+import { normalizePhoneNumber, generateEmailFromPhone } from '@/lib/auth-helpers';
 import Link from 'next/link';
 import { GuestGuard } from '@/components/auth/GuestGuard';
 
@@ -47,18 +48,16 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Nettoyer le numéro (enlever espaces et +)
-      const cleanPhone = phone.replace(/[\s+]/g, '');
+      // Normaliser le numéro et générer l'email (utilise les mêmes helpers que l'inscription)
+      const normalizedPhone = normalizePhoneNumber(phone);
+      const generatedEmail = generateEmailFromPhone(normalizedPhone);
 
-      // Reconstituer l'email système (astuce "Email Invisible")
-      const systemEmail = `${cleanPhone}@secureid.user`;
-
-      logger.info('Login attempt', { phone: cleanPhone });
+      logger.info('Login attempt', { phone: normalizedPhone, email: generatedEmail });
 
       // Authentification Firebase
-      await signInWithEmailAndPassword(auth, systemEmail, password);
+      await signInWithEmailAndPassword(auth, generatedEmail, password);
 
-      logger.info('Login successful', { phone: cleanPhone });
+      logger.info('Login successful', { phone: normalizedPhone });
 
       // Redirection vers le dashboard
       router.replace('/dashboard');
