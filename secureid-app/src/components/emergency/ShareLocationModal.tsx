@@ -125,8 +125,8 @@ export function ShareLocationModal({
                   <Share2 className="h-6 w-6 text-purple-400" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-white">Partager (Natif)</p>
-                  <p className="text-sm text-gray-400">Menu de partage système</p>
+                  <p className="font-semibold text-white">Partager</p>
+                  <p className="text-sm text-gray-400">Ouvrir le menu de partage</p>
                 </div>
               </button>
             )}

@@ -75,13 +75,13 @@ export function MedicalCard({ profile }: MedicalCardProps) {
           </div>
         )}
 
-        {/* Conditions Médicales */}
+        {/* Maladies */}
         {hasConditions && (
           <div className="sm:col-span-2">
             <div className="mb-2 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-yellow-400" />
               <p className="text-xs font-semibold uppercase tracking-wide text-yellow-400">
-                Conditions Médicales
+                Maladies
               </p>
             </div>
             <ul className="ml-6 list-disc space-y-1">

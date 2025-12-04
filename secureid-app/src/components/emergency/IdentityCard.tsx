@@ -6,6 +6,7 @@ import { User, MessageCircle, Copy, Check } from 'lucide-react';
 import type { ProfileDocument } from '@/types/profile';
 import { logger } from '@/lib/logger';
 import { ScanEffect } from './ScanEffect';
+import { translateRelationship } from '@/lib/relationship-helpers';
 
 /**
  * PHASE 5 V2 - IDENTITY CARD (Badge Sécurité)
@@ -129,7 +130,7 @@ export function IdentityCard({ profile }: IdentityCardProps) {
             <div className="flex-1">
               <p className="text-xs text-slate-500">Contact d'urgence</p>
               <p className="text-sm text-slate-300">
-                {primaryContact.name} · {primaryContact.relationship}
+                {primaryContact.name} · {translateRelationship(primaryContact.relationship)}
               </p>
               <p className="mt-1 text-sm font-mono text-slate-400">{primaryContact.phone}</p>
             </div>
