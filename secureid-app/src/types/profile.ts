@@ -94,6 +94,9 @@ export interface ProfileDocument {
   /** Code PIN à 4 chiffres pour accès médecin */
   doctorPin: string;
 
+  /** Code PIN à 4 chiffres pour contrôle sortie école (PHASE 8) */
+  schoolPin?: string;
+
   /** Liste des contacts d'urgence */
   emergencyContacts: EmergencyContact[];
 
@@ -134,4 +137,52 @@ export interface CreateProfileData {
   medicalNotes?: string;
   doctorPin: string;
   emergencyContacts: Omit<EmergencyContact, 'priority'>[];
+}
+
+/**
+ * PHASE 8 - TYPES SCHOOL PICKUP
+ *
+ * Types pour la gestion des sorties d'école
+ */
+
+/**
+ * Type de pass de récupération
+ */
+export type PickupType = 'PERMANENT' | 'TEMPORARY';
+
+/**
+ * Document récupérateur dans Firestore (sous-collection: profiles/{profileId}/pickups)
+ */
+export interface PickupDocument {
+  /** ID unique du récupérateur */
+  id: string;
+
+  /** Nom complet du récupérateur */
+  name: string;
+
+  /** Relation avec l'enfant (ex: "Oncle", "Chauffeur", "Voisin") */
+  relation: string;
+
+  /** URL de la photo du visage (Firebase Storage) */
+  photoUrl: string;
+
+  /** Type de pass */
+  type: PickupType;
+
+  /** Date d'expiration si pass temporaire */
+  expiresAt?: Timestamp | null;
+
+  /** Date de création */
+  createdAt: Timestamp;
+}
+
+/**
+ * Données pour création d'un nouveau récupérateur (formulaire)
+ */
+export interface CreatePickupData {
+  name: string;
+  relation: string;
+  photoFile: File;
+  type: PickupType;
+  expiresAt?: Date;
 }

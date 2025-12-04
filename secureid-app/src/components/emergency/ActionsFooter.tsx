@@ -1,16 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MapPin, Stethoscope, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { MapPin, Stethoscope, Loader2, AlertCircle, CheckCircle, GraduationCap } from 'lucide-react';
 import { ShareLocationModal } from './ShareLocationModal';
 import type { UseGeolocationReturn } from '@/hooks/useGeolocation';
 import type { ProfileDocument } from '@/types/profile';
 
 /**
- * PHASE 5 V2 + 6.5 - ACTIONS FOOTER
+ * PHASE 5 V2 + 6.5 + 8 - ACTIONS FOOTER
  *
  * Pied de page avec actions secondaires (dans le flux scroll):
  * - Bouton GPS (large, orange) avec modal de partage multi-canal
+ * - Bouton Contrôle École (outline, indigo) - PHASE 8
  * - Bouton Portail Médecin (outline, bleu, discret)
  */
 
@@ -18,9 +19,10 @@ interface ActionsFooterProps {
   profile: ProfileDocument;
   geolocation: UseGeolocationReturn;
   onOpenMedicalPortal: () => void;
+  onOpenSchoolPortal: () => void;
 }
 
-export function ActionsFooter({ profile, geolocation, onOpenMedicalPortal }: ActionsFooterProps) {
+export function ActionsFooter({ profile, geolocation, onOpenMedicalPortal, onOpenSchoolPortal }: ActionsFooterProps) {
   const [showShareModal, setShowShareModal] = useState(false);
   const primaryContact = profile.emergencyContacts[0];
 
@@ -94,6 +96,15 @@ export function ActionsFooter({ profile, geolocation, onOpenMedicalPortal }: Act
           )}
         </button>
 
+        {/* Bouton Contrôle École (Outline, Indigo) - PHASE 8 */}
+        <button
+          onClick={onOpenSchoolPortal}
+          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-indigo-600 bg-transparent px-6 py-3 font-medium text-indigo-400 transition-colors hover:bg-indigo-600/10 active:bg-indigo-600/20"
+        >
+          <GraduationCap className="h-5 w-5" />
+          <span>Contrôle Sortie École 🎓</span>
+        </button>
+
         {/* Bouton Portail Médecin (Outline, Bleu, Discret) */}
         <button
           onClick={onOpenMedicalPortal}
@@ -105,7 +116,7 @@ export function ActionsFooter({ profile, geolocation, onOpenMedicalPortal }: Act
 
         {/* Note de confidentialité */}
         <p className="text-center text-xs text-slate-500">
-          Le portail médical est protégé par code PIN
+          Les portails sont protégés par code PIN
         </p>
       </div>
 

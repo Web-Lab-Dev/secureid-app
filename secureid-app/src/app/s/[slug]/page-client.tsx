@@ -9,6 +9,8 @@ import { IdentityCard } from '@/components/emergency/IdentityCard';
 import { MedicalCard } from '@/components/emergency/MedicalCard';
 import { ActionsFooter } from '@/components/emergency/ActionsFooter';
 import { PinDialog } from '@/components/emergency/PinDialog';
+import { SchoolPinDialog } from '@/components/emergency/SchoolPinDialog';
+import { SchoolPortal } from '@/components/emergency/SchoolPortal';
 import { AIChatFab } from '@/components/emergency/AIChatFab';
 import { AIChatSheet } from '@/components/emergency/AIChatSheet';
 import { useGeolocation } from '@/hooks/useGeolocation';
@@ -30,6 +32,8 @@ interface EmergencyViewClientProps {
 
 export function EmergencyViewClient({ bracelet, profile }: EmergencyViewClientProps) {
   const [isPinDialogOpen, setIsPinDialogOpen] = useState(false);
+  const [isSchoolPinDialogOpen, setIsSchoolPinDialogOpen] = useState(false);
+  const [isSchoolPortalOpen, setIsSchoolPortalOpen] = useState(false);
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [scanRecorded, setScanRecorded] = useState(false);
   const geolocation = useGeolocation();
@@ -120,6 +124,7 @@ export function EmergencyViewClient({ bracelet, profile }: EmergencyViewClientPr
             profile={profile}
             geolocation={geolocation}
             onOpenMedicalPortal={() => setIsPinDialogOpen(true)}
+            onOpenSchoolPortal={() => setIsSchoolPinDialogOpen(true)}
           />
         </motion.div>
       </motion.div>
@@ -129,6 +134,25 @@ export function EmergencyViewClient({ bracelet, profile }: EmergencyViewClientPr
         isOpen={isPinDialogOpen}
         onClose={() => setIsPinDialogOpen(false)}
         profileId={profile.id}
+      />
+
+      {/* Dialog PIN École (PHASE 8) */}
+      <SchoolPinDialog
+        isOpen={isSchoolPinDialogOpen}
+        onClose={() => setIsSchoolPinDialogOpen(false)}
+        onSuccess={() => {
+          setIsSchoolPinDialogOpen(false);
+          setIsSchoolPortalOpen(true);
+        }}
+        profileId={profile.id}
+      />
+
+      {/* Portail École (PHASE 8) */}
+      <SchoolPortal
+        isOpen={isSchoolPortalOpen}
+        onClose={() => setIsSchoolPortalOpen(false)}
+        profileId={profile.id}
+        childName={profile.fullName}
       />
 
       {/* AI Chat FAB & Sheet */}
