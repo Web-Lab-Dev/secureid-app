@@ -50,10 +50,11 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
   if (!isOpen) return null;
 
   // Vérifier si un pass est temporaire et quand il expire
-  const getExpirationInfo = (pickup: PickupDocument) => {
+  const getExpirationInfo = (pickup: any) => {
     if (pickup.type !== 'TEMPORARY' || !pickup.expiresAt) return null;
 
-    const expiresDate = pickup.expiresAt.toDate();
+    // Convertir la string ISO en Date
+    const expiresDate = new Date(pickup.expiresAt);
     const now = new Date();
     const isToday = expiresDate.toDateString() === now.toDateString();
 

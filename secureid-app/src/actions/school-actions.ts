@@ -65,20 +65,29 @@ export async function getAuthorizedPickups(data: {
     }
 
     // Filtrer les pass temporaires expirés
-    const pickups: PickupDocument[] = [];
+    const pickups: any[] = [];
     snapshot.forEach((doc) => {
-      const pickupData = { id: doc.id, ...doc.data() } as PickupDocument;
+      const data = doc.data();
 
       // Si pass temporaire, vérifier l'expiration
-      if (pickupData.type === 'TEMPORARY' && pickupData.expiresAt) {
-        const expiresDate = pickupData.expiresAt.toDate();
+      if (data.type === 'TEMPORARY' && data.expiresAt) {
+        const expiresDate = data.expiresAt.toDate();
         if (expiresDate < now) {
           // Pass expiré, ne pas inclure
           return;
         }
       }
 
-      pickups.push(pickupData);
+      // Convertir les Timestamps en objets sérialisables
+      pickups.push({
+        id: doc.id,
+        name: data.name,
+        relation: data.relation,
+        photoUrl: data.photoUrl,
+        type: data.type,
+        expiresAt: data.expiresAt ? data.expiresAt.toDate().toISOString() : null,
+        createdAt: data.createdAt ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
+      });
     });
 
     return { success: true, pickups };
