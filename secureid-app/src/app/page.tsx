@@ -2,7 +2,8 @@
 
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
-import { Shield, Heart, Radio, ImageIcon, User, Phone } from 'lucide-react';
+import Image from 'next/image';
+import { Shield, Heart, Radio, User, Phone } from 'lucide-react';
 import { useRef } from 'react';
 
 /**
@@ -30,27 +31,29 @@ export default function LandingPage() {
       <section ref={heroRef} className="relative h-screen overflow-hidden">
         {/* Image de fond avec effet Ken Burns */}
         <motion.div
-          style={{ scale: heroScale, opacity: heroOpacity }}
-          className="absolute inset-0 bg-gradient-to-br from-orange-100 via-amber-50 to-orange-50"
+          style={{ scale: heroScale }}
+          className="absolute inset-0"
         >
-          {/* Placeholder Image - Mère africaine et enfant, lumière dorée */}
-          <div className="flex h-full w-full items-center justify-center">
-            <div className="flex flex-col items-center gap-4 text-stone-400">
-              <ImageIcon className="h-32 w-32" />
-              <p className="font-outfit text-sm">
-                Image: Mère tenant son enfant (lumière dorée 17h)
-              </p>
-            </div>
-          </div>
+          <Image
+            src="/landing/hero-mother-child.png"
+            alt="Mère tenant son enfant dans ses bras"
+            fill
+            className="object-cover"
+            priority
+            quality={90}
+          />
         </motion.div>
 
         {/* Overlay gradient pour lisibilité */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/40" />
+        <motion.div
+          style={{ opacity: heroOpacity }}
+          className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/50"
+        />
 
         {/* Titre animé mot par mot */}
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
           <motion.h1
-            className="font-playfair text-4xl font-bold leading-tight text-[#1c1917] sm:text-5xl md:text-6xl lg:text-7xl"
+            className="font-playfair text-4xl font-bold leading-tight text-white drop-shadow-2xl sm:text-5xl md:text-6xl lg:text-7xl"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
@@ -67,7 +70,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.8 }}
-              className="block bg-gradient-to-r from-orange-500 to-amber-600 bg-clip-text text-transparent"
+              className="block bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent"
             >
               votre monde.
             </motion.span>
@@ -77,7 +80,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 1.1 }}
-            className="mt-6 max-w-2xl font-outfit text-lg text-[#44403c] sm:text-xl"
+            className="mt-6 max-w-2xl font-outfit text-lg text-white/95 drop-shadow-lg sm:text-xl"
           >
             Un lien invisible qui veille sur lui quand vos yeux ne le peuvent pas.
           </motion.p>
@@ -137,30 +140,33 @@ export default function LandingPage() {
       {/* SECTION 2: LE BOUCLIER INVISIBLE */}
       <section className="bg-white px-4 py-20 sm:py-32">
         <div className="mx-auto max-w-4xl text-center">
-          {/* Animation cercle doré */}
+          {/* Image Shield Protection 3D */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.8 }}
-            className="relative mx-auto mb-12 h-48 w-48"
+            className="relative mx-auto mb-12 h-64 w-64"
           >
-            {/* Cercle animé */}
             <motion.div
               animate={{
-                rotate: 360,
-                opacity: [0.3, 0.6, 0.3],
+                y: [0, -10, 0],
               }}
               transition={{
-                rotate: { duration: 20, repeat: Infinity, ease: 'linear' },
-                opacity: { duration: 3, repeat: Infinity },
+                duration: 3,
+                repeat: Infinity,
+                ease: 'easeInOut',
               }}
-              className="absolute inset-0 rounded-full border-4 border-dashed border-amber-400"
-            />
-            {/* Silhouette enfant */}
-            <div className="flex h-full w-full items-center justify-center">
-              <User className="h-24 w-24 text-amber-600" strokeWidth={1.5} />
-            </div>
+              className="relative h-full w-full"
+            >
+              <Image
+                src="/landing/shield-protection-3d.png"
+                alt="Bouclier de protection 3D"
+                width={256}
+                height={256}
+                className="object-contain"
+              />
+            </motion.div>
           </motion.div>
 
           <motion.h2
@@ -210,8 +216,13 @@ export default function LandingPage() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="group rounded-3xl bg-white p-8 shadow-xl shadow-orange-100 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-200"
             >
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500">
-                <User className="h-8 w-8 text-white" strokeWidth={2} />
+              <div className="mb-6 relative h-20 w-20 overflow-hidden rounded-full ring-4 ring-orange-100 group-hover:ring-orange-200 transition-all">
+                <Image
+                  src="/landing/feature-identity-joy.png"
+                  alt="Enfant joyeux - Identité protégée"
+                  fill
+                  className="object-cover"
+                />
               </div>
               <h3 className="font-playfair text-2xl font-bold text-[#1c1917]">
                 L'Identité
@@ -232,8 +243,15 @@ export default function LandingPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="group rounded-3xl bg-white p-8 shadow-xl shadow-orange-100 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-200"
             >
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-red-400 to-rose-500">
+              <div className="mb-6 relative h-20 w-20 overflow-hidden rounded-full ring-4 ring-rose-100 group-hover:ring-rose-200 transition-all">
+                <Image
+                  src="/landing/feature-medical-kit.png"
+                  alt="Trousse médicale - Santé protégée"
+                  fill
+                  className="object-cover"
+                />
                 <motion.div
+                  className="absolute inset-0 flex items-center justify-center"
                   animate={{
                     scale: [1, 1.1, 1],
                   }}
@@ -243,7 +261,7 @@ export default function LandingPage() {
                     ease: 'easeInOut',
                   }}
                 >
-                  <Heart className="h-8 w-8 text-white" strokeWidth={2} fill="currentColor" />
+                  <Heart className="h-8 w-8 text-white drop-shadow-lg" strokeWidth={2} fill="currentColor" />
                 </motion.div>
               </div>
               <h3 className="font-playfair text-2xl font-bold text-[#1c1917]">
@@ -339,6 +357,47 @@ export default function LandingPage() {
               </p>
             </motion.div>
           </div>
+        </div>
+      </section>
+
+      {/* SECTION 5: CTA FINAL */}
+      <section className="relative h-[600px] overflow-hidden">
+        {/* Parallax Background */}
+        <div className="absolute inset-0">
+          <Image
+            src="/landing/cta-father-hand.png"
+            alt="Main protectrice d'un père"
+            fill
+            className="object-cover"
+            style={{ objectPosition: 'center' }}
+          />
+          {/* Dark overlay pour faire ressortir le contenu */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black/80" />
+        </div>
+
+        {/* Contenu CTA */}
+        <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="max-w-3xl"
+          >
+            <h2 className="mb-6 font-playfair text-4xl font-bold text-white drop-shadow-2xl sm:text-5xl md:text-6xl">
+              Parce qu'un parent ne devrait jamais avoir à chercher son enfant
+            </h2>
+            <p className="mb-10 font-outfit text-lg leading-relaxed text-white/90 drop-shadow-lg sm:text-xl">
+              Rejoignez les centaines de familles burkinabé qui ont choisi la tranquillité.
+            </p>
+            <Link
+              href="/activate"
+              className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-10 py-5 font-outfit text-xl font-bold text-white shadow-2xl shadow-orange-500/50 transition-all hover:scale-105 hover:shadow-orange-500/70"
+            >
+              <Shield className="h-6 w-6" strokeWidth={2.5} />
+              Activer sa protection maintenant
+            </Link>
+          </motion.div>
         </div>
       </section>
 
