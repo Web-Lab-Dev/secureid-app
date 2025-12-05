@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { User, FileText, AlertCircle } from 'lucide-react';
+import { User, FileHeart, GraduationCap, Edit3, AlertCircle } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { getBraceletBadgeVariant, getBraceletStatusLabel } from '@/lib/bracelet-helpers';
 import { Card } from '@/components/ui/Card';
@@ -14,23 +13,36 @@ import { reportBraceletLost, reactivateBracelet } from '@/actions/bracelet-actio
 import { useAuthContext } from '@/contexts/AuthContext';
 
 /**
- * PHASE 4 - PROFILE CARD
+ * PHASE 9 - PROFILE CARD (Refactored)
  *
  * Carte d'affichage pour un profil enfant dans le dashboard
  * Features:
- * - Photo et nom de l'enfant
+ * - Photo et nom de l'enfant (clickable pour éditer profil)
  * - Badge de statut du bracelet
  * - Toggle "Déclarer Perdu"
- * - Bouton "Gérer le Dossier"
+ * - 3 boutons d'action séparés:
+ *   1. Modifier le Profil (edit public info + photo)
+ *   2. Gérer Dossier Médical (confidential docs)
+ *   3. Portail Scolaire (school pickup management)
  */
 
 interface ProfileCardProps {
   profile: ProfileDocument;
   bracelet: BraceletDocument | null;
   onStatusChange?: () => void;
+  onEditProfile?: () => void;
+  onManageMedical?: () => void;
+  onManageSchool?: () => void;
 }
 
-export function ProfileCard({ profile, bracelet, onStatusChange }: ProfileCardProps) {
+export function ProfileCard({
+  profile,
+  bracelet,
+  onStatusChange,
+  onEditProfile,
+  onManageMedical,
+  onManageSchool
+}: ProfileCardProps) {
   const { user } = useAuthContext();
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [localStatus, setLocalStatus] = useState(bracelet?.status || 'ACTIVE');
@@ -71,9 +83,12 @@ export function ProfileCard({ profile, bracelet, onStatusChange }: ProfileCardPr
   return (
     <Card variant="default" className="overflow-hidden transition-all hover:border-brand-orange">
       <div className="p-6">
-        {/* Header avec Photo */}
+        {/* Header avec Photo - Clickable pour éditer profil */}
         <div className="mb-4 flex items-start justify-between">
-          <div className="flex items-center gap-3">
+          <button
+            onClick={onEditProfile}
+            className="flex items-center gap-3 text-left transition-opacity hover:opacity-80"
+          >
             {/* Photo de profil */}
             <div className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-slate-700">
               {profile.photoUrl ? (
@@ -91,14 +106,17 @@ export function ProfileCard({ profile, bracelet, onStatusChange }: ProfileCardPr
               )}
             </div>
 
-            {/* Nom */}
+            {/* Nom - Clickable */}
             <div>
-              <h3 className="text-lg font-semibold text-white">{profile.fullName}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-white">{profile.fullName}</h3>
+                <Edit3 className="h-3 w-3 text-slate-400" />
+              </div>
               <p className="text-xs text-slate-400 font-mono">
                 {bracelet?.id || 'Aucun bracelet'}
               </p>
             </div>
-          </div>
+          </button>
 
           {/* Badge Statut Bracelet */}
           {bracelet && (
@@ -131,14 +149,35 @@ export function ProfileCard({ profile, bracelet, onStatusChange }: ProfileCardPr
           </div>
         )}
 
-        {/* Bouton Gérer le Dossier */}
-        <Link
-          href={`/dashboard/profile/${profile.id}`}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-orange px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-orange/90"
-        >
-          <FileText className="h-4 w-4" />
-          Gérer le Dossier Médical
-        </Link>
+        {/* Boutons d'action - 3 sections séparées */}
+        <div className="space-y-2">
+          {/* Bouton 1: Modifier le Profil */}
+          <button
+            onClick={onEditProfile}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-600"
+          >
+            <Edit3 className="h-4 w-4" />
+            Modifier le Profil
+          </button>
+
+          {/* Bouton 2: Gérer Dossier Médical */}
+          <button
+            onClick={onManageMedical}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-orange px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-orange/90"
+          >
+            <FileHeart className="h-4 w-4" />
+            Gérer Dossier Médical
+          </button>
+
+          {/* Bouton 3: Portail Scolaire */}
+          <button
+            onClick={onManageSchool}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+          >
+            <GraduationCap className="h-4 w-4" />
+            Portail Scolaire
+          </button>
+        </div>
       </div>
     </Card>
   );

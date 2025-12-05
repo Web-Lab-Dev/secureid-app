@@ -7,17 +7,23 @@ import { Plus, Loader2, Users } from 'lucide-react';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { ProfileCard } from '@/components/dashboard/ProfileCard';
+import { EditProfileDialog } from '@/components/dashboard/EditProfileDialog';
+import { MedicalDocsDialog } from '@/components/dashboard/MedicalDocsDialog';
+import { SchoolDialog } from '@/components/dashboard/SchoolDialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { BraceletDocument } from '@/types/bracelet';
+import type { ProfileDocument } from '@/types/profile';
 
 /**
- * PHASE 4 - DASHBOARD CLIENT COMPONENT
+ * PHASE 9 - DASHBOARD CLIENT COMPONENT (Refactored)
  *
  * Affiche la grille des profils enfants avec leurs bracelets
- * Permet de déclarer un bracelet perdu et d'ajouter de nouveaux enfants
+ * - 3 dialogs modaux pour gérer profil, dossier médical, et école
+ * - Meilleure organisation de l'information
+ * - UX améliorée avec dialogs au lieu de navigation
  */
 
 export function DashboardPageClient() {
@@ -25,6 +31,22 @@ export function DashboardPageClient() {
   const { profiles, loading, refetch } = useProfiles();
   const [bracelets, setBracelets] = useState<Record<string, BraceletDocument>>({});
   const [loadingBracelets, setLoadingBracelets] = useState(true);
+
+  // Dialog states
+  const [editProfileDialog, setEditProfileDialog] = useState<{
+    isOpen: boolean;
+    profile: ProfileDocument | null;
+  }>({ isOpen: false, profile: null });
+
+  const [medicalDocsDialog, setMedicalDocsDialog] = useState<{
+    isOpen: boolean;
+    profile: ProfileDocument | null;
+  }>({ isOpen: false, profile: null });
+
+  const [schoolDialog, setSchoolDialog] = useState<{
+    isOpen: boolean;
+    profile: ProfileDocument | null;
+  }>({ isOpen: false, profile: null });
 
   // Charger les bracelets liés aux profils
   useEffect(() => {
@@ -89,6 +111,24 @@ export function DashboardPageClient() {
     refetch();
   };
 
+  // Dialog handlers
+  const handleEditProfile = (profile: ProfileDocument) => {
+    setEditProfileDialog({ isOpen: true, profile });
+  };
+
+  const handleManageMedical = (profile: ProfileDocument) => {
+    setMedicalDocsDialog({ isOpen: true, profile });
+  };
+
+  const handleManageSchool = (profile: ProfileDocument) => {
+    setSchoolDialog({ isOpen: true, profile });
+  };
+
+  const handleProfileUpdate = () => {
+    // Rafraîchir les profils après mise à jour
+    refetch();
+  };
+
   if (loading || loadingBracelets) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -148,6 +188,9 @@ export function DashboardPageClient() {
               profile={profile}
               bracelet={profile.currentBraceletId ? bracelets[profile.currentBraceletId] || null : null}
               onStatusChange={handleStatusChange}
+              onEditProfile={() => handleEditProfile(profile)}
+              onManageMedical={() => handleManageMedical(profile)}
+              onManageSchool={() => handleManageSchool(profile)}
             />
           ))}
         </div>
@@ -178,6 +221,32 @@ export function DashboardPageClient() {
 
       {/* PWA Install Banner (PHASE 7) */}
       <InstallBanner />
+
+      {/* Dialogs Modaux */}
+      {editProfileDialog.profile && (
+        <EditProfileDialog
+          isOpen={editProfileDialog.isOpen}
+          onClose={() => setEditProfileDialog({ isOpen: false, profile: null })}
+          profile={editProfileDialog.profile}
+          onUpdate={handleProfileUpdate}
+        />
+      )}
+
+      {medicalDocsDialog.profile && (
+        <MedicalDocsDialog
+          isOpen={medicalDocsDialog.isOpen}
+          onClose={() => setMedicalDocsDialog({ isOpen: false, profile: null })}
+          profile={medicalDocsDialog.profile}
+        />
+      )}
+
+      {schoolDialog.profile && (
+        <SchoolDialog
+          isOpen={schoolDialog.isOpen}
+          onClose={() => setSchoolDialog({ isOpen: false, profile: null })}
+          profile={schoolDialog.profile}
+        />
+      )}
     </>
   );
 }
