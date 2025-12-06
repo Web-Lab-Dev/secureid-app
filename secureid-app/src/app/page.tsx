@@ -795,20 +795,11 @@ export default function LandingPage() {
               muted
               loop
               playsInline
-              poster="/landing/product-poster.jpg"
               className="h-full w-full object-cover"
             >
               <source src="/landing/Cinematic_Metal_Plate_QR_Code_Video.mp4" type="video/mp4" />
               Votre navigateur ne supporte pas la vidéo HTML5.
             </video>
-
-            {/* Overlay pour si la vidéo ne charge pas */}
-            <div className="absolute inset-0 flex items-center justify-center bg-stone-800">
-              <div className="text-center">
-                <Shield className="mx-auto mb-4 h-24 w-24 text-orange-500" aria-hidden="true" />
-                <p className="font-outfit text-stone-400">Aperçu produit SecureID</p>
-              </div>
-            </div>
           </motion.div>
 
           {/* Grid Features */}
