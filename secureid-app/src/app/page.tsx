@@ -29,11 +29,8 @@ export default function LandingPage() {
     <div className="overflow-x-hidden bg-[#FAFAF9]">
       {/* SECTION 1: HERO ÉMOTIONNEL */}
       <section ref={heroRef} className="relative h-screen overflow-hidden">
-        {/* Image de fond avec effet Ken Burns */}
-        <motion.div
-          style={{ scale: heroScale }}
-          className="absolute inset-0"
-        >
+        {/* Image de fond FIXE (parallax) */}
+        <div className="fixed inset-0 h-screen w-full">
           <Image
             src="/landing/hero-mother-child.png"
             alt="Mère tenant son enfant dans ses bras"
@@ -42,13 +39,9 @@ export default function LandingPage() {
             priority
             quality={90}
           />
-        </motion.div>
-
-        {/* Overlay gradient pour lisibilité */}
-        <motion.div
-          style={{ opacity: heroOpacity }}
-          className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/50"
-        />
+          {/* Overlay gradient pour lisibilité */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/50" />
+        </div>
 
         {/* Titre animé mot par mot */}
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
@@ -93,7 +86,7 @@ export default function LandingPage() {
             className="mt-10"
           >
             <Link
-              href="/activate"
+              href="/login"
               className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-8 py-4 font-outfit text-lg font-semibold text-white shadow-2xl shadow-orange-500/30 transition-all hover:scale-105 hover:shadow-orange-500/50"
             >
               <Shield className="h-5 w-5" />
@@ -139,59 +132,65 @@ export default function LandingPage() {
 
       {/* SECTION 2: LE BOUCLIER INVISIBLE */}
       <section className="bg-white px-4 py-20 sm:py-32">
-        <div className="mx-auto max-w-4xl text-center">
-          {/* Image Shield Protection 3D */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            whileInView={{ opacity: 1, scale: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8 }}
-            className="relative mx-auto mb-12 h-64 w-64"
-          >
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
+            {/* Image Shield Protection 3D - 50% de la largeur */}
             <motion.div
-              animate={{
-                y: [0, -10, 0],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-              className="relative h-full w-full"
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.8 }}
+              className="relative w-full lg:w-1/2"
             >
-              <Image
-                src="/landing/shield-protection-3d.png"
-                alt="Bouclier de protection 3D"
-                width={256}
-                height={256}
-                className="object-contain"
-              />
+              <motion.div
+                animate={{
+                  y: [0, -15, 0],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+                className="relative aspect-square w-full"
+              >
+                <Image
+                  src="/landing/shield-protection-3d.png"
+                  alt="Bouclier de protection 3D"
+                  fill
+                  className="object-contain"
+                />
+                {/* Overlay pour masquer le logo Gemini en bas à droite */}
+                <div className="absolute bottom-0 right-0 h-16 w-24 bg-white" />
+              </motion.div>
             </motion.div>
-          </motion.div>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="font-playfair text-3xl font-bold text-[#1c1917] sm:text-4xl md:text-5xl"
-          >
-            Le Bouclier Invisible
-          </motion.h2>
+            {/* Texte - 50% de la largeur */}
+            <div className="w-full text-center lg:w-1/2 lg:text-left">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="font-playfair text-3xl font-bold text-[#1c1917] sm:text-4xl md:text-5xl"
+              >
+                Le Bouclier Invisible
+              </motion.h2>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-6 font-outfit text-lg leading-relaxed text-[#44403c] sm:text-xl"
-          >
-            Dans la cour de récréation, dans la foule, ou sur le chemin de l'école...
-            <br />
-            <span className="font-semibold text-amber-700">
-              SecureID veille sur lui quand vos yeux ne le peuvent pas.
-            </span>
-          </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="mt-6 font-outfit text-lg leading-relaxed text-[#44403c] sm:text-xl"
+              >
+                Dans la cour de récréation, dans la foule, ou sur le chemin de l'école...
+                <br />
+                <span className="font-semibold text-amber-700">
+                  SecureID veille sur lui quand vos yeux ne le peuvent pas.
+                </span>
+              </motion.p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -391,7 +390,7 @@ export default function LandingPage() {
               Rejoignez les centaines de familles burkinabé qui ont choisi la tranquillité.
             </p>
             <Link
-              href="/activate"
+              href="/login"
               className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-10 py-5 font-outfit text-xl font-bold text-white shadow-2xl shadow-orange-500/50 transition-all hover:scale-105 hover:shadow-orange-500/70"
             >
               <Shield className="h-6 w-6" strokeWidth={2.5} />
@@ -421,7 +420,7 @@ export default function LandingPage() {
               <h3 className="mb-4 font-outfit font-semibold text-[#1c1917]">Informations</h3>
               <ul className="space-y-2 font-outfit text-sm text-[#78716c]">
                 <li>
-                  <Link href="/activate" className="hover:text-amber-600 transition-colors">
+                  <Link href="/login" className="hover:text-amber-600 transition-colors">
                     Activer un bracelet
                   </Link>
                 </li>
@@ -444,14 +443,14 @@ export default function LandingPage() {
               <ul className="space-y-2 font-outfit text-sm text-[#78716c]">
                 <li className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
-                  <span>+226 XX XX XX XX</span>
+                  <span>+226 77 04 04 92 / 72 98 25 02</span>
                 </li>
                 <li>
                   <a
-                    href="mailto:contact@secureid.bf"
+                    href="mailto:tko364796@gmail.com"
                     className="hover:text-amber-600 transition-colors"
                   >
-                    contact@secureid.bf
+                    tko364796@gmail.com
                   </a>
                 </li>
               </ul>
@@ -475,7 +474,7 @@ export default function LandingPage() {
         className="fixed inset-x-0 bottom-0 z-50 border-t border-white/20 bg-white/80 p-4 backdrop-blur-lg sm:hidden"
       >
         <Link
-          href="/activate"
+          href="/login"
           className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 py-3 font-outfit font-semibold text-white shadow-lg shadow-orange-500/30"
         >
           <Shield className="h-5 w-5" />
