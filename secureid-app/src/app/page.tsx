@@ -3,7 +3,7 @@
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles, Battery, Droplet, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles, Battery, Droplet, Building2, ChevronLeft, ChevronRight, Mail, Linkedin, Facebook, Github, MessageCircle } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
 
 /**
@@ -318,8 +318,8 @@ export default function LandingPage() {
         </svg>
       </div>
 
-      {/* PHASE 12: TRUST BAR - Bandeau Institutionnel */}
-      <section className="relative z-10 bg-stone-50/50 px-4 py-8">
+      {/* PHASE 12: TRUST BAR - Bandeau Institutionnel Défilant */}
+      <section className="relative z-10 overflow-hidden bg-stone-50/50 px-4 py-8">
         <div className="mx-auto max-w-6xl">
           <motion.p
             initial={{ opacity: 0 }}
@@ -331,53 +331,59 @@ export default function LandingPage() {
             Conçu selon les standards de sécurité et de protection
           </motion.p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-wrap items-center justify-center gap-8 sm:gap-12"
-          >
-            {/* Logo CIL - Commission de l'Informatique et des Libertés */}
-            <div
-              className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
-              title="Commission de l'Informatique et des Libertés"
+          {/* Bandeau défilant infini */}
+          <div className="relative overflow-hidden">
+            <motion.div
+              animate={{ x: [0, -1000] }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                ease: 'linear',
+              }}
+              className="flex items-center gap-12 whitespace-nowrap"
             >
-              <ShieldCheck className="h-10 w-10 text-stone-700" aria-hidden="true" />
-              <span className="text-xs font-medium text-stone-600">CIL</span>
-            </div>
+              {/* Premier set de logos */}
+              {[...Array(3)].map((_, setIndex) => (
+                <div key={setIndex} className="flex items-center gap-12">
+                  {/* Logo CIL */}
+                  <div
+                    className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
+                    title="Commission de l'Informatique et des Libertés"
+                  >
+                    <ShieldCheck className="h-10 w-10 text-stone-700" aria-hidden="true" />
+                    <span className="text-xs font-medium text-stone-600">CIL</span>
+                  </div>
 
-            {/* Logo BNSP - Brigade Nationale de Sapeurs-Pompiers */}
-            <div
-              className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
-              title="Brigade Nationale de Sapeurs-Pompiers"
-            >
-              <Shield className="h-10 w-10 text-stone-700" aria-hidden="true" />
-              <span className="text-xs font-medium text-stone-600">BNSP</span>
-            </div>
+                  {/* Logo BNSP */}
+                  <div
+                    className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
+                    title="Brigade Nationale de Sapeurs-Pompiers"
+                  >
+                    <Shield className="h-10 w-10 text-stone-700" aria-hidden="true" />
+                    <span className="text-xs font-medium text-stone-600">BNSP</span>
+                  </div>
 
-            {/* Logo Ministère de la Famille - Protection de l'Enfance */}
-            <div
-              className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
-              title="Ministère de la Famille - Protection de l'Enfance"
-            >
-              <Building2 className="h-10 w-10 text-stone-700" aria-hidden="true" />
-              <span className="text-xs font-medium text-stone-600">
-                Min. Famille
-              </span>
-            </div>
+                  {/* Logo Ministère */}
+                  <div
+                    className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
+                    title="Ministère de la Famille - Protection de l'Enfance"
+                  >
+                    <Building2 className="h-10 w-10 text-stone-700" aria-hidden="true" />
+                    <span className="text-xs font-medium text-stone-600">Min. Famille</span>
+                  </div>
 
-            {/* Logo Standards Médicaux */}
-            <div
-              className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
-              title="Standards Médicaux Certifiés"
-            >
-              <Heart className="h-10 w-10 text-stone-700" aria-hidden="true" />
-              <span className="text-xs font-medium text-stone-600">
-                Standards Médicaux
-              </span>
-            </div>
-          </motion.div>
+                  {/* Logo Standards Médicaux */}
+                  <div
+                    className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
+                    title="Standards Médicaux Certifiés"
+                  >
+                    <Heart className="h-10 w-10 text-stone-700" aria-hidden="true" />
+                    <span className="text-xs font-medium text-stone-600">Standards Médicaux</span>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -967,6 +973,77 @@ export default function LandingPage() {
               <p className="font-outfit text-sm leading-relaxed text-[#78716c]">
                 Protégez ce qui compte le plus. Un lien invisible qui veille sur vos enfants.
               </p>
+
+              {/* Logos sociaux */}
+              <div className="mt-6 flex items-center gap-4">
+                {/* Téléphone */}
+                <a
+                  href="tel:+22677040492"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-200 text-stone-700 transition-all hover:bg-orange-500 hover:text-white hover:scale-110"
+                  aria-label="Appeler +226 77 04 04 92"
+                  title="Appel: 77040492 / 72982502"
+                >
+                  <Phone className="h-5 w-5" />
+                </a>
+
+                {/* WhatsApp */}
+                <a
+                  href="https://wa.me/22677040492"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-200 text-stone-700 transition-all hover:bg-green-500 hover:text-white hover:scale-110"
+                  aria-label="WhatsApp +226 77 04 04 92"
+                  title="WhatsApp: 77040492"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                </a>
+
+                {/* Email */}
+                <a
+                  href="mailto:tko364796@gmail.com"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-200 text-stone-700 transition-all hover:bg-blue-500 hover:text-white hover:scale-110"
+                  aria-label="Email tko364796@gmail.com"
+                  title="Email"
+                >
+                  <Mail className="h-5 w-5" />
+                </a>
+
+                {/* LinkedIn */}
+                <a
+                  href="https://www.linkedin.com/in/swabo-hamadou-ai/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-200 text-stone-700 transition-all hover:bg-[#0077B5] hover:text-white hover:scale-110"
+                  aria-label="LinkedIn Swabo Hamadou"
+                  title="LinkedIn"
+                >
+                  <Linkedin className="h-5 w-5" />
+                </a>
+
+                {/* Facebook */}
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-200 text-stone-700 transition-all hover:bg-[#1877F2] hover:text-white hover:scale-110"
+                  aria-label="Facebook SecureID"
+                  title="Facebook"
+                >
+                  <Facebook className="h-5 w-5" />
+                </a>
+
+                {/* GitHub */}
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-200 text-stone-700 transition-all hover:bg-[#181717] hover:text-white hover:scale-110"
+                  aria-label="GitHub SecureID"
+                  title="GitHub"
+                >
+                  <Github className="h-5 w-5" />
+                </a>
+              </div>
             </div>
 
             {/* Colonne 2: Liens */}
@@ -994,17 +1071,32 @@ export default function LandingPage() {
             {/* Colonne 3: Contact */}
             <div>
               <h3 className="mb-4 font-outfit font-semibold text-[#1c1917]">Contact</h3>
-              <ul className="space-y-2 font-outfit text-sm text-[#78716c]">
-                <li className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" aria-hidden="true" />
-                  <span>+226 77 04 04 92 / 72 98 25 02</span>
+              <ul className="space-y-3 font-outfit text-sm text-[#78716c]">
+                <li>
+                  <a
+                    href="tel:+22677040492"
+                    className="flex items-center gap-2 hover:text-amber-600 transition-colors"
+                  >
+                    <Phone className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                    <span>+226 77 04 04 92</span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="tel:+22672982502"
+                    className="flex items-center gap-2 hover:text-amber-600 transition-colors"
+                  >
+                    <Phone className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                    <span>+226 72 98 25 02</span>
+                  </a>
                 </li>
                 <li>
                   <a
                     href="mailto:tko364796@gmail.com"
-                    className="hover:text-amber-600 transition-colors"
+                    className="flex items-center gap-2 hover:text-amber-600 transition-colors"
                   >
-                    tko364796@gmail.com
+                    <Mail className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                    <span>tko364796@gmail.com</span>
                   </a>
                 </li>
               </ul>
