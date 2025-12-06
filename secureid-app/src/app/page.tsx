@@ -12,6 +12,8 @@ import { useRef } from 'react';
  * Direction artistique : Terre & Solaire
  * Copywriting : Parental, rassurant, sans jargon technique
  * Animations : Framer Motion fluides, scrollytelling
+ *
+ * SEO: Metadata définis dans layout.tsx parent
  */
 
 export default function LandingPage() {
@@ -35,6 +37,7 @@ export default function LandingPage() {
             src="/landing/hero-mother-child.png"
             alt="Mère tenant son enfant dans ses bras"
             fill
+            sizes="100vw"
             className="object-cover"
             priority
             quality={90}
@@ -89,7 +92,7 @@ export default function LandingPage() {
               href="/login"
               className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-8 py-4 font-outfit text-lg font-semibold text-white shadow-2xl shadow-orange-500/30 transition-all hover:scale-105 hover:shadow-orange-500/50"
             >
-              <Shield className="h-5 w-5" />
+              <Shield className="h-5 w-5" aria-hidden="true" />
               Activer sa protection
             </Link>
           </motion.div>
@@ -101,11 +104,14 @@ export default function LandingPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 2, duration: 1 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          aria-label="Faites défiler vers le bas pour découvrir SecureID"
+          role="img"
         >
           <motion.div
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
             className="h-8 w-5 rounded-full border-2 border-orange-400/50"
+            aria-hidden="true"
           >
             <motion.div
               animate={{ y: [0, 12, 0] }}
@@ -157,7 +163,9 @@ export default function LandingPage() {
                   src="/landing/shield-protection-3d.png"
                   alt="Bouclier de protection 3D"
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
                   className="object-contain"
+                  loading="lazy"
                 />
                 {/* Overlay pour masquer le logo Gemini en bas à droite */}
                 <div className="absolute bottom-0 right-0 h-16 w-24 bg-white" />
@@ -220,7 +228,9 @@ export default function LandingPage() {
                   src="/landing/feature-identity-joy.png"
                   alt="Enfant joyeux - Identité protégée"
                   fill
+                  sizes="80px"
                   className="object-cover"
+                  loading="lazy"
                 />
               </div>
               <h3 className="font-playfair text-2xl font-bold text-[#1c1917]">
@@ -247,7 +257,9 @@ export default function LandingPage() {
                   src="/landing/feature-medical-kit.png"
                   alt="Trousse médicale - Santé protégée"
                   fill
+                  sizes="80px"
                   className="object-cover"
+                  loading="lazy"
                 />
                 <motion.div
                   className="absolute inset-0 flex items-center justify-center"
@@ -260,7 +272,7 @@ export default function LandingPage() {
                     ease: 'easeInOut',
                   }}
                 >
-                  <Heart className="h-8 w-8 text-white drop-shadow-lg" strokeWidth={2} fill="currentColor" />
+                  <Heart className="h-8 w-8 text-white drop-shadow-lg" strokeWidth={2} fill="currentColor" aria-hidden="true" />
                 </motion.div>
               </div>
               <h3 className="font-playfair text-2xl font-bold text-[#1c1917]">
@@ -283,7 +295,7 @@ export default function LandingPage() {
               className="group rounded-3xl bg-white p-8 shadow-xl shadow-orange-100 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-200 sm:col-span-2 lg:col-span-1"
             >
               <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-400 to-blue-500">
-                <Radio className="h-8 w-8 text-white" strokeWidth={2} />
+                <Radio className="h-8 w-8 text-white" strokeWidth={2} aria-hidden="true" />
               </div>
               <h3 className="font-playfair text-2xl font-bold text-[#1c1917]">
                 Le Lien
@@ -321,7 +333,7 @@ export default function LandingPage() {
             >
               <div className="mb-4 flex items-center gap-4">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-200">
-                  <User className="h-7 w-7 text-amber-700" />
+                  <User className="h-7 w-7 text-amber-700" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-outfit font-semibold text-[#1c1917]">Aminata K.</p>
@@ -343,7 +355,7 @@ export default function LandingPage() {
             >
               <div className="mb-4 flex items-center gap-4">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-200">
-                  <User className="h-7 w-7 text-orange-700" />
+                  <User className="h-7 w-7 text-orange-700" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-outfit font-semibold text-[#1c1917]">Ibrahim S.</p>
@@ -367,8 +379,9 @@ export default function LandingPage() {
             src="/landing/cta-father-hand.png"
             alt="Main protectrice d'un père"
             fill
-            className="object-cover"
-            style={{ objectPosition: 'center' }}
+            sizes="100vw"
+            className="object-cover object-center"
+            loading="lazy"
           />
           {/* Dark overlay pour faire ressortir le contenu */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black/80" />
@@ -393,7 +406,7 @@ export default function LandingPage() {
               href="/login"
               className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-10 py-5 font-outfit text-xl font-bold text-white shadow-2xl shadow-orange-500/50 transition-all hover:scale-105 hover:shadow-orange-500/70"
             >
-              <Shield className="h-6 w-6" strokeWidth={2.5} />
+              <Shield className="h-6 w-6" strokeWidth={2.5} aria-hidden="true" />
               Activer sa protection maintenant
             </Link>
           </motion.div>
@@ -407,7 +420,7 @@ export default function LandingPage() {
             {/* Colonne 1: Logo et description */}
             <div>
               <div className="mb-4 flex items-center gap-2">
-                <Shield className="h-8 w-8 text-amber-600" strokeWidth={2} />
+                <Shield className="h-8 w-8 text-amber-600" strokeWidth={2} aria-hidden="true" />
                 <span className="font-playfair text-2xl font-bold text-[#1c1917]">SecureID</span>
               </div>
               <p className="font-outfit text-sm leading-relaxed text-[#78716c]">
@@ -442,7 +455,7 @@ export default function LandingPage() {
               <h3 className="mb-4 font-outfit font-semibold text-[#1c1917]">Contact</h3>
               <ul className="space-y-2 font-outfit text-sm text-[#78716c]">
                 <li className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
+                  <Phone className="h-4 w-4" aria-hidden="true" />
                   <span>+226 77 04 04 92 / 72 98 25 02</span>
                 </li>
                 <li>
@@ -477,7 +490,7 @@ export default function LandingPage() {
           href="/login"
           className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 py-3 font-outfit font-semibold text-white shadow-lg shadow-orange-500/30"
         >
-          <Shield className="h-5 w-5" />
+          <Shield className="h-5 w-5" aria-hidden="true" />
           ACTIVER SA PROTECTION
         </Link>
       </motion.div>
