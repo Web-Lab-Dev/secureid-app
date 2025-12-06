@@ -117,7 +117,7 @@ export default function LandingPage() {
       </section>
 
       {/* Transition SVG Wave */}
-      <div className="relative -mt-1">
+      <div className="relative z-10 -mt-1">
         <svg
           viewBox="0 0 1440 120"
           className="w-full text-[#FAFAF9]"
@@ -131,7 +131,7 @@ export default function LandingPage() {
       </div>
 
       {/* SECTION 2: LE BOUCLIER INVISIBLE */}
-      <section className="bg-white px-4 py-20 sm:py-32">
+      <section className="relative z-10 bg-white px-4 py-20 sm:py-32">
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
             {/* Image Shield Protection 3D - 50% de la largeur */}
@@ -195,7 +195,7 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 3: LES 3 PROMESSES */}
-      <section className="bg-[#FFF7ED] px-4 py-20 sm:py-32">
+      <section className="relative z-10 bg-[#FFF7ED] px-4 py-20 sm:py-32">
         <div className="mx-auto max-w-6xl">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -300,7 +300,7 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 4: TÉMOIGNAGES */}
-      <section className="bg-white px-4 py-20 sm:py-32">
+      <section className="relative z-10 bg-white px-4 py-20 sm:py-32">
         <div className="mx-auto max-w-6xl">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -360,7 +360,7 @@ export default function LandingPage() {
       </section>
 
       {/* SECTION 5: CTA FINAL */}
-      <section className="relative h-[600px] overflow-hidden">
+      <section className="relative z-10 h-[600px] overflow-hidden">
         {/* Parallax Background */}
         <div className="absolute inset-0">
           <Image
@@ -401,7 +401,7 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-stone-200 bg-[#FAFAF9] px-4 py-12">
+      <footer className="relative z-10 border-t border-stone-200 bg-[#FAFAF9] px-4 py-12">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-8 md:grid-cols-3">
             {/* Colonne 1: Logo et description */}
