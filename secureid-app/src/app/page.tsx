@@ -795,10 +795,10 @@ export default function LandingPage() {
               muted
               loop
               playsInline
-              poster="/images/landing/product-poster.jpg"
+              poster="/landing/product-poster.jpg"
               className="h-full w-full object-cover"
             >
-              <source src="/videos/product-demo.mp4" type="video/mp4" />
+              <source src="/landing/Cinematic_Metal_Plate_QR_Code_Video.mp4" type="video/mp4" />
               Votre navigateur ne supporte pas la vidéo HTML5.
             </video>
 
