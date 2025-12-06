@@ -3,7 +3,7 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, Heart, Radio, User, Phone } from 'lucide-react';
+import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles } from 'lucide-react';
 import { useRef } from 'react';
 
 /**
@@ -136,6 +136,61 @@ export default function LandingPage() {
         </svg>
       </div>
 
+      {/* INSERTION A: RÉALITÉ vs SÉRÉNITÉ */}
+      <section className="relative z-10 bg-white px-4 py-20 sm:py-32">
+        <div className="mx-auto max-w-5xl">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12 text-center font-playfair text-3xl font-bold text-[#1c1917] sm:text-4xl"
+          >
+            Pourquoi c'est vital ?
+          </motion.h2>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Carte Problème - Gris */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="rounded-2xl bg-stone-100 p-8"
+            >
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-stone-200">
+                <CloudOff className="h-8 w-8 text-stone-600" strokeWidth={2} aria-hidden="true" />
+              </div>
+              <h3 className="mb-4 font-playfair text-2xl font-bold text-[#1c1917]">
+                L'Incertitude
+              </h3>
+              <p className="font-outfit leading-relaxed text-[#44403c]">
+                Dehors, le lien est rompu. En cas de malaise ou d'égarement, les secours ne savent pas qui il est, ni qui appeler. Chaque minute de silence est une angoisse.
+              </p>
+            </motion.div>
+
+            {/* Carte Solution - Orange */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="rounded-2xl border-2 border-orange-300 bg-orange-50 p-8"
+            >
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-orange-500">
+                <ShieldCheck className="h-8 w-8 text-white" strokeWidth={2} aria-hidden="true" />
+              </div>
+              <h3 className="mb-4 font-playfair text-2xl font-bold text-[#1c1917]">
+                La Réponse Immédiate
+              </h3>
+              <p className="font-outfit leading-relaxed text-[#44403c]">
+                Il est identifié en 2 secondes. Le médecin accède à ses allergies. Vous recevez son emplacement GPS instantanément.{' '}
+                <span className="font-semibold text-orange-700">Le silence est brisé.</span>
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* SECTION 2: LE BOUCLIER INVISIBLE */}
       <section className="relative z-10 bg-white px-4 py-20 sm:py-32">
         <div className="mx-auto max-w-7xl">
@@ -211,10 +266,10 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="mb-16 text-center font-playfair text-3xl font-bold text-[#1c1917] sm:text-4xl"
           >
-            Trois promesses pour votre tranquillité
+            Quatre promesses pour votre tranquillité
           </motion.h2>
 
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
             {/* Carte 1: L'Identité */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -292,7 +347,7 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="group rounded-3xl bg-white p-8 shadow-xl shadow-orange-100 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-200 sm:col-span-2 lg:col-span-1"
+              className="group rounded-3xl bg-white p-8 shadow-xl shadow-orange-100 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-200"
             >
               <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-400 to-blue-500">
                 <Radio className="h-8 w-8 text-white" strokeWidth={2} aria-hidden="true" />
@@ -307,6 +362,150 @@ export default function LandingPage() {
                 </span>
               </p>
             </motion.div>
+
+            {/* Carte 4: L'Allié de l'École - NOUVELLE */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="group rounded-3xl bg-white p-8 shadow-xl shadow-orange-100 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-orange-200"
+            >
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-400 to-violet-500">
+                <GraduationCap className="h-8 w-8 text-white" strokeWidth={2} aria-hidden="true" />
+              </div>
+              <h3 className="font-playfair text-2xl font-bold text-[#1c1917]">
+                L'Allié de l'École
+              </h3>
+              <p className="mt-4 font-outfit leading-relaxed text-[#57534e]">
+                Fini le stress à 16h.
+                <span className="block mt-2 font-semibold text-purple-700">
+                  Le bracelet permet à l'école de vérifier instantanément si la nounou est autorisée à récupérer votre enfant.
+                </span>
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* INSERTION B: IA BIENVEILLANTE */}
+      <section className="relative z-10 overflow-hidden bg-gradient-to-br from-white via-blue-50/20 to-violet-50/30 px-4 py-20 sm:py-32">
+        <div className="mx-auto max-w-5xl">
+          <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
+            {/* Image Shield IA au centre */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.8 }}
+              className="relative w-full lg:w-1/2"
+            >
+              <motion.div
+                animate={{
+                  y: [0, -20, 0],
+                  rotate: [0, 5, -5, 0],
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+                className="relative aspect-square w-full max-w-md mx-auto"
+              >
+                <Image
+                  src="/landing/shield-protection-3d.png"
+                  alt="Intelligence Artificielle SecureID - Protection bienveillante"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-contain"
+                  loading="lazy"
+                />
+                {/* Effet de brillance IA */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-tr from-blue-400/20 via-purple-400/10 to-transparent rounded-full blur-3xl"
+                  animate={{
+                    opacity: [0.3, 0.6, 0.3],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                />
+              </motion.div>
+            </motion.div>
+
+            {/* Texte et Points Clés */}
+            <div className="w-full text-center lg:w-1/2 lg:text-left">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="mb-4 inline-flex items-center gap-2 rounded-full bg-violet-100 px-4 py-2"
+              >
+                <Sparkles className="h-5 w-5 text-violet-600" aria-hidden="true" />
+                <span className="font-outfit text-sm font-semibold text-violet-700">Intelligence Artificielle</span>
+              </motion.div>
+
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="font-playfair text-3xl font-bold text-[#1c1917] sm:text-4xl md:text-5xl"
+              >
+                Plus qu'un bracelet.{' '}
+                <span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
+                  Une Intelligence qui veille.
+                </span>
+              </motion.h2>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="mt-6 font-outfit text-lg leading-relaxed text-[#44403c] sm:text-xl"
+              >
+                Propulsé par une <span className="font-semibold text-violet-700">IA</span> qui assiste les secouristes.
+              </motion.p>
+
+              {/* Points Clés avec Étoiles */}
+              <div className="mt-8 space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="flex items-start gap-3"
+                >
+                  <Star className="mt-1 h-6 w-6 flex-shrink-0 fill-amber-400 text-amber-400" aria-hidden="true" />
+                  <div>
+                    <h4 className="font-outfit font-semibold text-[#1c1917]">Assistant Vital</h4>
+                    <p className="mt-1 font-outfit text-[#57534e]">
+                      Elle guide les premiers gestes en fonction de ses allergies spécifiques.
+                    </p>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="flex items-start gap-3"
+                >
+                  <Star className="mt-1 h-6 w-6 flex-shrink-0 fill-amber-400 text-amber-400" aria-hidden="true" />
+                  <div>
+                    <h4 className="font-outfit font-semibold text-[#1c1917]">Veille Active</h4>
+                    <p className="mt-1 font-outfit text-[#57534e]">
+                      Elle analyse la zone du scan pour vous rassurer (ex: 'Localisé près de l'école').
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
