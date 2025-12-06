@@ -1,10 +1,10 @@
 'use client';
 
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles, Battery, Droplet, Building2 } from 'lucide-react';
-import { useRef } from 'react';
+import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles, Battery, Droplet, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRef, useState, useEffect } from 'react';
 
 /**
  * PHASE 10 - LANDING PAGE ÉMOTIONNELLE "WARM & SAFE"
@@ -15,6 +15,188 @@ import { useRef } from 'react';
  *
  * SEO: Metadata définis dans layout.tsx parent
  */
+
+/**
+ * PHASE 12 - Composant Carrousel Témoignages
+ */
+interface Testimonial {
+  id: string;
+  name: string;
+  city: string;
+  quote: string;
+  bgColor: 'amber' | 'orange' | 'rose';
+}
+
+const testimonials: Testimonial[] = [
+  {
+    id: 'aminata',
+    name: 'Aminata K.',
+    city: 'Ouagadougou',
+    quote:
+      "Maintenant je pars travailler l'esprit tranquille. Je sais que si quelque chose arrive, les informations de mon fils sont là.",
+    bgColor: 'amber',
+  },
+  {
+    id: 'ibrahim',
+    name: 'Ibrahim S.',
+    city: 'Bobo-Dioulasso',
+    quote:
+      "Le bracelet a sauvé du temps précieux. Les infirmiers ont pu voir ses allergies immédiatement et agir vite.",
+    bgColor: 'orange',
+  },
+];
+
+function TestimonialsCarousel() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
+
+  // Auto-rotation toutes les 5 secondes
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDirection(1);
+      setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const handlePrevious = () => {
+    setDirection(-1);
+    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  };
+
+  const handleNext = () => {
+    setDirection(1);
+    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+  };
+
+  const bgColorClasses = {
+    amber: 'bg-amber-50',
+    orange: 'bg-orange-50',
+    rose: 'bg-rose-50',
+  };
+
+  const iconBgClasses = {
+    amber: 'bg-amber-200',
+    orange: 'bg-orange-200',
+    rose: 'bg-rose-200',
+  };
+
+  const iconTextClasses = {
+    amber: 'text-amber-700',
+    orange: 'text-orange-700',
+    rose: 'text-rose-700',
+  };
+
+  const currentTestimonial = testimonials[currentIndex];
+
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 300 : -300,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      x: direction > 0 ? -300 : 300,
+      opacity: 0,
+    }),
+  };
+
+  return (
+    <section className="relative z-10 bg-white px-4 py-20 sm:py-32">
+      <div className="mx-auto max-w-4xl">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-16 text-center font-playfair text-3xl font-bold text-[#1c1917] sm:text-4xl"
+        >
+          Ils nous font confiance
+        </motion.h2>
+
+        {/* Carrousel Container */}
+        <div className="relative">
+          {/* Navigation Buttons */}
+          <button
+            onClick={handlePrevious}
+            className="absolute left-0 top-1/2 z-10 -translate-x-12 -translate-y-1/2 rounded-full bg-white p-2 shadow-lg transition-all hover:scale-110 hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-50 sm:-translate-x-16"
+            aria-label="Témoignage précédent"
+          >
+            <ChevronLeft className="h-6 w-6 text-stone-700" />
+          </button>
+
+          <button
+            onClick={handleNext}
+            className="absolute right-0 top-1/2 z-10 -translate-y-1/2 translate-x-12 rounded-full bg-white p-2 shadow-lg transition-all hover:scale-110 hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-50 sm:translate-x-16"
+            aria-label="Témoignage suivant"
+          >
+            <ChevronRight className="h-6 w-6 text-stone-700" />
+          </button>
+
+          {/* Testimonials Slider */}
+          <div className="overflow-hidden">
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={currentIndex}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                className={`rounded-2xl ${bgColorClasses[currentTestimonial.bgColor]} p-8 sm:p-12`}
+              >
+                <div className="mb-6 flex items-center gap-4">
+                  <div
+                    className={`flex h-14 w-14 items-center justify-center rounded-full ${iconBgClasses[currentTestimonial.bgColor]}`}
+                  >
+                    <User
+                      className={`h-7 w-7 ${iconTextClasses[currentTestimonial.bgColor]}`}
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-outfit font-semibold text-[#1c1917]">
+                      {currentTestimonial.name}
+                    </p>
+                    <p className="font-outfit text-sm text-[#78716c]">
+                      {currentTestimonial.city}
+                    </p>
+                  </div>
+                </div>
+                <p className="font-outfit text-lg italic leading-relaxed text-[#44403c] sm:text-xl">
+                  "{currentTestimonial.quote}"
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Indicateurs de pagination */}
+          <div className="mt-8 flex justify-center gap-2">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setDirection(index > currentIndex ? 1 : -1);
+                  setCurrentIndex(index);
+                }}
+                className={`h-2 rounded-full transition-all ${
+                  index === currentIndex
+                    ? 'w-8 bg-orange-500'
+                    : 'w-2 bg-stone-300 hover:bg-stone-400'
+                }`}
+                aria-label={`Aller au témoignage ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -135,6 +317,69 @@ export default function LandingPage() {
           />
         </svg>
       </div>
+
+      {/* PHASE 12: TRUST BAR - Bandeau Institutionnel */}
+      <section className="relative z-10 bg-stone-50/50 px-4 py-8">
+        <div className="mx-auto max-w-6xl">
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-stone-400"
+          >
+            Conçu selon les standards de sécurité et de protection
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="flex flex-wrap items-center justify-center gap-8 sm:gap-12"
+          >
+            {/* Logo CIL - Commission de l'Informatique et des Libertés */}
+            <div
+              className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
+              title="Commission de l'Informatique et des Libertés"
+            >
+              <ShieldCheck className="h-10 w-10 text-stone-700" aria-hidden="true" />
+              <span className="text-xs font-medium text-stone-600">CIL</span>
+            </div>
+
+            {/* Logo BNSP - Brigade Nationale de Sapeurs-Pompiers */}
+            <div
+              className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
+              title="Brigade Nationale de Sapeurs-Pompiers"
+            >
+              <Shield className="h-10 w-10 text-stone-700" aria-hidden="true" />
+              <span className="text-xs font-medium text-stone-600">BNSP</span>
+            </div>
+
+            {/* Logo Ministère de la Famille - Protection de l'Enfance */}
+            <div
+              className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
+              title="Ministère de la Famille - Protection de l'Enfance"
+            >
+              <Building2 className="h-10 w-10 text-stone-700" aria-hidden="true" />
+              <span className="text-xs font-medium text-stone-600">
+                Min. Famille
+              </span>
+            </div>
+
+            {/* Logo Standards Médicaux */}
+            <div
+              className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
+              title="Standards Médicaux Certifiés"
+            >
+              <Heart className="h-10 w-10 text-stone-700" aria-hidden="true" />
+              <span className="text-xs font-medium text-stone-600">
+                Standards Médicaux
+              </span>
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
       {/* INSERTION A: RÉALITÉ vs SÉRÉNITÉ */}
       <section className="relative z-10 bg-white px-4 py-20 sm:py-32">
@@ -622,65 +867,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SECTION 4: TÉMOIGNAGES */}
-      <section className="relative z-10 bg-white px-4 py-20 sm:py-32">
-        <div className="mx-auto max-w-6xl">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-16 text-center font-playfair text-3xl font-bold text-[#1c1917] sm:text-4xl"
-          >
-            Ils nous font confiance
-          </motion.h2>
-
-          <div className="grid gap-8 md:grid-cols-2">
-            {/* Témoignage 1 */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="rounded-2xl bg-amber-50 p-8"
-            >
-              <div className="mb-4 flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-200">
-                  <User className="h-7 w-7 text-amber-700" aria-hidden="true" />
-                </div>
-                <div>
-                  <p className="font-outfit font-semibold text-[#1c1917]">Aminata K.</p>
-                  <p className="font-outfit text-sm text-[#78716c]">Ouagadougou</p>
-                </div>
-              </div>
-              <p className="font-outfit italic leading-relaxed text-[#44403c]">
-                "Maintenant je pars travailler l'esprit tranquille. Je sais que si quelque chose
-                arrive, les informations de mon fils sont là."
-              </p>
-            </motion.div>
-
-            {/* Témoignage 2 */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="rounded-2xl bg-orange-50 p-8"
-            >
-              <div className="mb-4 flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-200">
-                  <User className="h-7 w-7 text-orange-700" aria-hidden="true" />
-                </div>
-                <div>
-                  <p className="font-outfit font-semibold text-[#1c1917]">Ibrahim S.</p>
-                  <p className="font-outfit text-sm text-[#78716c]">Bobo-Dioulasso</p>
-                </div>
-              </div>
-              <p className="font-outfit italic leading-relaxed text-[#44403c]">
-                "Le bracelet a sauvé du temps précieux. Les infirmiers ont pu voir ses allergies
-                immédiatement et agir vite."
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      {/* SECTION 4: TÉMOIGNAGES - PHASE 12 CARROUSEL */}
+      <TestimonialsCarousel />
 
       {/* SECTION 5: CTA FINAL */}
       <section className="relative z-10 h-[600px] overflow-hidden">
