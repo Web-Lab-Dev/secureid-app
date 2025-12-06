@@ -3,7 +3,7 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles } from 'lucide-react';
+import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles, Battery, Droplet, Building2 } from 'lucide-react';
 import { useRef } from 'react';
 
 /**
@@ -510,6 +510,118 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* INSERTION C: DÉMO PRODUIT "L'ARMURE INVISIBLE" */}
+      <section className="relative z-10 bg-stone-900 px-4 py-20 sm:py-32">
+        <div className="mx-auto max-w-6xl">
+          {/* Titre */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12 text-center"
+          >
+            <h2 className="font-playfair text-4xl font-bold text-white sm:text-5xl">
+              Conçu pour{' '}
+              <span className="bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent">
+                la vraie vie.
+              </span>
+            </h2>
+            <p className="mt-4 font-outfit text-lg text-stone-300 sm:text-xl">
+              Pas de batterie. Pas d'ondes. 100% Étanche. Indestructible.
+            </p>
+          </motion.div>
+
+          {/* Vidéo Démo */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.8 }}
+            className="relative mb-16 aspect-video overflow-hidden rounded-3xl shadow-2xl shadow-orange-500/20"
+          >
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              poster="/images/landing/product-poster.jpg"
+              className="h-full w-full object-cover"
+            >
+              <source src="/videos/product-demo.mp4" type="video/mp4" />
+              Votre navigateur ne supporte pas la vidéo HTML5.
+            </video>
+
+            {/* Overlay pour si la vidéo ne charge pas */}
+            <div className="absolute inset-0 flex items-center justify-center bg-stone-800">
+              <div className="text-center">
+                <Shield className="mx-auto mb-4 h-24 w-24 text-orange-500" aria-hidden="true" />
+                <p className="font-outfit text-stone-400">Aperçu produit SecureID</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Grid Features */}
+          <div className="grid gap-8 md:grid-cols-3">
+            {/* Feature 1: Pas de Batterie */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-center"
+            >
+              <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500/10">
+                <Battery className="h-8 w-8 text-orange-400" strokeWidth={2} aria-hidden="true" />
+              </div>
+              <h3 className="mb-2 font-outfit text-xl font-semibold text-white">
+                0% Batterie requise
+              </h3>
+              <p className="font-outfit text-stone-400">
+                Aucune recharge nécessaire. Il protège jour et nuit, sans jamais s'éteindre.
+              </p>
+            </motion.div>
+
+            {/* Feature 2: Étanche */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-center"
+            >
+              <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500/10">
+                <Droplet className="h-8 w-8 text-blue-400" strokeWidth={2} aria-hidden="true" />
+              </div>
+              <h3 className="mb-2 font-outfit text-xl font-semibold text-white">
+                100% Étanche
+              </h3>
+              <p className="font-outfit text-stone-400">
+                Il résiste à la boue, à la pluie et aux récréations les plus mouvementées.
+              </p>
+            </motion.div>
+
+            {/* Feature 3: Indestructible */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="text-center"
+            >
+              <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10">
+                <Shield className="h-8 w-8 text-emerald-400" strokeWidth={2} aria-hidden="true" />
+              </div>
+              <h3 className="mb-2 font-outfit text-xl font-semibold text-white">
+                Matériaux Hypoallergéniques
+              </h3>
+              <p className="font-outfit text-stone-400">
+                Conçu avec des matériaux certifiés, doux pour la peau. Indestructible.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* SECTION 4: TÉMOIGNAGES */}
       <section className="relative z-10 bg-white px-4 py-20 sm:py-32">
         <div className="mx-auto max-w-6xl">
@@ -607,6 +719,48 @@ export default function LandingPage() {
             >
               <Shield className="h-6 w-6" strokeWidth={2.5} aria-hidden="true" />
               Activer sa protection maintenant
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* INSERTION D: PARTENARIAT ÉCOLE */}
+      <section className="relative z-10 bg-white px-4 py-16">
+        <div className="mx-auto max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="rounded-2xl border-l-4 border-orange-500 bg-orange-50/50 p-8 md:p-12"
+          >
+            {/* Badge */}
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-2">
+              <Building2 className="h-5 w-5 text-orange-600" aria-hidden="true" />
+              <span className="font-outfit text-sm font-semibold text-orange-700">
+                Établissements & Garderies
+              </span>
+            </div>
+
+            {/* Titre */}
+            <h2 className="mb-4 font-playfair text-3xl font-bold text-[#1c1917] sm:text-4xl">
+              Directeurs d'Établissement & Garderies
+            </h2>
+
+            {/* Description */}
+            <p className="mb-6 font-outfit text-lg leading-relaxed text-[#44403c]">
+              La sécurité de vos élèves est votre priorité ? Rejoignez le réseau{' '}
+              <span className="font-semibold text-orange-700">'Safe Zone'</span>.{' '}
+              Sécurisez les sorties et rassurez vos parents.
+            </p>
+
+            {/* CTA Secondaire */}
+            <Link
+              href="/ecoles-partenaires"
+              className="group inline-flex items-center gap-2 font-outfit text-lg font-semibold text-orange-700 underline decoration-2 underline-offset-4 transition-colors hover:text-orange-800"
+            >
+              Devenir École Partenaire
+              <span className="transition-transform group-hover:translate-x-1">→</span>
             </Link>
           </motion.div>
         </div>
