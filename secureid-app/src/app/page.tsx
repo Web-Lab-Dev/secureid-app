@@ -973,77 +973,6 @@ export default function LandingPage() {
               <p className="font-outfit text-sm leading-relaxed text-[#78716c]">
                 Protégez ce qui compte le plus. Un lien invisible qui veille sur vos enfants.
               </p>
-
-              {/* Logos sociaux */}
-              <div className="mt-6 flex items-center gap-4">
-                {/* Téléphone */}
-                <a
-                  href="tel:+22677040492"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-200 text-stone-700 transition-all hover:bg-orange-500 hover:text-white hover:scale-110"
-                  aria-label="Appeler +226 77 04 04 92"
-                  title="Appel: 77040492 / 72982502"
-                >
-                  <Phone className="h-5 w-5" />
-                </a>
-
-                {/* WhatsApp */}
-                <a
-                  href="https://wa.me/22677040492"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-200 text-stone-700 transition-all hover:bg-green-500 hover:text-white hover:scale-110"
-                  aria-label="WhatsApp +226 77 04 04 92"
-                  title="WhatsApp: 77040492"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                </a>
-
-                {/* Email */}
-                <a
-                  href="mailto:tko364796@gmail.com"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-200 text-stone-700 transition-all hover:bg-blue-500 hover:text-white hover:scale-110"
-                  aria-label="Email tko364796@gmail.com"
-                  title="Email"
-                >
-                  <Mail className="h-5 w-5" />
-                </a>
-
-                {/* LinkedIn */}
-                <a
-                  href="https://www.linkedin.com/in/swabo-hamadou-ai/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-200 text-stone-700 transition-all hover:bg-[#0077B5] hover:text-white hover:scale-110"
-                  aria-label="LinkedIn Swabo Hamadou"
-                  title="LinkedIn"
-                >
-                  <Linkedin className="h-5 w-5" />
-                </a>
-
-                {/* Facebook */}
-                <a
-                  href="#"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-200 text-stone-700 transition-all hover:bg-[#1877F2] hover:text-white hover:scale-110"
-                  aria-label="Facebook SecureID"
-                  title="Facebook"
-                >
-                  <Facebook className="h-5 w-5" />
-                </a>
-
-                {/* GitHub */}
-                <a
-                  href="#"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-200 text-stone-700 transition-all hover:bg-[#181717] hover:text-white hover:scale-110"
-                  aria-label="GitHub SecureID"
-                  title="GitHub"
-                >
-                  <Github className="h-5 w-5" />
-                </a>
-              </div>
             </div>
 
             {/* Colonne 2: Liens */}
@@ -1071,35 +1000,80 @@ export default function LandingPage() {
             {/* Colonne 3: Contact */}
             <div>
               <h3 className="mb-4 font-outfit font-semibold text-[#1c1917]">Contact</h3>
-              <ul className="space-y-3 font-outfit text-sm text-[#78716c]">
-                <li>
-                  <a
-                    href="tel:+22677040492"
-                    className="flex items-center gap-2 hover:text-amber-600 transition-colors"
-                  >
-                    <Phone className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-                    <span>+226 77 04 04 92</span>
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="tel:+22672982502"
-                    className="flex items-center gap-2 hover:text-amber-600 transition-colors"
-                  >
-                    <Phone className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-                    <span>+226 72 98 25 02</span>
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="mailto:tko364796@gmail.com"
-                    className="flex items-center gap-2 hover:text-amber-600 transition-colors"
-                  >
-                    <Mail className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-                    <span>tko364796@gmail.com</span>
-                  </a>
-                </li>
-              </ul>
+              <p className="mb-4 font-outfit text-sm font-semibold text-[#1c1917]">
+                +226 77 04 04 92 / 72 98 25 02
+              </p>
+
+              {/* Logos sociaux avec couleurs de marque */}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Téléphone */}
+                <a
+                  href="tel:+22677040492"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-white transition-all hover:bg-orange-600 hover:scale-110"
+                  aria-label="Appeler +226 77 04 04 92"
+                  title="Appel"
+                >
+                  <Phone className="h-5 w-5" />
+                </a>
+
+                {/* WhatsApp */}
+                <a
+                  href="https://wa.me/22677040492"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#25D366] text-white transition-all hover:bg-[#20BD5A] hover:scale-110"
+                  aria-label="WhatsApp +226 77 04 04 92"
+                  title="WhatsApp"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                </a>
+
+                {/* Email */}
+                <a
+                  href="mailto:tko364796@gmail.com"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EA4335] text-white transition-all hover:bg-[#D33426] hover:scale-110"
+                  aria-label="Email tko364796@gmail.com"
+                  title="Email"
+                >
+                  <Mail className="h-5 w-5" />
+                </a>
+
+                {/* LinkedIn */}
+                <a
+                  href="https://www.linkedin.com/in/swabo-hamadou-ai/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0077B5] text-white transition-all hover:bg-[#006399] hover:scale-110"
+                  aria-label="LinkedIn Swabo Hamadou"
+                  title="LinkedIn"
+                >
+                  <Linkedin className="h-5 w-5" />
+                </a>
+
+                {/* Facebook */}
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2] text-white transition-all hover:bg-[#1565D8] hover:scale-110"
+                  aria-label="Facebook SecureID"
+                  title="Facebook"
+                >
+                  <Facebook className="h-5 w-5" />
+                </a>
+
+                {/* GitHub */}
+                <a
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#181717] text-white transition-all hover:bg-black hover:scale-110"
+                  aria-label="GitHub SecureID"
+                  title="GitHub"
+                >
+                  <Github className="h-5 w-5" />
+                </a>
+              </div>
             </div>
           </div>
 
