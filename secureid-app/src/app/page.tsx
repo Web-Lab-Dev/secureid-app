@@ -797,7 +797,7 @@ export default function LandingPage() {
               playsInline
               className="h-full w-full object-cover"
             >
-              <source src="/landing/Cinematic_Metal_Plate_QR_Code_Video.mp4" type="video/mp4" />
+              <source src="/landing/product-demo.mp4" type="video/mp4" />
               Votre navigateur ne supporte pas la vidéo HTML5.
             </video>
           </motion.div>
