@@ -1214,7 +1214,7 @@ export default function LandingPage() {
                   loading="lazy"
                 />
                 {/* Masque logo Gemini en bas à droite */}
-                <div className="absolute bottom-0 right-0 h-[80px] w-[120px] bg-gradient-to-tl from-purple-50 via-violet-50/90 to-transparent" />
+                <div className="absolute bottom-0 right-0 h-[150px] w-[200px] bg-gradient-to-tl from-purple-50 via-violet-50/95 to-transparent" />
 
                 {/* Effet de brillance IA */}
                 <motion.div
