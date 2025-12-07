@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles, Battery, Droplet, Building2, ChevronLeft, ChevronRight, Mail, Linkedin, Facebook, Github, MessageCircle, ShoppingCart, X } from 'lucide-react';
+import { Shield, Heart, Radio, User, Phone, Battery, Droplet, Building2, ChevronLeft, ChevronRight, Mail, Linkedin, Facebook, Github, MessageCircle, Sparkles, ShieldCheck, X } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import HeroSection from '@/components/landing/HeroSection';
 import TrustBar from '@/components/landing/TrustBar';
