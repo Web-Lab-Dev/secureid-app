@@ -741,7 +741,7 @@ export default function LandingPage() {
             alt="Mère tenant son enfant dans ses bras"
             fill
             sizes="100vw"
-            className="object-cover scale-[0.85]"
+            className="object-cover"
             priority
             quality={90}
           />
