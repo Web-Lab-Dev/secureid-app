@@ -1,10 +1,10 @@
 'use client';
 
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles, Battery, Droplet, Building2, ChevronLeft, ChevronRight, Mail, Linkedin, Facebook, Github, MessageCircle, ShoppingCart, X } from 'lucide-react';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 
 /**
  * PHASE 10 - LANDING PAGE ÉMOTIONNELLE "WARM & SAFE"
@@ -265,7 +265,7 @@ function PhoneMockup({ src, alt, className = '', floatAnimation = false, priorit
 function DashboardCarouselSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const dashboardSlides = [
+  const dashboardSlides = useMemo(() => [
     {
       src: '/landing/showcase/dashboard/dashboard-home.jpg',
       alt: 'Accueil Dashboard - Vue d\'ensemble',
@@ -296,7 +296,7 @@ function DashboardCarouselSection() {
       title: 'Sa propre carte d\'identité',
       description: 'Il n\'est plus un inconnu. Chaque enfant a son identité numérique sécurisée.',
     },
-  ];
+  ], []);
 
   // Auto-scroll toutes les 4 secondes
   useEffect(() => {
@@ -722,14 +722,6 @@ function TestimonialsCarousel() {
 
 export default function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ['start start', 'end start'],
-  });
-
-  // Effet Ken Burns (zoom lent) sur l'image hero
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   // État modal partenaire
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
@@ -743,7 +735,7 @@ export default function LandingPage() {
         {/* Image de fond FIXE (parallax) */}
         <div className="fixed inset-0 h-screen w-full">
           <Image
-            src="/landing/hero-mother-child.png"
+            src="/landing/hero-mother-child.webp"
             alt="Mère tenant son enfant dans ses bras"
             fill
             sizes="100vw"
@@ -1007,7 +999,7 @@ export default function LandingPage() {
               >
                 <div className="relative h-full w-full">
                   <Image
-                    src="/landing/shield-protection-3d.png"
+                    src="/landing/shield-protection-3d.webp"
                     alt="Bouclier de protection 3D"
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
@@ -1073,7 +1065,7 @@ export default function LandingPage() {
             >
               <div className="mb-6 relative h-20 w-20 overflow-hidden rounded-full ring-4 ring-orange-100 group-hover:ring-orange-200 transition-all">
                 <Image
-                  src="/landing/feature-identity-joy.png"
+                  src="/landing/feature-identity-joy.webp"
                   alt="Enfant joyeux - Identité protégée"
                   fill
                   sizes="80px"
@@ -1102,7 +1094,7 @@ export default function LandingPage() {
             >
               <div className="mb-6 relative h-20 w-20 overflow-hidden rounded-full ring-4 ring-rose-100 group-hover:ring-rose-200 transition-all">
                 <Image
-                  src="/landing/feature-medical-kit.png"
+                  src="/landing/feature-medical-kit.webp"
                   alt="Trousse médicale - Santé protégée"
                   fill
                   sizes="80px"
@@ -1206,7 +1198,7 @@ export default function LandingPage() {
                 className="relative aspect-square w-full max-w-md mx-auto"
               >
                 <Image
-                  src="/landing/section-ia.png"
+                  src="/landing/section-ia.webp"
                   alt="Intelligence Artificielle SecureID - Protection bienveillante"
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -1561,7 +1553,7 @@ export default function LandingPage() {
         {/* Parallax Background */}
         <div className="absolute inset-0">
           <Image
-            src="/landing/cta-father-hand.png"
+            src="/landing/cta-father-hand.webp"
             alt="Main protectrice d'un père"
             fill
             sizes="100vw"
