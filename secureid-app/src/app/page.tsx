@@ -3,7 +3,7 @@
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles, Battery, Droplet, Building2, ChevronLeft, ChevronRight, Mail, Linkedin, Facebook, Github, MessageCircle, ShoppingCart, X, ZoomIn } from 'lucide-react';
+import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles, Battery, Droplet, Building2, ChevronLeft, ChevronRight, Mail, Linkedin, Facebook, Github, MessageCircle, ShoppingCart, X } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
 
 /**
@@ -216,10 +216,9 @@ interface PhoneMockupProps {
   className?: string;
   floatAnimation?: boolean;
   priority?: boolean;
-  onClick?: () => void;
 }
 
-function PhoneMockup({ src, alt, className = '', floatAnimation = false, priority = false, onClick }: PhoneMockupProps) {
+function PhoneMockup({ src, alt, className = '', floatAnimation = false, priority = false }: PhoneMockupProps) {
   return (
     <motion.div
       animate={
@@ -234,11 +233,10 @@ function PhoneMockup({ src, alt, className = '', floatAnimation = false, priorit
             }
           : undefined
       }
-      className={`relative ${className} ${onClick ? 'cursor-pointer group' : ''}`}
-      onClick={onClick}
+      className={`relative ${className}`}
     >
       {/* iPhone Mockup Frame */}
-      <div className="relative overflow-hidden rounded-[3rem] border-[12px] border-gray-900 bg-gray-900 shadow-2xl shadow-black/40 transition-transform group-hover:scale-105">
+      <div className="relative overflow-hidden rounded-[3rem] border-[12px] border-gray-900 bg-gray-900 shadow-2xl shadow-black/40">
         {/* Notch iPhone */}
         <div className="absolute left-1/2 top-0 z-10 h-7 w-40 -translate-x-1/2 rounded-b-3xl bg-gray-900" />
 
@@ -257,276 +255,7 @@ function PhoneMockup({ src, alt, className = '', floatAnimation = false, priorit
 
       {/* Subtle glow effect */}
       <div className="absolute -inset-4 -z-10 rounded-[4rem] bg-gradient-to-b from-blue-500/10 to-purple-500/10 blur-2xl opacity-50" />
-
-      {/* Zoom indicator si cliquable */}
-      {onClick && (
-        <div className="absolute bottom-4 right-4 rounded-full bg-black/60 p-2 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
-          <ZoomIn className="h-5 w-5 text-white" />
-        </div>
-      )}
     </motion.div>
-  );
-}
-
-/**
- * PHASE 13 - Modal Lightbox pour zoom des screenshots
- */
-interface LightboxModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  src: string;
-  alt: string;
-}
-
-function LightboxModal({ isOpen, onClose, src, alt }: LightboxModalProps) {
-  if (!isOpen) return null;
-
-  return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm"
-      >
-        {/* Bouton Fermer */}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 z-[10000] rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition hover:bg-white/20"
-          aria-label="Fermer"
-        >
-          <X className="h-6 w-6" />
-        </button>
-
-        {/* Image en plein écran */}
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.8, opacity: 0 }}
-          transition={{ type: 'spring', damping: 25 }}
-          className="relative max-h-[90vh] max-w-[90vw]"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="relative overflow-hidden rounded-[3rem] border-[12px] border-gray-900 bg-gray-900 shadow-2xl">
-            {/* Notch iPhone */}
-            <div className="absolute left-1/2 top-0 z-10 h-7 w-40 -translate-x-1/2 rounded-b-3xl bg-gray-900" />
-
-            {/* Screenshot */}
-            <div className="relative aspect-[9/19.5] w-[400px] overflow-hidden bg-white sm:w-[500px] md:w-[600px]">
-              <Image
-                src={src}
-                alt={alt}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 90vw, 600px"
-                priority
-              />
-            </div>
-          </div>
-
-          {/* Indication */}
-          <p className="mt-4 text-center font-outfit text-sm text-white/70">
-            Cliquez en dehors pour fermer
-          </p>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
-
-/**
- * PHASE 13 - Section Secouriste avec Modal Zoom
- */
-function SecouristeShowcaseSection() {
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxImage, setLightboxImage] = useState({ src: '', alt: '' });
-
-  const handlePhoneClick = (src: string, alt: string) => {
-    setLightboxImage({ src, alt });
-    setLightboxOpen(true);
-  };
-
-  return (
-    <>
-      <section className="relative z-10 overflow-hidden bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 px-4 py-20 sm:py-32">
-        <div className="mx-auto max-w-7xl">
-          {/* En-tête Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-16 text-center"
-          >
-            {/* Badge */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-red-500/20 px-4 py-2 backdrop-blur-sm">
-              <Heart className="h-5 w-5 text-red-400" aria-hidden="true" />
-              <span className="font-outfit text-sm font-semibold text-red-300">Interface Secouriste</span>
-            </div>
-
-            {/* Titre */}
-            <h2 className="mb-6 font-playfair text-4xl font-bold text-white sm:text-5xl lg:text-6xl">
-              Conçu pour{' '}
-              <span className="bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
-                l'efficacité absolue.
-              </span>
-            </h2>
-
-            {/* Sous-titre */}
-            <p className="mx-auto max-w-3xl font-outfit text-lg leading-relaxed text-slate-300 sm:text-xl">
-              Aucune friction. Aucune application à installer pour le secouriste.{' '}
-              <span className="font-semibold text-white">Juste l'essentiel.</span>
-            </p>
-          </motion.div>
-
-          {/* Hint Zoom */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.5 }}
-            className="mb-8 text-center font-outfit text-sm text-slate-400"
-          >
-            💡 Cliquez sur un téléphone pour agrandir et lire les détails
-          </motion.p>
-
-          {/* 3 Phones Overlap */}
-          <div className="relative mx-auto max-w-5xl">
-            <div className="flex items-center justify-center gap-4 md:gap-0">
-              {/* Phone 1 - Gauche (Alerte) */}
-              <motion.div
-                initial={{ opacity: 0, x: -100, rotateY: -15 }}
-                whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="relative z-10 w-64 md:w-80 md:-mr-16"
-                style={{ perspective: '1000px' }}
-              >
-                <PhoneMockup
-                  src="/landing/showcase/secouriste page/secouriste acceuil.jpg"
-                  alt="Alerte Vitale Secouriste"
-                  className="rotate-[-5deg] transform"
-                  onClick={() =>
-                    handlePhoneClick(
-                      '/landing/showcase/secouriste page/secouriste acceuil.jpg',
-                      'Alerte Vitale Secouriste - Zoom'
-                    )
-                  }
-                />
-                {/* Label */}
-                <div className="mt-4 text-center">
-                  <p className="font-outfit text-sm font-semibold text-red-400">Alerte Vitale</p>
-                  <p className="font-outfit text-xs text-slate-400">Infos médicales en 2s</p>
-                </div>
-              </motion.div>
-
-              {/* Phone 2 - Centre (IA Assistance) - Plus grand */}
-              <motion.div
-                initial={{ opacity: 0, y: 50, scale: 0.8 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                className="relative z-20 w-72 md:w-96"
-              >
-                <PhoneMockup
-                  src="/landing/showcase/secouriste page/secouriste ia.jpg"
-                  alt="IA Assistance Médicale"
-                  floatAnimation
-                  priority
-                  onClick={() =>
-                    handlePhoneClick(
-                      '/landing/showcase/secouriste page/secouriste ia.jpg',
-                      'IA Assistance Médicale - Zoom'
-                    )
-                  }
-                />
-                {/* Badge "Certifié" */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 1.2, type: 'spring' }}
-                  className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 font-outfit text-sm font-bold text-white shadow-lg"
-                >
-                  🏥 Certifié Médical
-                </motion.div>
-                {/* Label */}
-                <div className="mt-4 text-center">
-                  <p className="font-outfit text-sm font-semibold text-emerald-400">IA Bienveillante</p>
-                  <p className="font-outfit text-xs text-slate-400">Gestes vitaux guidés</p>
-                </div>
-              </motion.div>
-
-              {/* Phone 3 - Droite (GPS) */}
-              <motion.div
-                initial={{ opacity: 0, x: 100, rotateY: 15 }}
-                whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                className="relative z-10 w-64 md:w-80 md:-ml-16"
-                style={{ perspective: '1000px' }}
-              >
-                <PhoneMockup
-                  src="/landing/showcase/secouriste page/send position.jpg"
-                  alt="GPS et WhatsApp Parents"
-                  className="rotate-[5deg] transform"
-                  onClick={() =>
-                    handlePhoneClick(
-                      '/landing/showcase/secouriste page/send position.jpg',
-                      'GPS et WhatsApp Parents - Zoom'
-                    )
-                  }
-                />
-                {/* Label */}
-                <div className="mt-4 text-center">
-                  <p className="font-outfit text-sm font-semibold text-blue-400">GPS WhatsApp</p>
-                  <p className="font-outfit text-xs text-slate-400">Contact immédiat</p>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Stats Bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.8 }}
-            className="mt-20 grid gap-8 sm:grid-cols-3"
-          >
-            {/* Stat 1 */}
-            <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-center backdrop-blur-sm">
-              <p className="mb-2 font-playfair text-4xl font-bold text-orange-400">{'<2s'}</p>
-              <p className="font-outfit text-sm text-slate-300">Temps de réponse moyen</p>
-            </div>
-
-            {/* Stat 2 */}
-            <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-center backdrop-blur-sm">
-              <p className="mb-2 font-playfair text-4xl font-bold text-emerald-400">100%</p>
-              <p className="font-outfit text-sm text-slate-300">Sans installation</p>
-            </div>
-
-            {/* Stat 3 */}
-            <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-center backdrop-blur-sm">
-              <p className="mb-2 font-playfair text-4xl font-bold text-blue-400">500+</p>
-              <p className="font-outfit text-sm text-slate-300">Familles protégées</p>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Background effects */}
-        <div className="absolute left-0 top-1/4 -z-10 h-96 w-96 rounded-full bg-red-500/10 blur-3xl" />
-        <div className="absolute bottom-1/4 right-0 -z-10 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
-      </section>
-
-      {/* Modal Lightbox */}
-      <LightboxModal
-        isOpen={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-        src={lightboxImage.src}
-        alt={lightboxImage.alt}
-      />
-    </>
   );
 }
 
@@ -697,25 +426,49 @@ function DashboardCarouselSection() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="relative mx-auto w-full max-w-sm lg:max-w-md"
           >
-            {/* Carrousel Container */}
-            <div className="relative">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentSlide}
-                  initial={{ opacity: 0, x: 100 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -100 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <PhoneMockup
-                    src={dashboardSlides[currentSlide].src}
-                    alt={dashboardSlides[currentSlide].alt}
-                    floatAnimation
-                    priority={currentSlide === 0}
-                    className="mx-auto"
-                  />
-                </motion.div>
-              </AnimatePresence>
+            {/* Phone Mockup statique avec carrousel interne */}
+            <motion.div
+              animate={{
+                y: [0, -15, 0],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+              className="relative"
+            >
+              {/* iPhone Mockup Frame */}
+              <div className="relative overflow-hidden rounded-[3rem] border-[12px] border-gray-900 bg-gray-900 shadow-2xl shadow-black/40">
+                {/* Notch iPhone */}
+                <div className="absolute left-1/2 top-0 z-10 h-7 w-40 -translate-x-1/2 rounded-b-3xl bg-gray-900" />
+
+                {/* Carrousel d'images à l'intérieur */}
+                <div className="relative aspect-[9/19.5] overflow-hidden bg-white">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentSlide}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.5 }}
+                      className="absolute inset-0"
+                    >
+                      <Image
+                        src={dashboardSlides[currentSlide].src}
+                        alt={dashboardSlides[currentSlide].alt}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 80vw, 400px"
+                        priority={currentSlide === 0}
+                      />
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Subtle glow effect */}
+              <div className="absolute -inset-4 -z-10 rounded-[4rem] bg-gradient-to-b from-blue-500/10 to-purple-500/10 blur-2xl opacity-50" />
 
               {/* Navigation Arrows */}
               <button
@@ -744,7 +497,7 @@ function DashboardCarouselSection() {
               >
                 ✨ Nouveau
               </motion.div>
-            </div>
+            </motion.div>
 
             {/* Titre Slide Dynamique */}
             <AnimatePresence mode="wait">
@@ -1254,8 +1007,8 @@ export default function LandingPage() {
                   className="object-contain"
                   loading="lazy"
                 />
-                {/* Overlay pour masquer le logo Gemini en bas à droite */}
-                <div className="absolute bottom-0 right-0 h-16 w-24 bg-white" />
+                {/* Overlay subtil pour masquer le logo Gemini en bas à droite */}
+                <div className="absolute bottom-0 right-0 h-[40px] w-[60px] bg-gradient-to-tl from-white via-white/70 to-transparent" />
               </motion.div>
             </motion.div>
 
@@ -1542,8 +1295,147 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* PHASE 13 - SHOWCASE 2: PORTAIL SECOURISTE (Modal Lightbox) */}
-      <SecouristeShowcaseSection />
+      {/* PHASE 13 - SHOWCASE 2: PORTAIL SECOURISTE */}
+      <section className="relative z-10 overflow-hidden bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 px-4 py-20 sm:py-32">
+        <div className="mx-auto max-w-7xl">
+          {/* En-tête Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-16 text-center"
+          >
+            {/* Badge */}
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-red-500/20 px-4 py-2 backdrop-blur-sm">
+              <Heart className="h-5 w-5 text-red-400" aria-hidden="true" />
+              <span className="font-outfit text-sm font-semibold text-red-300">Interface Secouriste</span>
+            </div>
+
+            {/* Titre */}
+            <h2 className="mb-6 font-playfair text-4xl font-bold text-white sm:text-5xl lg:text-6xl">
+              Conçu pour{' '}
+              <span className="bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
+                l'efficacité absolue.
+              </span>
+            </h2>
+
+            {/* Sous-titre */}
+            <p className="mx-auto max-w-3xl font-outfit text-lg leading-relaxed text-slate-300 sm:text-xl">
+              Aucune friction. Aucune application à installer pour le secouriste.{' '}
+              <span className="font-semibold text-white">Juste l'essentiel.</span>
+            </p>
+          </motion.div>
+
+          {/* 3 Phones Overlap */}
+          <div className="relative mx-auto max-w-5xl">
+            <div className="flex items-center justify-center gap-4 md:gap-0">
+              {/* Phone 1 - Gauche (Alerte) */}
+              <motion.div
+                initial={{ opacity: 0, x: -100, rotateY: -15 }}
+                whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="relative z-10 w-64 md:w-80 md:-mr-16"
+                style={{ perspective: '1000px' }}
+              >
+                <PhoneMockup
+                  src="/landing/showcase/secouriste page/secouriste acceuil.jpg"
+                  alt="Alerte Vitale Secouriste"
+                  className="rotate-[-5deg] transform"
+                />
+                {/* Label */}
+                <div className="mt-4 text-center">
+                  <p className="font-outfit text-sm font-semibold text-red-400">Alerte Vitale</p>
+                  <p className="font-outfit text-xs text-slate-400">Infos médicales en 2s</p>
+                </div>
+              </motion.div>
+
+              {/* Phone 2 - Centre (IA Assistance) - Plus grand */}
+              <motion.div
+                initial={{ opacity: 0, y: 50, scale: 0.8 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="relative z-20 w-72 md:w-96"
+              >
+                <PhoneMockup
+                  src="/landing/showcase/secouriste page/secouriste ia.jpg"
+                  alt="IA Assistance Médicale"
+                  floatAnimation
+                  priority
+                />
+                {/* Badge "Certifié" */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 1.2, type: 'spring' }}
+                  className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 font-outfit text-sm font-bold text-white shadow-lg"
+                >
+                  🏥 Certifié Médical
+                </motion.div>
+                {/* Label */}
+                <div className="mt-4 text-center">
+                  <p className="font-outfit text-sm font-semibold text-emerald-400">IA Bienveillante</p>
+                  <p className="font-outfit text-xs text-slate-400">Gestes vitaux guidés</p>
+                </div>
+              </motion.div>
+
+              {/* Phone 3 - Droite (GPS) */}
+              <motion.div
+                initial={{ opacity: 0, x: 100, rotateY: 15 }}
+                whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                className="relative z-10 w-64 md:w-80 md:-ml-16"
+                style={{ perspective: '1000px' }}
+              >
+                <PhoneMockup
+                  src="/landing/showcase/secouriste page/send position.jpg"
+                  alt="GPS et WhatsApp Parents"
+                  className="rotate-[5deg] transform"
+                />
+                {/* Label */}
+                <div className="mt-4 text-center">
+                  <p className="font-outfit text-sm font-semibold text-blue-400">GPS WhatsApp</p>
+                  <p className="font-outfit text-xs text-slate-400">Contact immédiat</p>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Stats Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.8 }}
+            className="mt-20 grid gap-8 sm:grid-cols-3"
+          >
+            {/* Stat 1 */}
+            <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-center backdrop-blur-sm">
+              <p className="mb-2 font-playfair text-4xl font-bold text-orange-400">{'<2s'}</p>
+              <p className="font-outfit text-sm text-slate-300">Temps de réponse moyen</p>
+            </div>
+
+            {/* Stat 2 */}
+            <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-center backdrop-blur-sm">
+              <p className="mb-2 font-playfair text-4xl font-bold text-emerald-400">100%</p>
+              <p className="font-outfit text-sm text-slate-300">Sans installation</p>
+            </div>
+
+            {/* Stat 3 */}
+            <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-center backdrop-blur-sm">
+              <p className="mb-2 font-playfair text-4xl font-bold text-blue-400">500+</p>
+              <p className="font-outfit text-sm text-slate-300">Familles protégées</p>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Background effects */}
+        <div className="absolute left-0 top-1/4 -z-10 h-96 w-96 rounded-full bg-red-500/10 blur-3xl" />
+        <div className="absolute bottom-1/4 right-0 -z-10 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
+      </section>
 
       {/* INSERTION C: DÉMO PRODUIT "L'ARMURE INVISIBLE" */}
       <section className="relative z-10 bg-stone-900 px-4 py-20 sm:py-32">
@@ -1584,8 +1476,8 @@ export default function LandingPage() {
               <source src="/landing/product-demo.mp4" type="video/mp4" />
               Votre navigateur ne supporte pas la vidéo HTML5.
             </video>
-            {/* Overlay pour masquer le logo Gemini en bas à droite */}
-            <div className="absolute bottom-0 right-0 h-20 w-32 bg-stone-900" />
+            {/* Overlay subtil pour masquer le logo Gemini en bas à droite */}
+            <div className="absolute bottom-0 right-0 h-[50px] w-[80px] bg-gradient-to-tl from-stone-900/90 via-stone-900/50 to-transparent" />
           </motion.div>
 
           {/* Grid Features */}
