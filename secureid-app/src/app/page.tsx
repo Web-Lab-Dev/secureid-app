@@ -3,7 +3,7 @@
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles, Battery, Droplet, Building2, ChevronLeft, ChevronRight, Mail, Linkedin, Facebook, Github, MessageCircle } from 'lucide-react';
+import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles, Battery, Droplet, Building2, ChevronLeft, ChevronRight, Mail, Linkedin, Facebook, Github, MessageCircle, ShoppingCart, X } from 'lucide-react';
 import { useRef, useState, useEffect } from 'react';
 
 /**
@@ -25,6 +25,186 @@ interface Testimonial {
   city: string;
   quote: string;
   bgColor: 'amber' | 'orange' | 'rose';
+}
+
+/**
+ * Composant Modal Formulaire Partenaire
+ */
+function PartnershipModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [formData, setFormData] = useState({
+    etablissement: '',
+    type: 'ecole',
+    responsable: '',
+    email: '',
+    telephone: '',
+    ville: '',
+    nombreEleves: '',
+    message: '',
+  });
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: Envoyer les données au backend
+    console.log('Form submitted:', formData);
+    alert('Merci ! Nous vous contacterons rapidement.');
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-8 shadow-2xl"
+      >
+        {/* Bouton Fermer */}
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-full p-2 hover:bg-stone-100"
+          aria-label="Fermer"
+        >
+          <X className="h-6 w-6 text-stone-600" />
+        </button>
+
+        {/* Titre */}
+        <h2 className="mb-6 font-playfair text-3xl font-bold text-[#1c1917]">
+          Devenir École Partenaire
+        </h2>
+        <p className="mb-8 font-outfit text-stone-600">
+          Rejoignez le réseau Safe Zone et sécurisez les sorties de votre établissement.
+        </p>
+
+        {/* Formulaire */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Nom Établissement */}
+            <div>
+              <label className="mb-2 block font-outfit text-sm font-semibold text-stone-700">
+                Nom de l'établissement *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.etablissement}
+                onChange={(e) => setFormData({ ...formData, etablissement: e.target.value })}
+                className="w-full rounded-lg border border-stone-300 px-4 py-3 font-outfit focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+              />
+            </div>
+
+            {/* Type */}
+            <div>
+              <label className="mb-2 block font-outfit text-sm font-semibold text-stone-700">
+                Type *
+              </label>
+              <select
+                required
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                className="w-full rounded-lg border border-stone-300 px-4 py-3 font-outfit focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+              >
+                <option value="ecole">École</option>
+                <option value="garderie">Garderie</option>
+                <option value="creche">Crèche</option>
+              </select>
+            </div>
+
+            {/* Nom Responsable */}
+            <div>
+              <label className="mb-2 block font-outfit text-sm font-semibold text-stone-700">
+                Nom du responsable *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.responsable}
+                onChange={(e) => setFormData({ ...formData, responsable: e.target.value })}
+                className="w-full rounded-lg border border-stone-300 px-4 py-3 font-outfit focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+              />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="mb-2 block font-outfit text-sm font-semibold text-stone-700">
+                Email *
+              </label>
+              <input
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full rounded-lg border border-stone-300 px-4 py-3 font-outfit focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+              />
+            </div>
+
+            {/* Téléphone */}
+            <div>
+              <label className="mb-2 block font-outfit text-sm font-semibold text-stone-700">
+                Téléphone *
+              </label>
+              <input
+                type="tel"
+                required
+                value={formData.telephone}
+                onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
+                className="w-full rounded-lg border border-stone-300 px-4 py-3 font-outfit focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+              />
+            </div>
+
+            {/* Ville */}
+            <div>
+              <label className="mb-2 block font-outfit text-sm font-semibold text-stone-700">
+                Ville *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.ville}
+                onChange={(e) => setFormData({ ...formData, ville: e.target.value })}
+                className="w-full rounded-lg border border-stone-300 px-4 py-3 font-outfit focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+              />
+            </div>
+
+            {/* Nombre d'élèves */}
+            <div className="md:col-span-2">
+              <label className="mb-2 block font-outfit text-sm font-semibold text-stone-700">
+                Nombre d'élèves approximatif
+              </label>
+              <input
+                type="number"
+                value={formData.nombreEleves}
+                onChange={(e) => setFormData({ ...formData, nombreEleves: e.target.value })}
+                className="w-full rounded-lg border border-stone-300 px-4 py-3 font-outfit focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+              />
+            </div>
+
+            {/* Message */}
+            <div className="md:col-span-2">
+              <label className="mb-2 block font-outfit text-sm font-semibold text-stone-700">
+                Message (optionnel)
+              </label>
+              <textarea
+                rows={4}
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                className="w-full rounded-lg border border-stone-300 px-4 py-3 font-outfit focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200"
+              />
+            </div>
+          </div>
+
+          {/* Bouton Submit */}
+          <button
+            type="submit"
+            className="w-full rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-8 py-4 font-outfit text-lg font-semibold text-white shadow-lg shadow-orange-500/30 transition-all hover:scale-105 hover:shadow-orange-500/50"
+          >
+            Envoyer la demande
+          </button>
+        </form>
+      </motion.div>
+    </div>
+  );
 }
 
 const testimonials: Testimonial[] = [
@@ -209,7 +389,12 @@ export default function LandingPage() {
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
+  // État modal partenaire
+  const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
+
   return (
+    <>
+      <PartnershipModal isOpen={isPartnerModalOpen} onClose={() => setIsPartnerModalOpen(false)} />
     <div className="overflow-x-hidden bg-[#FAFAF9]">
       {/* SECTION 1: HERO ÉMOTIONNEL */}
       <section ref={heroRef} className="relative h-screen overflow-hidden">
@@ -263,19 +448,29 @@ export default function LandingPage() {
             Un lien invisible qui veille sur lui quand vos yeux ne le peuvent pas.
           </motion.p>
 
-          {/* CTA Principal */}
+          {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 1.4 }}
-            className="mt-10"
+            className="mt-10 flex flex-wrap items-center gap-4"
           >
+            {/* Bouton Principal - Activer */}
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-8 py-4 font-outfit text-lg font-semibold text-white shadow-2xl shadow-orange-500/30 transition-all hover:scale-105 hover:shadow-orange-500/50"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-8 py-4 font-outfit text-base font-semibold text-white shadow-2xl shadow-orange-500/30 transition-all hover:scale-105 hover:shadow-orange-500/50"
             >
               <Shield className="h-5 w-5" aria-hidden="true" />
               Activer sa protection
+            </Link>
+
+            {/* Bouton Secondaire - Commander */}
+            <Link
+              href="#commander"
+              className="inline-flex items-center gap-2 rounded-full border-2 border-orange-500 bg-transparent px-8 py-4 font-outfit text-base font-semibold text-white backdrop-blur-sm transition-all hover:bg-orange-500/10 hover:scale-105"
+            >
+              <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+              Commander un bracelet
             </Link>
           </motion.div>
         </div>
@@ -319,14 +514,14 @@ export default function LandingPage() {
       </div>
 
       {/* PHASE 12: TRUST BAR - Bandeau Institutionnel Défilant */}
-      <section className="relative z-10 overflow-hidden bg-stone-50/50 px-4 py-8">
+      <section className="relative z-10 overflow-hidden bg-gradient-to-b from-stone-100 to-stone-50 px-4 py-10">
         <div className="mx-auto max-w-6xl">
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-stone-400"
+            className="mb-8 text-center text-sm font-bold uppercase tracking-widest text-stone-700 drop-shadow-sm"
           >
             Conçu selon les standards de sécurité et de protection
           </motion.p>
@@ -640,7 +835,7 @@ export default function LandingPage() {
       </section>
 
       {/* INSERTION B: IA BIENVEILLANTE */}
-      <section className="relative z-10 overflow-hidden bg-gradient-to-br from-white via-blue-50/20 to-violet-50/30 px-4 py-20 sm:py-32">
+      <section className="relative z-10 overflow-hidden bg-gradient-to-br from-blue-50 via-violet-50 to-purple-50 px-4 py-20 sm:py-32">
         <div className="mx-auto max-w-5xl">
           <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
             {/* Image Shield IA au centre */}
@@ -704,10 +899,10 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.1 }}
-                className="font-playfair text-3xl font-bold text-[#1c1917] sm:text-4xl md:text-5xl"
+                className="font-playfair text-4xl font-bold text-[#1c1917] drop-shadow-sm sm:text-5xl md:text-6xl"
               >
                 Plus qu'un bracelet.{' '}
-                <span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-blue-700 to-violet-700 bg-clip-text text-transparent drop-shadow-md">
                   Une Intelligence qui veille.
                 </span>
               </motion.h2>
@@ -717,9 +912,9 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="mt-6 font-outfit text-lg leading-relaxed text-[#44403c] sm:text-xl"
+                className="mt-6 font-outfit text-xl font-medium leading-relaxed text-[#292524] drop-shadow-sm sm:text-2xl"
               >
-                Propulsé par une <span className="font-semibold text-violet-700">IA</span> qui assiste les secouristes.
+                Propulsé par une <span className="font-bold text-violet-700">IA</span> qui assiste les secouristes.
               </motion.p>
 
               {/* Points Clés avec Étoiles */}
@@ -800,6 +995,8 @@ export default function LandingPage() {
               <source src="/landing/product-demo.mp4" type="video/mp4" />
               Votre navigateur ne supporte pas la vidéo HTML5.
             </video>
+            {/* Overlay pour masquer le logo Gemini en bas à droite */}
+            <div className="absolute bottom-0 right-0 h-20 w-32 bg-stone-900" />
           </motion.div>
 
           {/* Grid Features */}
@@ -900,9 +1097,9 @@ export default function LandingPage() {
             </p>
             <Link
               href="/login"
-              className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-10 py-5 font-outfit text-xl font-bold text-white shadow-2xl shadow-orange-500/50 transition-all hover:scale-105 hover:shadow-orange-500/70"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-8 py-4 font-outfit text-base font-semibold text-white shadow-2xl shadow-orange-500/50 transition-all hover:scale-105 hover:shadow-orange-500/70"
             >
-              <Shield className="h-6 w-6" strokeWidth={2.5} aria-hidden="true" />
+              <Shield className="h-5 w-5" aria-hidden="true" />
               Activer sa protection maintenant
             </Link>
           </motion.div>
@@ -940,13 +1137,13 @@ export default function LandingPage() {
             </p>
 
             {/* CTA Secondaire */}
-            <Link
-              href="/ecoles-partenaires"
+            <button
+              onClick={() => setIsPartnerModalOpen(true)}
               className="group inline-flex items-center gap-2 font-outfit text-lg font-semibold text-orange-700 underline decoration-2 underline-offset-4 transition-colors hover:text-orange-800"
             >
               Devenir École Partenaire
               <span className="transition-transform group-hover:translate-x-1">→</span>
-            </Link>
+            </button>
           </motion.div>
         </div>
       </section>
@@ -1093,5 +1290,6 @@ export default function LandingPage() {
         </Link>
       </motion.div>
     </div>
+    </>
   );
 }
