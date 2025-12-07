@@ -445,13 +445,13 @@ function DashboardCarouselSection() {
 
                 {/* Carrousel d'images à l'intérieur */}
                 <div className="relative aspect-[9/19.5] overflow-hidden bg-white">
-                  <AnimatePresence mode="wait">
+                  <AnimatePresence initial={false}>
                     <motion.div
                       key={currentSlide}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.5 }}
+                      transition={{ duration: 0.8, ease: 'easeInOut' }}
                       className="absolute inset-0"
                     >
                       <Image
@@ -741,7 +741,7 @@ export default function LandingPage() {
             alt="Mère tenant son enfant dans ses bras"
             fill
             sizes="100vw"
-            className="object-cover"
+            className="object-cover scale-[0.85]"
             priority
             quality={90}
           />
@@ -997,18 +997,20 @@ export default function LandingPage() {
                   repeat: Infinity,
                   ease: 'easeInOut',
                 }}
-                className="relative aspect-square w-full"
+                className="relative aspect-square w-full overflow-hidden rounded-3xl bg-gradient-to-br from-amber-50 to-orange-50 p-8 shadow-xl shadow-orange-100/50"
               >
-                <Image
-                  src="/landing/shield-protection-3d.png"
-                  alt="Bouclier de protection 3D"
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                  className="object-contain"
-                  loading="lazy"
-                />
-                {/* Overlay subtil pour masquer le logo Gemini en bas à droite */}
-                <div className="absolute bottom-0 right-0 h-[40px] w-[60px] bg-gradient-to-tl from-white via-white/70 to-transparent" />
+                <div className="relative h-full w-full">
+                  <Image
+                    src="/landing/shield-protection-3d.png"
+                    alt="Bouclier de protection 3D"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                    className="object-contain drop-shadow-2xl"
+                    loading="lazy"
+                  />
+                  {/* Overlay subtil pour masquer le logo Gemini en bas à droite */}
+                  <div className="absolute bottom-0 right-0 h-[50px] w-[70px] bg-gradient-to-tl from-orange-50 via-amber-50/80 to-transparent" />
+                </div>
               </motion.div>
             </motion.div>
 
@@ -1372,7 +1374,7 @@ export default function LandingPage() {
                   transition={{ delay: 1.2, type: 'spring' }}
                   className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 font-outfit text-sm font-bold text-white shadow-lg"
                 >
-                  🏥 Certifié Médical
+                  🏥 Validé Médical
                 </motion.div>
                 {/* Label */}
                 <div className="mt-4 text-center">
