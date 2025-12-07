@@ -292,9 +292,9 @@ function DashboardCarouselSection() {
     },
     {
       src: '/landing/showcase/dashboard/dashboard-home (2).jpg',
-      alt: 'Dashboard - Navigation',
-      title: 'Navigation fluide',
-      description: 'Interface intuitive et rapide',
+      alt: 'Dashboard - Carte d\'identité enfant',
+      title: 'Sa propre carte d\'identité',
+      description: 'Il n\'est plus un inconnu. Chaque enfant a son identité numérique sécurisée.',
     },
   ];
 
@@ -445,6 +445,12 @@ function DashboardCarouselSection() {
 
                 {/* Carrousel d'images à l'intérieur */}
                 <div className="relative aspect-[9/19.5] overflow-hidden bg-white">
+                  {/* Titre SecureID en haut à gauche */}
+                  <div className="absolute left-4 top-8 z-20 flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-orange-600" aria-hidden="true" />
+                    <span className="font-playfair text-lg font-bold text-gray-900">SecureID</span>
+                  </div>
+
                   <AnimatePresence initial={false}>
                     <motion.div
                       key={currentSlide}
@@ -1010,6 +1016,8 @@ export default function LandingPage() {
                   />
                   {/* Overlay subtil pour masquer le logo Gemini en bas à droite */}
                   <div className="absolute bottom-0 right-0 h-[50px] w-[70px] bg-gradient-to-tl from-orange-50 via-amber-50/80 to-transparent" />
+                  {/* Bloc de 5px pour masquer précisément le logo */}
+                  <div className="absolute bottom-0 right-0 h-[5px] w-[5px] bg-orange-50" />
                 </div>
               </motion.div>
             </motion.div>
