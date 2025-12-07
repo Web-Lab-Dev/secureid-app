@@ -1014,10 +1014,8 @@ export default function LandingPage() {
                     className="object-contain drop-shadow-2xl"
                     loading="lazy"
                   />
-                  {/* Overlay subtil pour masquer le logo Gemini en bas à droite */}
-                  <div className="absolute bottom-0 right-0 h-[50px] w-[70px] bg-gradient-to-tl from-orange-50 via-amber-50/80 to-transparent" />
-                  {/* Bloc de 5px pour masquer précisément le logo */}
-                  <div className="absolute bottom-0 right-0 h-[5px] w-[5px] bg-orange-50" />
+                  {/* Masque logo Gemini en bas à droite */}
+                  <div className="absolute bottom-0 right-0 h-[100px] w-[150px] bg-gradient-to-tl from-orange-50 via-amber-50/90 to-transparent" />
                 </div>
               </motion.div>
             </motion.div>
@@ -1215,8 +1213,8 @@ export default function LandingPage() {
                   className="object-contain"
                   loading="lazy"
                 />
-                {/* Masque logo Gemini 5px en bas à droite */}
-                <div className="absolute bottom-0 right-0 h-[5px] w-[5px] bg-purple-50" />
+                {/* Masque logo Gemini en bas à droite */}
+                <div className="absolute bottom-0 right-0 h-[80px] w-[120px] bg-gradient-to-tl from-purple-50 via-violet-50/90 to-transparent" />
 
                 {/* Effet de brillance IA */}
                 <motion.div
