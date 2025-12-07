@@ -1208,13 +1208,16 @@ export default function LandingPage() {
                 className="relative aspect-square w-full max-w-md mx-auto"
               >
                 <Image
-                  src="/landing/shield-protection-3d.png"
+                  src="/landing/section-ia.png"
                   alt="Intelligence Artificielle SecureID - Protection bienveillante"
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-contain"
                   loading="lazy"
                 />
+                {/* Masque logo Gemini 5px en bas à droite */}
+                <div className="absolute bottom-0 right-0 h-[5px] w-[5px] bg-purple-50" />
+
                 {/* Effet de brillance IA */}
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-tr from-blue-400/20 via-purple-400/10 to-transparent rounded-full blur-3xl"
