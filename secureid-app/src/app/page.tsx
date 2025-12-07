@@ -4,7 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Shield, Heart, Radio, User, Phone, CloudOff, ShieldCheck, GraduationCap, Star, Sparkles, Battery, Droplet, Building2, ChevronLeft, ChevronRight, Mail, Linkedin, Facebook, Github, MessageCircle, ShoppingCart, X } from 'lucide-react';
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import HeroSection from '@/components/landing/HeroSection';
+import TrustBar from '@/components/landing/TrustBar';
+import ProblemSolutionSection from '@/components/landing/ProblemSolutionSection';
 
 /**
  * PHASE 10 - LANDING PAGE ÉMOTIONNELLE "WARM & SAFE"
@@ -721,8 +724,6 @@ function TestimonialsCarousel() {
 }
 
 export default function LandingPage() {
-  const heroRef = useRef<HTMLDivElement>(null);
-
   // État modal partenaire
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
 
@@ -730,246 +731,9 @@ export default function LandingPage() {
     <>
       <PartnershipModal isOpen={isPartnerModalOpen} onClose={() => setIsPartnerModalOpen(false)} />
     <div className="overflow-x-hidden bg-[#FAFAF9]">
-      {/* SECTION 1: HERO ÉMOTIONNEL */}
-      <section ref={heroRef} className="relative h-screen overflow-hidden">
-        {/* Image de fond FIXE (parallax) */}
-        <div className="fixed inset-0 h-screen w-full">
-          <Image
-            src="/landing/hero-mother-child.webp"
-            alt="Mère tenant son enfant dans ses bras"
-            fill
-            sizes="100vw"
-            className="object-cover"
-            priority
-            quality={90}
-          />
-          {/* Overlay gradient pour lisibilité */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/50" />
-        </div>
-
-        {/* Titre animé mot par mot */}
-        <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
-          <motion.h1
-            className="font-playfair text-4xl font-bold leading-tight text-white drop-shadow-2xl sm:text-5xl md:text-6xl lg:text-7xl"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            <motion.span
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="block"
-            >
-              Parce qu'il est
-            </motion.span>
-            <motion.span
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-              className="block bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent"
-            >
-              votre monde.
-            </motion.span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.1 }}
-            className="mt-6 max-w-2xl font-outfit text-lg text-white/95 drop-shadow-lg sm:text-xl"
-          >
-            Un lien invisible qui veille sur lui quand vos yeux ne le peuvent pas.
-          </motion.p>
-
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.4 }}
-            className="mt-10 flex flex-wrap items-center gap-4"
-          >
-            {/* Bouton Principal - Activer */}
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-8 py-4 font-outfit text-base font-semibold text-white shadow-2xl shadow-orange-500/30 transition-all hover:scale-105 hover:shadow-orange-500/50"
-            >
-              <Shield className="h-5 w-5" aria-hidden="true" />
-              Activer sa protection
-            </Link>
-
-            {/* Bouton Secondaire - Commander */}
-            <Link
-              href="#commander"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-orange-500 bg-transparent px-8 py-4 font-outfit text-base font-semibold text-white backdrop-blur-sm transition-all hover:bg-orange-500/10 hover:scale-105"
-            >
-              <ShoppingCart className="h-5 w-5" aria-hidden="true" />
-              Commander un bracelet
-            </Link>
-          </motion.div>
-        </div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2, duration: 1 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          aria-label="Faites défiler vers le bas pour découvrir SecureID"
-          role="img"
-        >
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="h-8 w-5 rounded-full border-2 border-orange-400/50"
-            aria-hidden="true"
-          >
-            <motion.div
-              animate={{ y: [0, 12, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="mx-auto mt-1 h-2 w-1 rounded-full bg-orange-400"
-            />
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* Transition SVG Wave */}
-      <div className="relative z-10 -mt-1">
-        <svg
-          viewBox="0 0 1440 120"
-          className="w-full text-[#FAFAF9]"
-          preserveAspectRatio="none"
-        >
-          <path
-            fill="currentColor"
-            d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"
-          />
-        </svg>
-      </div>
-
-      {/* PHASE 12: TRUST BAR - Bandeau Institutionnel Défilant */}
-      <section className="relative z-10 overflow-hidden bg-gradient-to-b from-stone-100 to-stone-50 px-4 py-10">
-        <div className="mx-auto max-w-6xl">
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="mb-8 text-center text-sm font-bold uppercase tracking-widest text-stone-700 drop-shadow-sm"
-          >
-            Conçu selon les standards de sécurité et de protection
-          </motion.p>
-
-          {/* Bandeau défilant infini */}
-          <div className="relative overflow-hidden">
-            <motion.div
-              animate={{ x: [0, -1000] }}
-              transition={{
-                duration: 20,
-                repeat: Infinity,
-                ease: 'linear',
-              }}
-              className="flex items-center gap-12 whitespace-nowrap"
-            >
-              {/* Premier set de logos */}
-              {[...Array(3)].map((_, setIndex) => (
-                <div key={setIndex} className="flex items-center gap-12">
-                  {/* Logo CIL */}
-                  <div
-                    className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
-                    title="Commission de l'Informatique et des Libertés"
-                  >
-                    <ShieldCheck className="h-10 w-10 text-stone-700" aria-hidden="true" />
-                    <span className="text-xs font-medium text-stone-600">CIL</span>
-                  </div>
-
-                  {/* Logo BNSP */}
-                  <div
-                    className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
-                    title="Brigade Nationale de Sapeurs-Pompiers"
-                  >
-                    <Shield className="h-10 w-10 text-stone-700" aria-hidden="true" />
-                    <span className="text-xs font-medium text-stone-600">BNSP</span>
-                  </div>
-
-                  {/* Logo Ministère */}
-                  <div
-                    className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
-                    title="Ministère de la Famille - Protection de l'Enfance"
-                  >
-                    <Building2 className="h-10 w-10 text-stone-700" aria-hidden="true" />
-                    <span className="text-xs font-medium text-stone-600">Min. Famille</span>
-                  </div>
-
-                  {/* Logo Standards Médicaux */}
-                  <div
-                    className="flex items-center gap-2 grayscale opacity-50 transition-opacity hover:opacity-70"
-                    title="Standards Médicaux Certifiés"
-                  >
-                    <Heart className="h-10 w-10 text-stone-700" aria-hidden="true" />
-                    <span className="text-xs font-medium text-stone-600">Standards Médicaux</span>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* INSERTION A: RÉALITÉ vs SÉRÉNITÉ */}
-      <section className="relative z-10 bg-white px-4 py-20 sm:py-32">
-        <div className="mx-auto max-w-5xl">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-12 text-center font-playfair text-3xl font-bold text-[#1c1917] sm:text-4xl"
-          >
-            Pourquoi c'est vital ?
-          </motion.h2>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* Carte Problème - Gris */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="rounded-2xl bg-stone-100 p-8"
-            >
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-stone-200">
-                <CloudOff className="h-8 w-8 text-stone-600" strokeWidth={2} aria-hidden="true" />
-              </div>
-              <h3 className="mb-4 font-playfair text-2xl font-bold text-[#1c1917]">
-                L'Incertitude
-              </h3>
-              <p className="font-outfit leading-relaxed text-[#44403c]">
-                Dehors, le lien est rompu. En cas de malaise ou d'égarement, les secours ne savent pas qui il est, ni qui appeler. Chaque minute de silence est une angoisse.
-              </p>
-            </motion.div>
-
-            {/* Carte Solution - Orange */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="rounded-2xl border-2 border-orange-300 bg-orange-50 p-8"
-            >
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-orange-500">
-                <ShieldCheck className="h-8 w-8 text-white" strokeWidth={2} aria-hidden="true" />
-              </div>
-              <h3 className="mb-4 font-playfair text-2xl font-bold text-[#1c1917]">
-                La Réponse Immédiate
-              </h3>
-              <p className="font-outfit leading-relaxed text-[#44403c]">
-                Il est identifié en 2 secondes. Le médecin accède à ses allergies. Vous recevez son emplacement GPS instantanément.{' '}
-                <span className="font-semibold text-orange-700">Le silence est brisé.</span>
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      <HeroSection />
+      <TrustBar />
+      <ProblemSolutionSection />
 
       {/* PHASE 13 - SHOWCASE 1: DASHBOARD PARENT (Carrousel Auto-Défilant) */}
       <DashboardCarouselSection />
