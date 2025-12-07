@@ -146,11 +146,11 @@ export function DashboardPageClient() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Mes Enfants</h1>
+          <h1 className="text-3xl font-bold text-white">Ma Famille</h1>
           <p className="mt-2 text-slate-400">
             {profiles.length === 0
-              ? 'Aucun profil enregistré'
-              : `${profiles.length} profil${profiles.length > 1 ? 's' : ''} enregistré${profiles.length > 1 ? 's' : ''}`}
+              ? 'Aucun enfant protégé'
+              : `${profiles.length} enfant${profiles.length > 1 ? 's' : ''} protégé${profiles.length > 1 ? 's' : ''}`}
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export function DashboardPageClient() {
           className="flex items-center gap-2 rounded-lg bg-brand-orange px-4 py-2 font-semibold text-white transition-colors hover:bg-brand-orange/90"
         >
           <Plus className="h-5 w-5" />
-          Ajouter une Unité
+          Protéger un autre enfant
         </Link>
       </div>
 

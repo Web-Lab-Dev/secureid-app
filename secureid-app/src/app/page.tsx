@@ -340,15 +340,15 @@ function DashboardCarouselSection() {
 
             {/* Titre */}
             <h2 className="mb-6 font-playfair text-4xl font-bold text-[#1c1917] sm:text-5xl lg:text-6xl">
-              Tout votre univers,{' '}
+              Veillez sur eux,{' '}
               <span className="bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-                au bout du doigt.
+                d'un simple regard.
               </span>
             </h2>
 
             {/* Sous-titre */}
             <p className="mb-10 font-outfit text-lg leading-relaxed text-[#57534e] sm:text-xl">
-              Gérez les profils, les tuteurs et les alertes de toute la famille depuis une interface unique.
+              Ajoutez une allergie, validez une nounou ou consultez un vaccin. Vous avez le super-pouvoir de tout gérer depuis votre poche.
             </p>
 
             {/* Arguments Clés */}
@@ -366,10 +366,10 @@ function DashboardCarouselSection() {
                 </div>
                 <div>
                   <h4 className="mb-1 font-outfit font-semibold text-[#1c1917]">
-                    Gestion Multi-Enfants
+                    Toute la famille, réunie.
                   </h4>
                   <p className="font-outfit text-sm text-[#57534e]">
-                    Ajoutez autant de bracelets que nécessaire. Chaque profil est distinct et sécurisé.
+                    Hamadou, Malick, Emilie... Chaque enfant a sa carte, sa photo et ses protections spécifiques. Ajoutez un nouveau bracelet en 3 secondes.
                   </p>
                 </div>
               </motion.div>
@@ -387,10 +387,10 @@ function DashboardCarouselSection() {
                 </div>
                 <div>
                   <h4 className="mb-1 font-outfit font-semibold text-[#1c1917]">
-                    Mise à jour temps réel
+                    Une modification ? C'est immédiat.
                   </h4>
                   <p className="font-outfit text-sm text-[#57534e]">
-                    Une allergie découverte ? Modifiez la fiche instantanément, elle est synchronisée.
+                    Une nouvelle allergie découverte ? Mettez à jour sa fiche. La seconde d'après, le bracelet est à jour. Pas besoin d'en racheter un.
                   </p>
                 </div>
               </motion.div>
@@ -408,10 +408,10 @@ function DashboardCarouselSection() {
                 </div>
                 <div>
                   <h4 className="mb-1 font-outfit font-semibold text-[#1c1917]">
-                    Coffre-fort sécurisé
+                    Vos secrets sont bien gardés.
                   </h4>
                   <p className="font-outfit text-sm text-[#57534e]">
-                    Définissez vos codes PIN Médecin et École. Vous seul contrôlez l'accès.
+                    Vous seul détenez les clés (Codes PIN) pour ouvrir le carnet de santé ou valider les sorties d'école. C'est votre jardin secret.
                   </p>
                 </div>
               </motion.div>

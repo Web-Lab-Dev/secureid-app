@@ -160,13 +160,13 @@ export function ProfileCard({
             Modifier le Profil
           </button>
 
-          {/* Bouton 2: Gérer Dossier Médical */}
+          {/* Bouton 2: Son Carnet de Santé */}
           <button
             onClick={onManageMedical}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-orange px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-orange/90"
           >
             <FileHeart className="h-4 w-4" />
-            Gérer Dossier Médical
+            Son Carnet de Santé
           </button>
 
           {/* Bouton 3: Portail Scolaire */}
