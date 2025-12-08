@@ -120,9 +120,14 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
     }
   };
 
-  const formatLocation = (lat: number | null, lng: number | null): string => {
-    if (!lat || !lng) return 'Localisation non disponible';
-    return `${lat.toFixed(4)}°, ${lng.toFixed(4)}°`;
+  const formatLocation = (scan: ScanDocument): string => {
+    if (scan.city && scan.country) {
+      return `${scan.city}, ${scan.country}`;
+    }
+    if (scan.lat && scan.lng) {
+      return `${scan.lat.toFixed(4)}°, ${scan.lng.toFixed(4)}°`;
+    }
+    return 'Localisation non disponible';
   };
 
   const getDeviceIcon = (deviceType?: string): string => {
@@ -208,7 +213,7 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
                         {/* Localisation */}
                         <div className="mt-2 flex items-center gap-2 text-sm text-slate-400">
                           <MapPin className="h-4 w-4" />
-                          <span>{formatLocation(scan.lat, scan.lng)}</span>
+                          <span>{formatLocation(scan)}</span>
                         </div>
 
                         {/* Appareil */}

@@ -234,8 +234,8 @@ export function NotificationsPageClient() {
                   </div>
 
                   {/* Localisation */}
-                  <div className="mt-2 flex items-center gap-2 text-sm text-slate-400">
-                    <MapPin className="h-4 w-4" />
+                  <div className="mt-2 flex items-center gap-2 text-sm text-slate-300">
+                    <MapPin className="h-4 w-4 text-brand-orange" />
                     <span>
                       {scan.city && scan.country
                         ? `${scan.city}, ${scan.country}`

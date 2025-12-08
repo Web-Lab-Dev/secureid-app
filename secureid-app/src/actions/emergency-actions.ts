@@ -181,6 +181,33 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
     // Parser le User Agent pour plus d'infos
     const deviceInfo = parseUserAgent(userAgent || '');
 
+    // Reverse geocoding : convertir GPS en ville/pays
+    let city: string | undefined;
+    let country: string | undefined;
+
+    if (geolocation?.lat && geolocation?.lng) {
+      try {
+        // Appeler notre API de geocoding
+        const geocodeResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/geocode`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lat: geolocation.lat,
+            lng: geolocation.lng,
+          }),
+        });
+
+        if (geocodeResponse.ok) {
+          const geocodeData = await geocodeResponse.json();
+          city = geocodeData.city;
+          country = geocodeData.country;
+        }
+      } catch (geocodeError) {
+        // Geocoding échoué - continuer sans ville/pays
+        logger.warn('Geocoding failed', { error: geocodeError });
+      }
+    }
+
     const scanData = {
       braceletId,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
@@ -190,6 +217,8 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
       deviceType: deviceInfo.deviceType,
       browser: deviceInfo.browser,
       os: deviceInfo.os,
+      city: city || null,
+      country: country || null,
       isRead: false, // Nouveau scan non lu par défaut
     };
 
