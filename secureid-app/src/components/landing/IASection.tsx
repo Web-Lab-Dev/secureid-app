@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Sparkles, Star } from 'lucide-react';
+import { fadeInUpVariants, fadeInLeftVariants, optimizedViewport, performanceClasses } from '@/lib/animations';
 
 export default function IASection() {
   return (
@@ -11,11 +12,11 @@ export default function IASection() {
         <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
           {/* Image Shield IA au centre */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.8 }}
-            className="relative w-full lg:w-1/2"
+            initial="hidden"
+            whileInView="visible"
+            viewport={optimizedViewport}
+            variants={fadeInUpVariants}
+            className={`relative w-full lg:w-1/2 ${performanceClasses.animatedElement}`}
           >
             <motion.div
               animate={{
@@ -58,22 +59,22 @@ export default function IASection() {
           {/* Texte et Points Clés */}
           <div className="w-full text-center lg:w-1/2 lg:text-left">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="mb-4 inline-flex items-center gap-2 rounded-full bg-violet-100 px-4 py-2"
+              initial="hidden"
+              whileInView="visible"
+              viewport={optimizedViewport}
+              variants={fadeInUpVariants}
+              className={`mb-4 inline-flex items-center gap-2 rounded-full bg-violet-100 px-4 py-2 ${performanceClasses.animatedElement}`}
             >
               <Sparkles className="h-5 w-5 text-violet-600" aria-hidden="true" />
               <span className="font-outfit text-sm font-semibold text-violet-700">Intelligence Artificielle</span>
             </motion.div>
 
             <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="font-playfair text-4xl font-bold text-[#1c1917] drop-shadow-sm sm:text-5xl md:text-6xl"
+              initial="hidden"
+              whileInView="visible"
+              viewport={optimizedViewport}
+              variants={fadeInUpVariants}
+              className={`font-playfair text-4xl font-bold text-[#1c1917] drop-shadow-sm sm:text-5xl md:text-6xl ${performanceClasses.animatedElement}`}
             >
               Plus qu'un bracelet.{' '}
               <span className="bg-gradient-to-r from-blue-700 to-violet-700 bg-clip-text text-transparent drop-shadow-md">
@@ -82,11 +83,11 @@ export default function IASection() {
             </motion.h2>
 
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="mt-6 font-outfit text-xl font-medium leading-relaxed text-[#292524] drop-shadow-sm sm:text-2xl"
+              initial="hidden"
+              whileInView="visible"
+              viewport={optimizedViewport}
+              variants={fadeInUpVariants}
+              className={`mt-6 font-outfit text-xl font-medium leading-relaxed text-[#292524] drop-shadow-sm sm:text-2xl ${performanceClasses.animatedElement}`}
             >
               Propulsé par une <span className="font-bold text-violet-700">IA</span> qui assiste les secouristes.
             </motion.p>
@@ -94,11 +95,11 @@ export default function IASection() {
             {/* Points Clés avec Étoiles */}
             <div className="mt-8 space-y-4">
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="flex items-start gap-3"
+                initial="hidden"
+                whileInView="visible"
+                viewport={optimizedViewport}
+                variants={fadeInLeftVariants}
+                className={`flex items-start gap-3 ${performanceClasses.animatedElement}`}
               >
                 <Star className="mt-1 h-6 w-6 flex-shrink-0 fill-amber-400 text-amber-400" aria-hidden="true" />
                 <div>
@@ -110,11 +111,11 @@ export default function IASection() {
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="flex items-start gap-3"
+                initial="hidden"
+                whileInView="visible"
+                viewport={optimizedViewport}
+                variants={fadeInLeftVariants}
+                className={`flex items-start gap-3 ${performanceClasses.animatedElement}`}
               >
                 <Star className="mt-1 h-6 w-6 flex-shrink-0 fill-amber-400 text-amber-400" aria-hidden="true" />
                 <div>
