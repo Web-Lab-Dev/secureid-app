@@ -50,6 +50,9 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
           const scansData = scansSnap.docs.map((doc) => doc.data() as ScanDocument);
 
           setScans(scansData);
+
+          // Marquer tous les scans comme lus
+          await markScansAsRead(scansSnap.docs);
         } catch (indexError: any) {
           // Fallback sans orderBy si l'index n'existe pas
           console.warn('Index Firestore manquant, fallback sans orderBy:', indexError);
