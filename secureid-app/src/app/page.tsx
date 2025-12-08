@@ -4,13 +4,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Shield, Heart, Radio, User, Phone, Battery, Droplet, Building2, ChevronLeft, ChevronRight, Mail, Linkedin, Facebook, Github, MessageCircle, Sparkles, ShieldCheck, X } from 'lucide-react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import HeroSection from '@/components/landing/HeroSection';
 import TrustBar from '@/components/landing/TrustBar';
-import ProblemSolutionSection from '@/components/landing/ProblemSolutionSection';
-import ShieldSection from '@/components/landing/ShieldSection';
-import FeaturesSection from '@/components/landing/FeaturesSection';
-import IASection from '@/components/landing/IASection';
+
+// Lazy loading des sections non-critiques pour optimiser le bundle initial
+const ProblemSolutionSection = lazy(() => import('@/components/landing/ProblemSolutionSection'));
+const ShieldSection = lazy(() => import('@/components/landing/ShieldSection'));
+const FeaturesSection = lazy(() => import('@/components/landing/FeaturesSection'));
+const IASection = lazy(() => import('@/components/landing/IASection'));
 
 /**
  * PHASE 10 - LANDING PAGE ÉMOTIONNELLE "WARM & SAFE"
@@ -736,14 +738,18 @@ export default function LandingPage() {
     <div className="overflow-x-hidden bg-[#FAFAF9]">
       <HeroSection />
       <TrustBar />
-      <ProblemSolutionSection />
 
-      {/* PHASE 13 - SHOWCASE 1: DASHBOARD PARENT (Carrousel Auto-Défilant) */}
-      <DashboardCarouselSection />
+      {/* Lazy loading des sections non-critiques avec Suspense */}
+      <Suspense fallback={<div className="h-screen w-full bg-white" />}>
+        <ProblemSolutionSection />
 
-      <ShieldSection />
-      <FeaturesSection />
-      <IASection />
+        {/* PHASE 13 - SHOWCASE 1: DASHBOARD PARENT (Carrousel Auto-Défilant) */}
+        <DashboardCarouselSection />
+
+        <ShieldSection />
+        <FeaturesSection />
+        <IASection />
+      </Suspense>
 
       {/* PHASE 13 - SHOWCASE 2: PORTAIL SECOURISTE */}
       <section className="relative z-10 overflow-hidden bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 px-4 py-20 sm:py-32">
