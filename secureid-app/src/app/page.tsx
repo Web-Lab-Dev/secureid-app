@@ -104,12 +104,12 @@ function PartnershipModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm overflow-y-auto py-4 px-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-8 shadow-2xl"
+        className="relative my-auto w-full max-w-2xl rounded-2xl bg-white p-6 sm:p-8 shadow-2xl max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-y-auto"
       >
         {/* Bouton Fermer */}
         <button
@@ -121,16 +121,16 @@ function PartnershipModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         </button>
 
         {/* Titre */}
-        <h2 className="mb-6 font-playfair text-3xl font-bold text-[#1c1917]">
+        <h2 className="mb-4 sm:mb-6 font-playfair text-2xl sm:text-3xl font-bold text-[#1c1917]">
           Devenir École Partenaire
         </h2>
-        <p className="mb-8 font-outfit text-stone-600">
+        <p className="mb-4 sm:mb-6 font-outfit text-sm sm:text-base text-stone-600">
           Rejoignez le réseau Safe Zone et sécurisez les sorties de votre établissement.
         </p>
 
         {/* Formulaire */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
             {/* Nom Établissement */}
             <div>
               <label className="mb-2 block font-outfit text-sm font-semibold text-stone-700">
