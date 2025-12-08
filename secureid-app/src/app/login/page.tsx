@@ -200,10 +200,9 @@ export default function LoginPage() {
             </p>
             <button
               onClick={() => setShowScanner(true)}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-brand-orange bg-brand-orange/10 py-3 font-semibold text-brand-orange transition-all hover:bg-brand-orange/20"
+              className="mt-2 inline-block text-brand-orange transition-colors hover:text-orange-400"
             >
-              <Camera className="h-5 w-5" />
-              Scannez un bracelet pour activer
+              Scannez un bracelet pour activer →
             </button>
           </div>
         </div>
