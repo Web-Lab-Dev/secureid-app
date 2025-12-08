@@ -59,7 +59,7 @@ export function DashboardNav() {
             </Link>
 
             <Link
-              href="/dashboard/account"
+              href="/dashboard"
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
             >
               <User className="h-4 w-4" />

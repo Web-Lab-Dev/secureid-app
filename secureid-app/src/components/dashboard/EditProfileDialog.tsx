@@ -4,12 +4,12 @@ import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, Save, Upload, User, Loader2 } from 'lucide-react';
+import { X, Save, Upload, User, Loader2, Calendar } from 'lucide-react';
 import Image from 'next/image';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Timestamp } from 'firebase/firestore';
 import { updateProfile } from '@/actions/profile-actions';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { uploadProfilePhoto } from '@/lib/storage-helpers';
 import type { ProfileDocument } from '@/types/profile';
 import { phoneSchema } from '@/schemas/activation';
 
@@ -22,6 +22,7 @@ import { phoneSchema } from '@/schemas/activation';
 
 const editProfileSchema = z.object({
   fullName: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
+  dateOfBirth: z.string().optional(),
   bloodType: z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'UNKNOWN']),
   allergies: z.string(),
   conditions: z.string(),
@@ -51,6 +52,17 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Convertir Timestamp Firebase en string YYYY-MM-DD pour l'input date
+  const formatDateForInput = (timestamp: any): string => {
+    if (!timestamp) return '';
+    try {
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      return date.toISOString().split('T')[0];
+    } catch {
+      return '';
+    }
+  };
+
   const {
     register,
     handleSubmit,
@@ -59,6 +71,7 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
     resolver: zodResolver(editProfileSchema),
     defaultValues: {
       fullName: profile.fullName,
+      dateOfBirth: formatDateForInput(profile.dateOfBirth),
       bloodType: profile.medicalInfo.bloodType,
       allergies: profile.medicalInfo.allergies.join(', '),
       conditions: profile.medicalInfo.conditions.join(', '),
@@ -104,12 +117,10 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
     try {
       let photoUrl = profile.photoUrl;
 
-      // Upload photo si changée
+      // Upload photo si changée (avec compression via storage-helpers)
       if (photoFile) {
         setIsUploadingPhoto(true);
-        const storageRef = ref(storage, `profiles/${profile.id}/${Date.now()}_${photoFile.name}`);
-        const uploadResult = await uploadBytes(storageRef, photoFile);
-        photoUrl = await getDownloadURL(uploadResult.ref);
+        photoUrl = await uploadProfilePhoto(photoFile, profile.id);
         setIsUploadingPhoto(false);
       }
 
@@ -127,10 +138,20 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
         .map((m) => m.trim())
         .filter((m) => m !== '');
 
+      // Convertir la date de naissance en Date JS (pas Timestamp)
+      let dateOfBirthDate: Date | null = null;
+      if (data.dateOfBirth) {
+        dateOfBirthDate = new Date(data.dateOfBirth);
+      } else if (profile.dateOfBirth) {
+        // Conserver la valeur existante si pas de changement
+        dateOfBirthDate = profile.dateOfBirth.toDate();
+      }
+
       const result = await updateProfile({
         profileId: profile.id,
         updates: {
           fullName: data.fullName,
+          dateOfBirth: dateOfBirthDate,
           photoUrl: photoUrl || undefined,
           bloodType: data.bloodType,
           allergies: allergiesArray,
@@ -259,6 +280,25 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
                   />
                   {errors.fullName && (
                     <p className="mt-1 text-sm text-red-500">{errors.fullName.message}</p>
+                  )}
+                </div>
+
+                {/* Date de naissance */}
+                <div className="sm:col-span-2">
+                  <label className="mb-2 block text-sm font-medium text-white">
+                    Date de naissance <span className="text-xs text-slate-400 ml-2">(L'âge s'affichera automatiquement)</span>
+                  </label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+                    <input
+                      {...register('dateOfBirth')}
+                      type="date"
+                      className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 pl-10 text-white focus:border-brand-orange focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  {errors.dateOfBirth && (
+                    <p className="mt-1 text-sm text-red-500">{errors.dateOfBirth.message}</p>
                   )}
                 </div>
 

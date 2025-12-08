@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { User, FileHeart, GraduationCap, Edit3, AlertCircle } from 'lucide-react';
+import { User, FileHeart, GraduationCap, Edit3, AlertCircle, History } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { getBraceletBadgeVariant, getBraceletStatusLabel } from '@/lib/bracelet-helpers';
 import { Card } from '@/components/ui/Card';
@@ -33,6 +33,7 @@ interface ProfileCardProps {
   onEditProfile?: () => void;
   onManageMedical?: () => void;
   onManageSchool?: () => void;
+  onViewScans?: () => void;
 }
 
 export function ProfileCard({
@@ -41,7 +42,8 @@ export function ProfileCard({
   onStatusChange,
   onEditProfile,
   onManageMedical,
-  onManageSchool
+  onManageSchool,
+  onViewScans
 }: ProfileCardProps) {
   const { user } = useAuthContext();
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
@@ -149,7 +151,7 @@ export function ProfileCard({
           </div>
         )}
 
-        {/* Boutons d'action - 3 sections séparées */}
+        {/* Boutons d'action - 4 sections séparées */}
         <div className="space-y-2">
           {/* Bouton 1: Modifier le Profil */}
           <button
@@ -176,6 +178,15 @@ export function ProfileCard({
           >
             <GraduationCap className="h-4 w-4" />
             Portail Scolaire
+          </button>
+
+          {/* Bouton 4: Historique des Scans */}
+          <button
+            onClick={onViewScans}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-500"
+          >
+            <History className="h-4 w-4" />
+            Historique des Scans
           </button>
         </div>
       </div>
