@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, Heart, Radio, User, Phone, Battery, Droplet, Building2, ChevronLeft, ChevronRight, Mail, Linkedin, Facebook, Github, MessageCircle, Sparkles, ShieldCheck, X } from 'lucide-react';
+import { Shield, Radio, User, Phone, Battery, Droplet, ChevronLeft, ChevronRight, Sparkles, ShieldCheck, X } from 'lucide-react';
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import HeroSection from '@/components/landing/HeroSection';
 import TrustBar from '@/components/landing/TrustBar';
@@ -13,6 +13,11 @@ const ProblemSolutionSection = lazy(() => import('@/components/landing/ProblemSo
 const ShieldSection = lazy(() => import('@/components/landing/ShieldSection'));
 const FeaturesSection = lazy(() => import('@/components/landing/FeaturesSection'));
 const IASection = lazy(() => import('@/components/landing/IASection'));
+const SecoursiteSection = lazy(() => import('@/components/landing/SecoursiteSection'));
+const CTASection = lazy(() => import('@/components/landing/CTASection'));
+const PartnershipSection = lazy(() => import('@/components/landing/PartnershipSection'));
+const Footer = lazy(() => import('@/components/landing/Footer'));
+const StickyBar = lazy(() => import('@/components/landing/StickyBar'));
 
 /**
  * PHASE 10 - LANDING PAGE ÉMOTIONNELLE "WARM & SAFE"
@@ -751,147 +756,9 @@ export default function LandingPage() {
         <IASection />
       </Suspense>
 
-      {/* PHASE 13 - SHOWCASE 2: PORTAIL SECOURISTE */}
-      <section className="relative z-10 overflow-hidden bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 px-4 py-20 sm:py-32">
-        <div className="mx-auto max-w-7xl">
-          {/* En-tête Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-16 text-center"
-          >
-            {/* Badge */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-red-500/20 px-4 py-2 backdrop-blur-sm">
-              <Heart className="h-5 w-5 text-red-400" aria-hidden="true" />
-              <span className="font-outfit text-sm font-semibold text-red-300">Interface Secouriste</span>
-            </div>
-
-            {/* Titre */}
-            <h2 className="mb-6 font-playfair text-4xl font-bold text-white sm:text-5xl lg:text-6xl">
-              Conçu pour{' '}
-              <span className="bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
-                l'efficacité absolue.
-              </span>
-            </h2>
-
-            {/* Sous-titre */}
-            <p className="mx-auto max-w-3xl font-outfit text-lg leading-relaxed text-slate-300 sm:text-xl">
-              Aucune friction. Aucune application à installer pour le secouriste.{' '}
-              <span className="font-semibold text-white">Juste l'essentiel.</span>
-            </p>
-          </motion.div>
-
-          {/* 3 Phones Overlap */}
-          <div className="relative mx-auto max-w-5xl">
-            <div className="flex items-center justify-center gap-4 md:gap-0">
-              {/* Phone 1 - Gauche (Alerte) */}
-              <motion.div
-                initial={{ opacity: 0, x: -100, rotateY: -15 }}
-                whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="relative z-10 w-64 md:w-80 md:-mr-16"
-                style={{ perspective: '1000px' }}
-              >
-                <PhoneMockup
-                  src="/landing/showcase/secouriste page/secouriste acceuil.jpg"
-                  alt="Alerte Vitale Secouriste"
-                  className="rotate-[-5deg] transform"
-                />
-                {/* Label */}
-                <div className="mt-4 text-center">
-                  <p className="font-outfit text-sm font-semibold text-red-400">Alerte Vitale</p>
-                  <p className="font-outfit text-xs text-slate-400">Infos médicales en 2s</p>
-                </div>
-              </motion.div>
-
-              {/* Phone 2 - Centre (IA Assistance) - Plus grand */}
-              <motion.div
-                initial={{ opacity: 0, y: 50, scale: 0.8 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                className="relative z-20 w-72 md:w-96"
-              >
-                <PhoneMockup
-                  src="/landing/showcase/secouriste page/secouriste ia.jpg"
-                  alt="IA Assistance Médicale"
-                  floatAnimation
-                  priority
-                />
-                {/* Badge "Certifié" */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 1.2, type: 'spring' }}
-                  className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 font-outfit text-sm font-bold text-white shadow-lg"
-                >
-                  🏥 Validé Médical
-                </motion.div>
-                {/* Label */}
-                <div className="mt-4 text-center">
-                  <p className="font-outfit text-sm font-semibold text-emerald-400">IA Bienveillante</p>
-                  <p className="font-outfit text-xs text-slate-400">Gestes vitaux guidés</p>
-                </div>
-              </motion.div>
-
-              {/* Phone 3 - Droite (GPS) */}
-              <motion.div
-                initial={{ opacity: 0, x: 100, rotateY: 15 }}
-                whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                className="relative z-10 w-64 md:w-80 md:-ml-16"
-                style={{ perspective: '1000px' }}
-              >
-                <PhoneMockup
-                  src="/landing/showcase/secouriste page/send position.jpg"
-                  alt="GPS et WhatsApp Parents"
-                  className="rotate-[5deg] transform"
-                />
-                {/* Label */}
-                <div className="mt-4 text-center">
-                  <p className="font-outfit text-sm font-semibold text-blue-400">GPS WhatsApp</p>
-                  <p className="font-outfit text-xs text-slate-400">Contact immédiat</p>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Stats Bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.8 }}
-            className="mt-20 grid gap-8 sm:grid-cols-3"
-          >
-            {/* Stat 1 */}
-            <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-center backdrop-blur-sm">
-              <p className="mb-2 font-playfair text-4xl font-bold text-orange-400">{'<2s'}</p>
-              <p className="font-outfit text-sm text-slate-300">Temps de réponse moyen</p>
-            </div>
-
-            {/* Stat 2 */}
-            <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-center backdrop-blur-sm">
-              <p className="mb-2 font-playfair text-4xl font-bold text-emerald-400">100%</p>
-              <p className="font-outfit text-sm text-slate-300">Sans installation</p>
-            </div>
-
-            {/* Stat 3 */}
-            <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-center backdrop-blur-sm">
-              <p className="mb-2 font-playfair text-4xl font-bold text-blue-400">500+</p>
-              <p className="font-outfit text-sm text-slate-300">Familles protégées</p>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Background effects */}
-        <div className="absolute left-0 top-1/4 -z-10 h-96 w-96 rounded-full bg-red-500/10 blur-3xl" />
-        <div className="absolute bottom-1/4 right-0 -z-10 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
-      </section>
+      <Suspense fallback={<div className="h-screen w-full bg-slate-900" />}>
+        <SecoursiteSection />
+      </Suspense>
 
       {/* INSERTION C: DÉMO PRODUIT "L'ARMURE INVISIBLE" */}
       <section className="relative z-10 bg-stone-900 px-4 py-20 sm:py-32">
@@ -1001,231 +868,19 @@ export default function LandingPage() {
       {/* SECTION 4: TÉMOIGNAGES - PHASE 12 CARROUSEL */}
       <TestimonialsCarousel />
 
-      {/* SECTION 5: CTA FINAL */}
-      <section className="relative z-10 h-[600px] overflow-hidden">
-        {/* Parallax Background */}
-        <div className="absolute inset-0">
-          <Image
-            src="/landing/cta-father-hand.webp"
-            alt="Main protectrice d'un père"
-            fill
-            sizes="100vw"
-            className="object-cover object-center"
-            loading="lazy"
-          />
-          {/* Dark overlay pour faire ressortir le contenu */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black/80" />
-        </div>
+      <Suspense fallback={<div className="h-[600px] w-full bg-black" />}>
+        <CTASection />
+      </Suspense>
 
-        {/* Contenu CTA */}
-        <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="max-w-3xl"
-          >
-            <h2 className="mb-6 font-playfair text-4xl font-bold text-white drop-shadow-2xl sm:text-5xl md:text-6xl">
-              Parce qu'un parent ne devrait jamais avoir à chercher son enfant
-            </h2>
-            <p className="mb-10 font-outfit text-lg leading-relaxed text-white/90 drop-shadow-lg sm:text-xl">
-              Rejoignez les centaines de familles burkinabé qui ont choisi la tranquillité.
-            </p>
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-8 py-4 font-outfit text-base font-semibold text-white shadow-2xl shadow-orange-500/50 transition-all hover:scale-105 hover:shadow-orange-500/70"
-            >
-              <Shield className="h-5 w-5" aria-hidden="true" />
-              Activer sa protection maintenant
-            </Link>
-          </motion.div>
-        </div>
-      </section>
+      <Suspense fallback={<div className="h-64 w-full bg-white" />}>
+        <PartnershipSection onOpenModal={() => setIsPartnerModalOpen(true)} />
+      </Suspense>
 
-      {/* INSERTION D: PARTENARIAT ÉCOLE */}
-      <section className="relative z-10 bg-white px-4 py-16">
-        <div className="mx-auto max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="rounded-2xl border-l-4 border-orange-500 bg-orange-50/50 p-8 md:p-12"
-          >
-            {/* Badge */}
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-2">
-              <Building2 className="h-5 w-5 text-orange-600" aria-hidden="true" />
-              <span className="font-outfit text-sm font-semibold text-orange-700">
-                Établissements & Garderies
-              </span>
-            </div>
+      <Suspense fallback={<div className="h-96 w-full bg-[#FAFAF9]" />}>
+        <Footer />
+      </Suspense>
 
-            {/* Titre */}
-            <h2 className="mb-4 font-playfair text-3xl font-bold text-[#1c1917] sm:text-4xl">
-              Directeurs d'Établissement & Garderies
-            </h2>
-
-            {/* Description */}
-            <p className="mb-6 font-outfit text-lg leading-relaxed text-[#44403c]">
-              La sécurité de vos élèves est votre priorité ? Rejoignez le réseau{' '}
-              <span className="font-semibold text-orange-700">'Safe Zone'</span>.{' '}
-              Sécurisez les sorties et rassurez vos parents.
-            </p>
-
-            {/* CTA Secondaire */}
-            <button
-              onClick={() => setIsPartnerModalOpen(true)}
-              className="group inline-flex items-center gap-2 font-outfit text-lg font-semibold text-orange-700 underline decoration-2 underline-offset-4 transition-colors hover:text-orange-800"
-            >
-              Devenir École Partenaire
-              <span className="transition-transform group-hover:translate-x-1">→</span>
-            </button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="relative z-10 border-t border-stone-200 bg-[#FAFAF9] px-4 py-12">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid gap-8 md:grid-cols-3">
-            {/* Colonne 1: Logo et description */}
-            <div>
-              <div className="mb-4 flex items-center gap-2">
-                <Shield className="h-8 w-8 text-amber-600" strokeWidth={2} aria-hidden="true" />
-                <span className="font-playfair text-2xl font-bold text-[#1c1917]">SecureID</span>
-              </div>
-              <p className="font-outfit text-sm leading-relaxed text-[#78716c]">
-                Protégez ce qui compte le plus. Un lien invisible qui veille sur vos enfants.
-              </p>
-            </div>
-
-            {/* Colonne 2: Liens */}
-            <div>
-              <h3 className="mb-4 font-outfit font-semibold text-[#1c1917]">Informations</h3>
-              <ul className="space-y-2 font-outfit text-sm text-[#78716c]">
-                <li>
-                  <Link href="/login" className="hover:text-amber-600 transition-colors">
-                    Activer un bracelet
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/login" className="hover:text-amber-600 transition-colors">
-                    Se connecter
-                  </Link>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-amber-600 transition-colors">
-                    À propos
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Colonne 3: Contact */}
-            <div>
-              <h3 className="mb-4 font-outfit font-semibold text-[#1c1917]">Contact</h3>
-              <p className="mb-4 font-outfit text-sm font-semibold text-[#1c1917]">
-                +226 77 04 04 92 / 72 98 25 02
-              </p>
-
-              {/* Logos sociaux avec couleurs de marque */}
-              <div className="flex flex-wrap items-center gap-3">
-                {/* Téléphone */}
-                <a
-                  href="tel:+22677040492"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-white transition-all hover:bg-orange-600 hover:scale-110"
-                  aria-label="Appeler +226 77 04 04 92"
-                  title="Appel"
-                >
-                  <Phone className="h-5 w-5" />
-                </a>
-
-                {/* WhatsApp */}
-                <a
-                  href="https://wa.me/22677040492"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#25D366] text-white transition-all hover:bg-[#20BD5A] hover:scale-110"
-                  aria-label="WhatsApp +226 77 04 04 92"
-                  title="WhatsApp"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                </a>
-
-                {/* Email */}
-                <a
-                  href="mailto:tko364796@gmail.com"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EA4335] text-white transition-all hover:bg-[#D33426] hover:scale-110"
-                  aria-label="Email tko364796@gmail.com"
-                  title="Email"
-                >
-                  <Mail className="h-5 w-5" />
-                </a>
-
-                {/* LinkedIn */}
-                <a
-                  href="https://www.linkedin.com/in/swabo-hamadou-ai/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0077B5] text-white transition-all hover:bg-[#006399] hover:scale-110"
-                  aria-label="LinkedIn Swabo Hamadou"
-                  title="LinkedIn"
-                >
-                  <Linkedin className="h-5 w-5" />
-                </a>
-
-                {/* Facebook */}
-                <a
-                  href="#"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2] text-white transition-all hover:bg-[#1565D8] hover:scale-110"
-                  aria-label="Facebook SecureID"
-                  title="Facebook"
-                >
-                  <Facebook className="h-5 w-5" />
-                </a>
-
-                {/* GitHub */}
-                <a
-                  href="#"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#181717] text-white transition-all hover:bg-black hover:scale-110"
-                  aria-label="GitHub SecureID"
-                  title="GitHub"
-                >
-                  <Github className="h-5 w-5" />
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Copyright */}
-          <div className="mt-12 border-t border-stone-200 pt-8 text-center">
-            <p className="font-outfit text-sm text-[#a8a29e]">
-              © {new Date().getFullYear()} SecureID. Protégez ce qui compte le plus.
-            </p>
-          </div>
-        </div>
-      </footer>
-
-      {/* STICKY BOTTOM BAR (Mobile) */}
-      <motion.div
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        transition={{ delay: 1, duration: 0.5 }}
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-white/20 bg-white/80 p-4 backdrop-blur-lg sm:hidden"
-      >
-        <Link
-          href="/login"
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 py-3 font-outfit font-semibold text-white shadow-lg shadow-orange-500/30"
-        >
-          <Shield className="h-5 w-5" aria-hidden="true" />
-          ACTIVER SA PROTECTION
-        </Link>
-      </motion.div>
+      <StickyBar />
     </div>
     </>
   );
