@@ -25,6 +25,24 @@ export interface ScanDocument {
 
   /** IP address (optionnel, pour sécurité) */
   ipAddress?: string;
+
+  /** Type d'appareil (mobile, tablet, desktop) */
+  deviceType?: string;
+
+  /** Nom du navigateur (Chrome, Safari, Firefox) */
+  browser?: string;
+
+  /** Système d'exploitation (Android, iOS, Windows) */
+  os?: string;
+
+  /** Ville approximative (basée sur IP ou GPS) */
+  city?: string;
+
+  /** Pays (basé sur IP ou GPS) */
+  country?: string;
+
+  /** Statut de lecture par le parent */
+  isRead?: boolean;
 }
 
 export interface GeolocationData {

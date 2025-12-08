@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Clock, MapPin, Smartphone, Loader2 } from 'lucide-react';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
+import { X, Clock, MapPin, Loader2 } from 'lucide-react';
+import { collection, query, where, orderBy, getDocs, writeBatch, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { ScanDocument } from '@/types/scan';
 import type { ProfileDocument } from '@/types/profile';
@@ -70,12 +70,34 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
             });
 
           setScans(scansData);
+
+          // Marquer tous les scans comme lus
+          await markScansAsRead(scansSnap.docs);
         }
       } catch (err) {
         console.error('Error loading scans:', err);
         setError('Impossible de charger l\'historique des scans');
       } finally {
         setLoading(false);
+      }
+    };
+
+    // Fonction pour marquer les scans comme lus
+    const markScansAsRead = async (scanDocs: any[]) => {
+      try {
+        const batch = writeBatch(db);
+        const unreadScans = scanDocs.filter((doc) => doc.data().isRead === false);
+
+        if (unreadScans.length === 0) return;
+
+        unreadScans.forEach((scanDoc) => {
+          batch.update(doc(db, 'scans', scanDoc.id), { isRead: true });
+        });
+
+        await batch.commit();
+        console.log(`${unreadScans.length} scan(s) marqué(s) comme lu(s)`);
+      } catch (error) {
+        console.error('Error marking scans as read:', error);
       }
     };
 
@@ -100,14 +122,19 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
     return `${lat.toFixed(4)}°, ${lng.toFixed(4)}°`;
   };
 
-  const extractDeviceInfo = (userAgent: string): string => {
-    // Extraction simplifiée de l'info navigateur/OS
-    if (userAgent.includes('iPhone')) return 'iPhone';
-    if (userAgent.includes('iPad')) return 'iPad';
-    if (userAgent.includes('Android')) return 'Android';
-    if (userAgent.includes('Windows')) return 'Windows';
-    if (userAgent.includes('Mac')) return 'Mac';
-    return 'Appareil inconnu';
+  const getDeviceIcon = (deviceType?: string): string => {
+    if (deviceType === 'mobile') return '📱';
+    if (deviceType === 'tablet') return '📟';
+    if (deviceType === 'desktop') return '💻';
+    return '📱';
+  };
+
+  const getDeviceLabel = (scan: ScanDocument): string => {
+    const parts = [];
+    if (scan.deviceType) parts.push(scan.deviceType.charAt(0).toUpperCase() + scan.deviceType.slice(1));
+    if (scan.os) parts.push(scan.os);
+    if (scan.browser) parts.push(scan.browser);
+    return parts.length > 0 ? parts.join(' • ') : 'Appareil inconnu';
   };
 
   if (!isOpen) return null;
@@ -182,10 +209,19 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
                         </div>
 
                         {/* Appareil */}
-                        <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
-                          <Smartphone className="h-4 w-4" />
-                          <span>{extractDeviceInfo(scan.userAgent)}</span>
+                        <div className="mt-2 flex items-center gap-2 text-sm text-slate-500">
+                          <span className="text-base">{getDeviceIcon(scan.deviceType)}</span>
+                          <span>{getDeviceLabel(scan)}</span>
                         </div>
+
+                        {/* Badge "Non lu" si applicable */}
+                        {!scan.isRead && (
+                          <div className="mt-2">
+                            <span className="inline-block rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-semibold text-red-400">
+                              Nouveau
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Badge numéro */}

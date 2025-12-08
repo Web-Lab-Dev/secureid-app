@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Home, User, LogOut, Shield } from 'lucide-react';
+import { Home, Bell, LogOut, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { LogoutConfirmDialog } from '@/components/auth/LogoutConfirmDialog';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 /**
  * PHASE 4 - NAVIGATION DASHBOARD
@@ -20,6 +22,24 @@ export function DashboardNav() {
   const router = useRouter();
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [unreadScansCount, setUnreadScansCount] = useState(0);
+
+  // Écouter les scans non lus en temps réel
+  useEffect(() => {
+    if (!user) return;
+
+    // Query pour compter les scans non lus
+    const scansQuery = query(
+      collection(db, 'scans'),
+      where('isRead', '==', false)
+    );
+
+    const unsubscribe = onSnapshot(scansQuery, (snapshot) => {
+      setUnreadScansCount(snapshot.size);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   const handleSignOut = async () => {
     setIsLoggingOut(true);
@@ -59,11 +79,16 @@ export function DashboardNav() {
             </Link>
 
             <Link
-              href="/dashboard"
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
+              href="/dashboard/notifications"
+              className="relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
             >
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Mon Compte</span>
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">Notifications</span>
+              {unreadScansCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                  {unreadScansCount > 99 ? '99+' : unreadScansCount}
+                </span>
+              )}
             </Link>
 
             {/* User Info & Logout */}

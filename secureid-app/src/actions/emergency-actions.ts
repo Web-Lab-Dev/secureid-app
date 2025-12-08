@@ -133,6 +133,39 @@ interface RecordScanResult {
  * @param input - Données du scan (bracelet, position GPS, user agent)
  * @returns ID du scan créé ou erreur
  */
+/**
+ * Parse le User Agent pour extraire les informations d'appareil
+ */
+function parseUserAgent(ua: string): { deviceType: string; browser: string; os: string } {
+  const userAgent = ua.toLowerCase();
+
+  // Détection du type d'appareil
+  let deviceType = 'desktop';
+  if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(userAgent)) {
+    deviceType = 'tablet';
+  } else if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+    deviceType = 'mobile';
+  }
+
+  // Détection du navigateur
+  let browser = 'Unknown';
+  if (userAgent.includes('firefox')) browser = 'Firefox';
+  else if (userAgent.includes('edg')) browser = 'Edge';
+  else if (userAgent.includes('chrome')) browser = 'Chrome';
+  else if (userAgent.includes('safari')) browser = 'Safari';
+  else if (userAgent.includes('opera') || userAgent.includes('opr')) browser = 'Opera';
+
+  // Détection de l'OS
+  let os = 'Unknown';
+  if (userAgent.includes('android')) os = 'Android';
+  else if (userAgent.includes('iphone') || userAgent.includes('ipad')) os = 'iOS';
+  else if (userAgent.includes('mac')) os = 'macOS';
+  else if (userAgent.includes('win')) os = 'Windows';
+  else if (userAgent.includes('linux')) os = 'Linux';
+
+  return { deviceType, browser, os };
+}
+
 export async function recordScan(input: RecordScanInput): Promise<RecordScanResult> {
   try {
     const { braceletId, geolocation, userAgent } = input;
@@ -145,12 +178,19 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
       };
     }
 
+    // Parser le User Agent pour plus d'infos
+    const deviceInfo = parseUserAgent(userAgent || '');
+
     const scanData = {
       braceletId,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
       lat: geolocation?.lat || null,
       lng: geolocation?.lng || null,
       userAgent: userAgent || 'unknown',
+      deviceType: deviceInfo.deviceType,
+      browser: deviceInfo.browser,
+      os: deviceInfo.os,
+      isRead: false, // Nouveau scan non lu par défaut
     };
 
     // Utiliser Admin SDK pour ajouter le document
