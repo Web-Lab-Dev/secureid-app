@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "analyze": "ANALYZE=true npm run build",
     "provision": "node scripts/generate-batch.js",
     "generate-china": "tsx scripts/generate-china-batch.js",
     "test-china": "tsx scripts/test-china-batch.js",
@@ -32,6 +33,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.0.7",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/node": "^20.19.25",
     "@types/qrcode": "^1.5.5",

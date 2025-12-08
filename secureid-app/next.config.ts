@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 
+// NIVEAU 3 - Bundle Analyzer pour optimisation des performances
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const nextConfig: NextConfig = {
   // Mode strict React activé pour détecter les problèmes en développement
   reactStrictMode: true,
@@ -71,4 +76,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);
