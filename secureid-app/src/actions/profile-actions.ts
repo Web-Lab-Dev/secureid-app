@@ -204,13 +204,21 @@ export async function updateProfile(
     }
 
     if (updates.emergencyContacts !== undefined) {
-      updateData.emergencyContacts = updates.emergencyContacts.map((contact, index) => ({
-        name: contact.name,
-        relationship: contact.relationship,
-        phone: contact.phone,
-        email: contact.email || undefined,
-        priority: index + 1,
-      }));
+      updateData.emergencyContacts = updates.emergencyContacts.map((contact, index) => {
+        const emergencyContact: any = {
+          name: contact.name,
+          relationship: contact.relationship,
+          phone: contact.phone,
+          priority: index + 1,
+        };
+
+        // N'ajouter email que s'il existe (éviter undefined)
+        if (contact.email && contact.email.trim()) {
+          emergencyContact.email = contact.email;
+        }
+
+        return emergencyContact;
+      });
     }
 
     // Mettre à jour dans Firestore (Admin SDK)
