@@ -147,6 +147,14 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
         dateOfBirthDate = profile.dateOfBirth.toDate();
       }
 
+      // Construire le contact d'urgence sans champs undefined
+      const emergencyContact: any = {
+        name: data.emergencyContactName,
+        phone: data.emergencyContactPhone,
+        relationship: data.emergencyContactRelation as any,
+        priority: 1,
+      };
+
       const result = await updateProfile({
         profileId: profile.id,
         updates: {
@@ -158,13 +166,7 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
           conditions: conditionsArray,
           medications: medicationsArray,
           medicalNotes: data.medicalNotes || undefined,
-          emergencyContacts: [
-            {
-              name: data.emergencyContactName,
-              phone: data.emergencyContactPhone,
-              relationship: data.emergencyContactRelation as any,
-            },
-          ],
+          emergencyContacts: [emergencyContact],
         },
       });
 

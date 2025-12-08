@@ -38,16 +38,39 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
         setLoading(true);
         setError(null);
 
-        const scansQuery = query(
-          collection(db, 'scans'),
-          where('braceletId', '==', profile.currentBraceletId),
-          orderBy('timestamp', 'desc')
-        );
+        // Tenter avec orderBy (nécessite index Firestore)
+        try {
+          const scansQuery = query(
+            collection(db, 'scans'),
+            where('braceletId', '==', profile.currentBraceletId),
+            orderBy('timestamp', 'desc')
+          );
 
-        const scansSnap = await getDocs(scansQuery);
-        const scansData = scansSnap.docs.map((doc) => doc.data() as ScanDocument);
+          const scansSnap = await getDocs(scansQuery);
+          const scansData = scansSnap.docs.map((doc) => doc.data() as ScanDocument);
 
-        setScans(scansData);
+          setScans(scansData);
+        } catch (indexError: any) {
+          // Fallback sans orderBy si l'index n'existe pas
+          console.warn('Index Firestore manquant, fallback sans orderBy:', indexError);
+
+          const scansQuerySimple = query(
+            collection(db, 'scans'),
+            where('braceletId', '==', profile.currentBraceletId)
+          );
+
+          const scansSnap = await getDocs(scansQuerySimple);
+          const scansData = scansSnap.docs
+            .map((doc) => doc.data() as ScanDocument)
+            .sort((a, b) => {
+              // Tri manuel en mémoire
+              const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
+              const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : 0;
+              return timeB - timeA; // DESC
+            });
+
+          setScans(scansData);
+        }
       } catch (err) {
         console.error('Error loading scans:', err);
         setError('Impossible de charger l\'historique des scans');
