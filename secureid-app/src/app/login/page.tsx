@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, Phone, Lock, Loader2 } from 'lucide-react';
+import { Shield, Phone, Lock, Loader2, Camera } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { logger } from '@/lib/logger';
 import { normalizePhoneNumber, generateEmailFromPhone } from '@/lib/auth-helpers';
-import Link from 'next/link';
 import { GuestGuard } from '@/components/auth/GuestGuard';
+import { QRScanner } from '@/components/scanner/QRScanner';
 
 /**
  * PHASE 9 - PAGE DE LOGIN
@@ -23,6 +23,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showScanner, setShowScanner] = useState(false);
 
   const handlePhoneChange = (value: string) => {
     // Permettre uniquement les chiffres, espaces et +
@@ -85,8 +86,29 @@ export default function LoginPage() {
     }
   };
 
+  const handleQRScan = (data: string) => {
+    console.log('QR scanné:', data);
+    // Rediriger vers la page d'activation avec les données du QR
+    // Format attendu: https://secureid.app/s/{slug} ou juste {id}?token={token}
+    try {
+      const url = new URL(data);
+      // Si c'est une URL complète, extraire le path
+      router.push(url.pathname + url.search);
+    } catch {
+      // Si ce n'est pas une URL, c'est probablement juste un ID
+      // Rediriger vers /activate ou /s/{data}
+      router.push(`/s/${data}`);
+    }
+  };
+
   return (
     <GuestGuard>
+      {/* Scanner QR Modal */}
+      <QRScanner
+        isOpen={showScanner}
+        onClose={() => setShowScanner(false)}
+        onScan={handleQRScan}
+      />
       <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 px-4">
       {/* Logo & Titre */}
       <div className="mb-8 text-center">
@@ -171,25 +193,19 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Lien vers activation */}
+          {/* Scanner de bracelet */}
           <div className="mt-6 border-t border-slate-800 pt-6 text-center">
             <p className="text-sm text-slate-400">
               Nouveau chez SecureID ?
             </p>
-            <Link
-              href="/activate"
-              className="mt-2 inline-block text-brand-orange transition-colors hover:text-orange-400"
+            <button
+              onClick={() => setShowScanner(true)}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-brand-orange bg-brand-orange/10 py-3 font-semibold text-brand-orange transition-all hover:bg-brand-orange/20"
             >
-              Scannez un bracelet pour activer →
-            </Link>
+              <Camera className="h-5 w-5" />
+              Scannez un bracelet pour activer
+            </button>
           </div>
-        </div>
-
-        {/* Info sécurité */}
-        <div className="mt-4 text-center">
-          <p className="text-xs text-slate-500">
-            🔒 Connexion sécurisée par Firebase Authentication
-          </p>
         </div>
       </div>
       </div>
