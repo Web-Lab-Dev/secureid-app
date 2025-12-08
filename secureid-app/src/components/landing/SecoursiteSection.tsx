@@ -129,7 +129,7 @@ export default function SecoursiteSection() {
                 transition={{ delay: 1.2, type: 'spring' }}
                 className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 font-outfit text-sm font-bold text-white shadow-lg"
               >
-                🏥 Validé Médical
+                Son Passeport
               </motion.div>
               {/* Label */}
               <div className="mt-4 text-center">

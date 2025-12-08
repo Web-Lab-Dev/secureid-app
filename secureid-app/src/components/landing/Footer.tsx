@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Shield, Phone, MessageCircle, Mail, Linkedin, Facebook, Github } from 'lucide-react';
+import { Shield, Phone, MessageCircle, Mail, Linkedin } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -92,30 +92,6 @@ export default function Footer() {
                 title="LinkedIn"
               >
                 <Linkedin className="h-5 w-5" />
-              </a>
-
-              {/* Facebook */}
-              <a
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2] text-white transition-all hover:bg-[#1565D8] hover:scale-110"
-                aria-label="Facebook SecureID"
-                title="Facebook"
-              >
-                <Facebook className="h-5 w-5" />
-              </a>
-
-              {/* GitHub */}
-              <a
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#181717] text-white transition-all hover:bg-black hover:scale-110"
-                aria-label="GitHub SecureID"
-                title="GitHub"
-              >
-                <Github className="h-5 w-5" />
               </a>
             </div>
           </div>

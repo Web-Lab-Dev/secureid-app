@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Shield, Radio, User, Phone, Battery, Droplet, ChevronLeft, ChevronRight, Sparkles, ShieldCheck, X } from 'lucide-react';
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import Header from '@/components/landing/Header';
 import HeroSection from '@/components/landing/HeroSection';
 import TrustBar from '@/components/landing/TrustBar';
 
@@ -54,15 +55,52 @@ function PartnershipModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
     nombreEleves: '',
     message: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Envoyer les données au backend
-    console.log('Form submitted:', formData);
-    alert('Merci ! Nous vous contacterons rapidement.');
-    onClose();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/partnership', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors de l\'envoi');
+      }
+
+      // Succès
+      alert('✅ Merci ! Votre demande a été envoyée avec succès. Nous vous contacterons rapidement.');
+      onClose();
+
+      // Réinitialiser le formulaire
+      setFormData({
+        etablissement: '',
+        type: 'ecole',
+        responsable: '',
+        email: '',
+        telephone: '',
+        ville: '',
+        nombreEleves: '',
+        message: '',
+      });
+    } catch (err) {
+      console.error('Erreur:', err);
+      setError(err instanceof Error ? err.message : 'Erreur lors de l\'envoi. Veuillez réessayer.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -207,12 +245,20 @@ function PartnershipModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
             </div>
           </div>
 
+          {/* Message d'erreur */}
+          {error && (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-red-700 font-outfit text-sm">
+              ❌ {error}
+            </div>
+          )}
+
           {/* Bouton Submit */}
           <button
             type="submit"
-            className="w-full rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-8 py-4 font-outfit text-lg font-semibold text-white shadow-lg shadow-orange-500/30 transition-all hover:scale-105 hover:shadow-orange-500/50"
+            disabled={isLoading}
+            className="w-full rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-8 py-4 font-outfit text-lg font-semibold text-white shadow-lg shadow-orange-500/30 transition-all hover:scale-105 hover:shadow-orange-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
-            Envoyer la demande
+            {isLoading ? '⏳ Envoi en cours...' : 'Envoyer la demande'}
           </button>
         </form>
       </motion.div>
@@ -458,12 +504,6 @@ function DashboardCarouselSection() {
 
                 {/* Carrousel d'images à l'intérieur */}
                 <div className="relative aspect-[9/19.5] overflow-hidden bg-white">
-                  {/* Titre SecureID en haut à gauche */}
-                  <div className="absolute left-4 top-8 z-20 flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-orange-600" aria-hidden="true" />
-                    <span className="font-playfair text-lg font-bold text-gray-900">SecureID</span>
-                  </div>
-
                   <AnimatePresence initial={false}>
                     <motion.div
                       key={currentSlide}
@@ -741,8 +781,10 @@ export default function LandingPage() {
     <>
       <PartnershipModal isOpen={isPartnerModalOpen} onClose={() => setIsPartnerModalOpen(false)} />
     <div className="overflow-x-hidden bg-[#FAFAF9]">
-      <HeroSection />
-      <TrustBar />
+      <Header />
+      <div className="pt-16"> {/* Padding pour compenser le header fixe */}
+        <HeroSection />
+        <TrustBar />
 
       {/* Lazy loading des sections non-critiques avec Suspense */}
       <Suspense fallback={<div className="h-screen w-full bg-white" />}>
@@ -881,6 +923,7 @@ export default function LandingPage() {
       </Suspense>
 
       <StickyBar />
+      </div> {/* Fermeture du div pt-16 */}
     </div>
     </>
   );
