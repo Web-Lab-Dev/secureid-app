@@ -85,9 +85,9 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
     return <ErrorPage type="factory-locked" slug={slug} />;
   }
 
-  // CAS B: Bracelet INACTIVE (neuf) → Rediriger vers activation
+  // CAS B: Bracelet INACTIVE (neuf) → Rediriger vers landing page
   if (status === 'INACTIVE') {
-    redirect(`/activate?id=${slug}&token=${token}`);
+    redirect(`/?welcome=true&id=${slug}&token=${token}`);
   }
 
   // CAS C: Bracelet ACTIVE → Afficher mode urgence complet
