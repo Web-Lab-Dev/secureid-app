@@ -165,13 +165,13 @@ export function DashboardPageClient() {
         </div>
 
         {/* Bouton Ajouter */}
-        <Link
-          href="/activate"
+        <button
+          onClick={() => alert('📱 Scannez le QR code sur votre nouveau bracelet SecureID pour continuer l\'activation.\n\nSi vous n\'avez pas encore de bracelet, commandez-en un sur notre site.')}
           className="flex items-center gap-2 rounded-lg bg-brand-orange px-4 py-2 font-semibold text-white transition-colors hover:bg-brand-orange/90"
         >
           <Plus className="h-5 w-5" />
           Protéger un autre enfant
-        </Link>
+        </button>
       </div>
 
       {/* Grille de Profils ou Empty State */}
@@ -181,13 +181,13 @@ export function DashboardPageClient() {
           title="Aucun enfant enregistré"
           description="Commencez par scanner un bracelet QR code pour créer le premier profil de votre enfant."
           action={
-            <Link
-              href="/activate"
+            <button
+              onClick={() => alert('📱 Scannez le QR code sur votre bracelet SecureID avec l\'appareil photo de votre téléphone.\n\nSi vous n\'avez pas encore de bracelet, commandez-en un sur notre site.')}
               className="inline-flex items-center gap-2 rounded-lg bg-brand-orange px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-orange/90"
             >
               <Plus className="h-5 w-5" />
               Scanner un Bracelet
-            </Link>
+            </button>
           }
         />
       ) : (
