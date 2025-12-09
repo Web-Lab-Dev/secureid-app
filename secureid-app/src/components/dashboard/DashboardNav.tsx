@@ -102,8 +102,6 @@ export function DashboardNav() {
 
   // Marquer tous les scans comme lus quand le modal se ferme
   const handleCloseNotifications = async () => {
-    setIsNotificationsOpen(false);
-
     if (allScans.length > 0) {
       try {
         const batch = writeBatch(db);
@@ -118,6 +116,9 @@ export function DashboardNav() {
         console.error('Error marking scans as read:', error);
       }
     }
+
+    // Fermer le modal APRÈS avoir marqué les scans
+    setIsNotificationsOpen(false);
   };
 
   const formatDate = (timestamp: Timestamp | null | undefined): string => {
