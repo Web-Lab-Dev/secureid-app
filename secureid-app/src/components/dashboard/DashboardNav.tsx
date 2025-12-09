@@ -42,11 +42,17 @@ export function DashboardNav() {
       .map((p) => p.currentBraceletId)
       .filter((id): id is string => id !== null);
 
-    if (braceletIds.length === 0) return;
+    if (braceletIds.length === 0) {
+      setAllScans([]);
+      setUnreadScansCount(0);
+      return;
+    }
 
-    // Query pour tous les scans des enfants du parent
+    // IMPORTANT: Firestore limite le where('in') à 10 éléments max
+    // Si un parent a plus de 10 enfants, il faudra paginer
     const scansQuery = query(
       collection(db, 'scans'),
+      where('braceletId', 'in', braceletIds.slice(0, 10)),
       where('isRead', '==', false)
     );
 
@@ -56,19 +62,16 @@ export function DashboardNav() {
       snapshot.forEach((docSnap) => {
         const scanData = docSnap.data() as ScanDocument;
 
-        // Filtrer uniquement les scans des bracelets de ce parent
-        if (braceletIds.includes(scanData.braceletId)) {
-          const matchingProfile = profiles.find(
-            (p) => p.currentBraceletId === scanData.braceletId
-          );
+        const matchingProfile = profiles.find(
+          (p) => p.currentBraceletId === scanData.braceletId
+        );
 
-          if (matchingProfile) {
-            scans.push({
-              ...scanData,
-              scanId: docSnap.id,
-              childName: matchingProfile.fullName,
-            });
-          }
+        if (matchingProfile) {
+          scans.push({
+            ...scanData,
+            scanId: docSnap.id,
+            childName: matchingProfile.fullName,
+          });
         }
       });
 
@@ -102,6 +105,9 @@ export function DashboardNav() {
 
   // Marquer tous les scans comme lus quand le modal se ferme
   const handleCloseNotifications = async () => {
+    // Fermer immédiatement le modal pour une meilleure UX
+    setIsNotificationsOpen(false);
+
     if (allScans.length > 0) {
       try {
         const batch = writeBatch(db);
@@ -116,9 +122,6 @@ export function DashboardNav() {
         console.error('Error marking scans as read:', error);
       }
     }
-
-    // Fermer le modal APRÈS avoir marqué les scans
-    setIsNotificationsOpen(false);
   };
 
   const formatDate = (timestamp: Timestamp | null | undefined): string => {
