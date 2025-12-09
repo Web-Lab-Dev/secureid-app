@@ -3,7 +3,26 @@
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
 
-export default function Header() {
+interface HeaderProps {
+  braceletParams?: { id?: string; token?: string; welcome?: boolean };
+}
+
+export default function Header({ braceletParams }: HeaderProps) {
+  // Construire l'URL avec les paramètres du bracelet si disponibles
+  const getActivateUrl = () => {
+    if (braceletParams?.id && braceletParams?.token) {
+      return `/activate?id=${braceletParams.id}&token=${braceletParams.token}`;
+    }
+    return '/login';
+  };
+
+  const getButtonText = () => {
+    if (braceletParams?.id && braceletParams?.token) {
+      return 'Activer mon bracelet';
+    }
+    return 'Se connecter';
+  };
+
   return (
     <header className="fixed left-0 right-0 top-0 z-50 border-b border-white/10 bg-white/80 backdrop-blur-lg">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
@@ -15,10 +34,10 @@ export default function Header() {
 
         {/* Navigation CTA */}
         <Link
-          href="/login"
+          href={getActivateUrl()}
           className="rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-6 py-2 font-outfit text-sm font-semibold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
         >
-          Se connecter
+          {getButtonText()}
         </Link>
       </div>
     </header>

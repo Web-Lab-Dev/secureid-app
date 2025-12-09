@@ -6,8 +6,20 @@ import Image from 'next/image';
 import { Shield, ShoppingCart } from 'lucide-react';
 import { useRef } from 'react';
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  braceletParams?: { id?: string; token?: string; welcome?: boolean };
+}
+
+export default function HeroSection({ braceletParams }: HeroSectionProps) {
   const heroRef = useRef<HTMLDivElement>(null);
+
+  // Construire l'URL avec les paramètres du bracelet si disponibles
+  const getActivateUrl = () => {
+    if (braceletParams?.id && braceletParams?.token) {
+      return `/activate?id=${braceletParams.id}&token=${braceletParams.token}`;
+    }
+    return '/login';
+  };
 
   return (
     <>
@@ -72,7 +84,7 @@ export default function HeroSection() {
           >
             {/* Bouton Principal - Activer */}
             <Link
-              href="/login"
+              href={getActivateUrl()}
               className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-8 py-4 font-outfit text-base font-semibold text-white shadow-2xl shadow-orange-500/30 transition-all hover:scale-105 hover:shadow-orange-500/50"
             >
               <Shield className="h-5 w-5" aria-hidden="true" />

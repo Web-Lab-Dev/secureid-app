@@ -777,13 +777,30 @@ export default function LandingPage() {
   // État modal partenaire
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
 
+  // Récupérer les paramètres URL pour scan INACTIVE
+  const [braceletParams, setBraceletParams] = useState<{ id?: string; token?: string; welcome?: boolean }>({});
+
+  useEffect(() => {
+    // Côté client uniquement
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const token = params.get('token');
+      const welcome = params.get('welcome') === 'true';
+
+      if (id && token) {
+        setBraceletParams({ id, token, welcome });
+      }
+    }
+  }, []);
+
   return (
     <>
       <PartnershipModal isOpen={isPartnerModalOpen} onClose={() => setIsPartnerModalOpen(false)} />
     <div className="overflow-x-hidden bg-[#FAFAF9]">
-      <Header />
+      <Header braceletParams={braceletParams} />
       <div className="pt-16"> {/* Padding pour compenser le header fixe */}
-        <HeroSection />
+        <HeroSection braceletParams={braceletParams} />
         <TrustBar />
 
       {/* Lazy loading des sections non-critiques avec Suspense */}
@@ -922,7 +939,7 @@ export default function LandingPage() {
         <Footer />
       </Suspense>
 
-      <StickyBar />
+      <StickyBar braceletParams={braceletParams} />
       </div> {/* Fermeture du div pt-16 */}
     </div>
     </>

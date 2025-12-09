@@ -4,7 +4,19 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
 
-export default function StickyBar() {
+interface StickyBarProps {
+  braceletParams?: { id?: string; token?: string; welcome?: boolean };
+}
+
+export default function StickyBar({ braceletParams }: StickyBarProps) {
+  // Construire l'URL avec les paramètres du bracelet si disponibles
+  const getActivateUrl = () => {
+    if (braceletParams?.id && braceletParams?.token) {
+      return `/activate?id=${braceletParams.id}&token=${braceletParams.token}`;
+    }
+    return '/login';
+  };
+
   return (
     <motion.div
       initial={{ y: 100 }}
@@ -13,7 +25,7 @@ export default function StickyBar() {
       className="fixed inset-x-0 bottom-0 z-50 border-t border-white/20 bg-white/80 p-4 backdrop-blur-lg sm:hidden"
     >
       <Link
-        href="/login"
+        href={getActivateUrl()}
         className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 py-3 font-outfit font-semibold text-white shadow-lg shadow-orange-500/30"
       >
         <Shield className="h-5 w-5" aria-hidden="true" />
