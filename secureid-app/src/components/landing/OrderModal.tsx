@@ -103,7 +103,7 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
   if (submitSuccess) {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4"
         onClick={onClose}
       >
         <div
@@ -126,7 +126,7 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
   // Formulaire de commande
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto"
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4 overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -228,7 +228,7 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
                 value={formData.deliveryAddress}
                 onChange={(e) => setFormData({ ...formData, deliveryAddress: e.target.value })}
                 className="w-full rounded-lg border border-slate-300 px-4 py-3 font-outfit text-slate-900 transition-colors focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-                placeholder="Ex: Secteur 15, Rue 15.45, Maison après la pharmacie..."
+                placeholder="Ex: Secteur 30, Quartier Gounghin, Rue 30.250..."
               />
             </div>
 
