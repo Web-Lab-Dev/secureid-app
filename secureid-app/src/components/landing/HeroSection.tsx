@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Shield, ShoppingCart } from 'lucide-react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import { OrderModal } from './OrderModal';
 
 interface HeroSectionProps {
   braceletParams?: { id?: string; token?: string; welcome?: boolean };
@@ -12,6 +13,7 @@ interface HeroSectionProps {
 
 export default function HeroSection({ braceletParams }: HeroSectionProps) {
   const heroRef = useRef<HTMLDivElement>(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   // Construire l'URL avec les paramètres du bracelet si disponibles
   const getActivateUrl = () => {
@@ -92,13 +94,13 @@ export default function HeroSection({ braceletParams }: HeroSectionProps) {
             </Link>
 
             {/* Bouton Secondaire - Commander */}
-            <Link
-              href="#commander"
+            <button
+              onClick={() => setIsOrderModalOpen(true)}
               className="inline-flex items-center gap-2 rounded-full border-2 border-orange-500 bg-transparent px-8 py-4 font-outfit text-base font-semibold text-white backdrop-blur-sm transition-all hover:bg-orange-500/10 hover:scale-105"
             >
               <ShoppingCart className="h-5 w-5" aria-hidden="true" />
               Commander un bracelet
-            </Link>
+            </button>
           </motion.div>
         </div>
 
@@ -139,6 +141,9 @@ export default function HeroSection({ braceletParams }: HeroSectionProps) {
           />
         </svg>
       </div>
+
+      {/* Modal de Commande */}
+      <OrderModal isOpen={isOrderModalOpen} onClose={() => setIsOrderModalOpen(false)} />
     </>
   );
 }
