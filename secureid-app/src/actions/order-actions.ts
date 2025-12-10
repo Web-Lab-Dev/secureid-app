@@ -38,6 +38,9 @@ export async function createOrder(formData: OrderFormData): Promise<{
   error?: string;
 }> {
   try {
+    logger.info('createOrder called', { customerName: formData.customerName });
+    console.log('🛒 Starting order creation...');
+
     // Validation des données
     if (
       !formData.customerName ||
@@ -45,6 +48,7 @@ export async function createOrder(formData: OrderFormData): Promise<{
       !formData.quantity ||
       !formData.deliveryAddress
     ) {
+      logger.warn('Order validation failed - missing fields');
       return {
         success: false,
         error: 'Tous les champs obligatoires doivent être remplis',
@@ -80,9 +84,11 @@ export async function createOrder(formData: OrderFormData): Promise<{
     };
 
     // Sauvegarde dans Firestore
+    console.log('💾 Saving order to Firestore...', { orderId });
     await db.collection('orders').doc(orderId).set(orderData);
+    console.log('✅ Order saved to Firestore', { orderId });
 
-    logger.info('Order created', { orderId });
+    logger.info('Order created in Firestore', { orderId });
 
     // Construction du lien Google Maps
     const mapsLink = formData.gpsLocation
@@ -91,8 +97,12 @@ export async function createOrder(formData: OrderFormData): Promise<{
 
     // Envoi de l'email de notification via Resend
     try {
-      await resend.emails.send({
-        from: 'SecureID <noreply@secureid.com>',
+      console.log('📧 Sending email notification...', { to: process.env.ADMIN_EMAIL });
+
+      // IMPORTANT: Resend nécessite un domaine vérifié pour 'from'
+      // Pour tester: utilisez 'onboarding@resend.dev' ou configurez votre domaine
+      const emailResult = await resend.emails.send({
+        from: 'Acme <onboarding@resend.dev>',
         to: process.env.ADMIN_EMAIL || 'admin@secureid.com',
         subject: `🛒 Nouvelle Commande SecureID - ${orderId}`,
         html: `
@@ -206,10 +216,16 @@ export async function createOrder(formData: OrderFormData): Promise<{
         `,
       });
 
-      logger.info('Order notification email sent', { orderId });
+      console.log('✅ Email sent successfully', { emailResult });
+      logger.info('Order notification email sent', { orderId, emailResult });
     } catch (emailError) {
       // Si l'email échoue, on log mais on ne bloque pas la commande
-      logger.error('Failed to send order email', { error: emailError, orderId });
+      logger.error('Failed to send order email', {
+        error: emailError instanceof Error ? emailError.message : String(emailError),
+        orderId,
+        adminEmail: process.env.ADMIN_EMAIL
+      });
+      console.error('Resend email error details:', emailError);
     }
 
     return {
