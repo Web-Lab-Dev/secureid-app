@@ -126,11 +126,11 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
   // Formulaire de commande
   return (
     <div
-      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4 overflow-y-auto"
+      className="fixed inset-0 z-9999 flex items-start justify-center bg-black/50 p-4 overflow-y-auto pt-8"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl my-8 rounded-2xl bg-white shadow-2xl"
+        className="w-full max-w-2xl mb-8 rounded-2xl bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
