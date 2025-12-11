@@ -1,8 +1,7 @@
 'use server';
 
-import { adminDb as db, admin } from '@/lib/firebase-admin';
 import { logger } from '@/lib/logger';
-import type { OrderFormData, OrderDocument } from '@/types/order';
+import type { OrderFormData } from '@/types/order';
 
 /**
  * PRIX FIXE: 5000 FCFA par bracelet
@@ -65,27 +64,7 @@ export async function createOrder(formData: OrderFormData): Promise<{
     // Génération de l'ID de commande
     const orderId = generateOrderId();
 
-    // Création du document de commande
-    const orderData = {
-      orderId,
-      customerName: formData.customerName,
-      customerPhone: formData.customerPhone,
-      quantity: formData.quantity,
-      pricePerBracelet: PRICE_PER_BRACELET,
-      totalAmount,
-      deliveryAddress: formData.deliveryAddress,
-      gpsLocation: formData.gpsLocation,
-      deliveryNotes: formData.deliveryNotes || '',
-      status: 'PENDING' as const,
-      createdAt: admin.firestore.Timestamp.now(),
-    };
-
-    // Sauvegarde dans Firestore
-    console.log('💾 Saving order to Firestore...', { orderId });
-    await db.collection('orders').doc(orderId).set(orderData);
-    console.log('✅ Order saved to Firestore', { orderId });
-
-    logger.info('Order created in Firestore', { orderId });
+    console.log('📋 Order prepared (Firestore save skipped for now)', { orderId });
 
     // Envoi de l'email de notification via SMTP (Nodemailer)
     try {
