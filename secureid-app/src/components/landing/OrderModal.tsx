@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { X, MapPin, Loader2, ShoppingCart, CheckCircle } from 'lucide-react';
-import { createOrder } from '@/actions/order-actions';
-import type { OrderFormData } from '@/types/order';
 
 interface OrderModalProps {
   isOpen: boolean;
@@ -11,6 +9,27 @@ interface OrderModalProps {
 }
 
 const PRICE_PER_BRACELET = 5000;
+
+// Fonction pour générer un ID de commande
+function generateOrderId(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const random = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, '0');
+  return `ORD-${year}${month}${day}-${random}`;
+}
+
+interface OrderFormData {
+  customerName: string;
+  customerPhone: string;
+  quantity: number;
+  deliveryAddress: string;
+  gpsLocation: { lat: number; lng: number } | null;
+  deliveryNotes?: string;
+}
 
 export function OrderModal({ isOpen, onClose }: OrderModalProps) {
   const [formData, setFormData] = useState<OrderFormData>({
@@ -71,28 +90,57 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
     setIsSubmitting(true);
     setSubmitError(null);
 
-    const result = await createOrder(formData);
+    try {
+      // Générer l'ID de commande
+      const orderId = generateOrderId();
+      const totalAmount = formData.quantity * PRICE_PER_BRACELET;
 
-    if (result.success) {
-      setSubmitSuccess(true);
-      // Réinitialiser le formulaire après 3 secondes
-      setTimeout(() => {
-        setSubmitSuccess(false);
-        setFormData({
-          customerName: '',
-          customerPhone: '+226',
-          quantity: 1,
-          deliveryAddress: '',
-          gpsLocation: null,
-          deliveryNotes: '',
-        });
-        onClose();
-      }, 3000);
-    } else {
-      setSubmitError(result.error || 'Une erreur est survenue');
+      console.log('📧 Envoi de la commande...', { orderId });
+
+      // Appeler l'API directement (comme le partenariat)
+      const response = await fetch('/api/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          customerName: formData.customerName,
+          customerPhone: formData.customerPhone,
+          quantity: formData.quantity,
+          pricePerBracelet: PRICE_PER_BRACELET,
+          totalAmount,
+          deliveryAddress: formData.deliveryAddress,
+          gpsLocation: formData.gpsLocation,
+          deliveryNotes: formData.deliveryNotes,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        console.log('✅ Commande envoyée avec succès!', result);
+        setSubmitSuccess(true);
+        // Réinitialiser le formulaire après 3 secondes
+        setTimeout(() => {
+          setSubmitSuccess(false);
+          setFormData({
+            customerName: '',
+            customerPhone: '+226',
+            quantity: 1,
+            deliveryAddress: '',
+            gpsLocation: null,
+            deliveryNotes: '',
+          });
+          onClose();
+        }, 3000);
+      } else {
+        throw new Error(result.details || result.error || 'Erreur lors de l\'envoi');
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de l\'envoi de la commande:', error);
+      setSubmitError(error instanceof Error ? error.message : 'Une erreur est survenue');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
   };
 
   const totalAmount = formData.quantity * PRICE_PER_BRACELET;
