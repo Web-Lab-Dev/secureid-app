@@ -20,20 +20,50 @@ export async function POST(request: NextRequest) {
 
     // Validation basique
     if (!orderId || !customerName || !customerPhone || !deliveryAddress) {
+      console.error('❌ Validation failed - missing required fields');
       return NextResponse.json(
         { error: 'Champs requis manquants' },
         { status: 400 }
       );
     }
 
+    // Vérifier la config SMTP
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+
+    console.log('🔧 SMTP Config:', {
+      user: smtpUser,
+      hasPassword: !!smtpPass,
+      passwordLength: smtpPass?.length || 0,
+    });
+
+    if (!smtpUser || !smtpPass) {
+      console.error('❌ SMTP credentials missing!');
+      return NextResponse.json(
+        { error: 'Configuration SMTP manquante', details: 'SMTP_USER ou SMTP_PASS non configuré' },
+        { status: 500 }
+      );
+    }
+
     // Configuration du transporteur SMTP (même config que partenariats)
+    console.log('🔧 Creating SMTP transporter...');
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.SMTP_USER || 'tko364796@gmail.com',
-        pass: process.env.SMTP_PASS || '',
+        user: smtpUser,
+        pass: smtpPass,
       },
     });
+
+    // Vérifier la connexion SMTP
+    console.log('🔌 Verifying SMTP connection...');
+    try {
+      await transporter.verify();
+      console.log('✅ SMTP connection verified');
+    } catch (verifyError) {
+      console.error('❌ SMTP verification failed:', verifyError);
+      throw new Error(`SMTP verification failed: ${verifyError instanceof Error ? verifyError.message : 'Unknown error'}`);
+    }
 
     // Construction du lien Google Maps
     const mapsLink = gpsLocation
@@ -82,15 +112,26 @@ Email envoyé automatiquement depuis SecureID
     `.trim();
 
     // Envoi de l'email
+    console.log('📤 Sending email...', {
+      from: smtpUser,
+      to: smtpUser,
+      subject: `🛒 Nouvelle Commande SecureID - ${orderId}`,
+    });
+
     const info = await transporter.sendMail({
-      from: `"SecureID Commandes" <${process.env.SMTP_USER || 'tko364796@gmail.com'}>`,
-      to: process.env.SMTP_USER || 'tko364796@gmail.com',
+      from: `"SecureID Commandes" <${smtpUser}>`,
+      to: smtpUser,
       subject: `🛒 Nouvelle Commande SecureID - ${orderId} (${quantity} bracelet${quantity > 1 ? 's' : ''})`,
       text: emailContent,
       html: `<pre style="font-family: 'Courier New', monospace; white-space: pre-wrap; background: #f5f5f5; padding: 20px; border-radius: 8px;">${emailContent}</pre>`,
     });
 
-    console.log('✅ Email commande envoyé:', info.messageId);
+    console.log('✅ Email commande envoyé avec succès!', {
+      messageId: info.messageId,
+      accepted: info.accepted,
+      rejected: info.rejected,
+      response: info.response,
+    });
 
     return NextResponse.json(
       {
