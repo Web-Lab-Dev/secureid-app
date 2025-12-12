@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Shield, ShoppingCart } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { OrderModal } from './OrderModal';
+import { Button } from '@/components/ui/button';
 
 interface HeroSectionProps {
   braceletParams?: { id?: string; token?: string; welcome?: boolean };
@@ -85,22 +86,18 @@ export default function HeroSection({ braceletParams }: HeroSectionProps) {
             className="mt-10 flex flex-wrap items-center gap-4"
           >
             {/* Bouton Principal - Activer */}
-            <Link
-              href={getActivateUrl()}
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-8 py-4 font-outfit text-base font-semibold text-white shadow-2xl shadow-orange-500/30 transition-all hover:scale-105 hover:shadow-orange-500/50"
-            >
-              <Shield className="h-5 w-5" aria-hidden="true" />
-              Activer sa protection
-            </Link>
+            <Button variant="gradient" size="lg" rounded="full" asChild>
+              <Link href={getActivateUrl()}>
+                <Shield className="h-5 w-5" aria-hidden="true" />
+                Activer sa protection
+              </Link>
+            </Button>
 
             {/* Bouton Secondaire - Commander */}
-            <button
-              onClick={() => setIsOrderModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-full border-2 border-orange-500 bg-transparent px-8 py-4 font-outfit text-base font-semibold text-white backdrop-blur-sm transition-all hover:bg-orange-500/10 hover:scale-105"
-            >
+            <Button variant="outline" size="lg" rounded="full" onClick={() => setIsOrderModalOpen(true)}>
               <ShoppingCart className="h-5 w-5" aria-hidden="true" />
               Commander un bracelet
-            </button>
+            </Button>
           </motion.div>
         </div>
 
