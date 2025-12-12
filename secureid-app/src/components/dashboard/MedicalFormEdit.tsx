@@ -292,10 +292,12 @@ export function MedicalFormEdit({ profile, onUpdate }: MedicalFormEditProps) {
       </div>
 
       {/* Bouton Enregistrer */}
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-orange px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-orange/90 disabled:cursor-not-allowed disabled:opacity-50"
+        variant="primary"
+        size="md"
+        fullWidth
       >
         {isSubmitting ? (
           <>
@@ -308,7 +310,7 @@ export function MedicalFormEdit({ profile, onUpdate }: MedicalFormEditProps) {
             Enregistrer les modifications
           </>
         )}
-      </button>
+      </Button>
     </form>
   );
 }
