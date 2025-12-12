@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shield, Phone, Lock, Loader2, Camera } from 'lucide-react';
+import { Shield, Phone, Lock, Loader2 } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { logger } from '@/lib/logger';
@@ -62,7 +62,7 @@ export default function LoginPage() {
 
       // Redirection vers le dashboard
       router.replace('/dashboard');
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('Login error', { error: err, phone });
 
       // Messages d'erreur user-friendly
@@ -87,7 +87,6 @@ export default function LoginPage() {
   };
 
   const handleQRScan = (data: string) => {
-    console.log('QR scanné:', data);
     // Rediriger vers la page d'activation avec les données du QR
     // Format attendu: https://secureid.app/s/{slug} ou juste {id}?token={token}
     try {

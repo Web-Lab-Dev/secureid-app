@@ -1,5 +1,6 @@
 'use client';
 
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { Download, X } from 'lucide-react';
 
@@ -71,14 +72,14 @@ export function InstallBanner() {
       const { outcome } = await deferredPrompt.userChoice;
 
       if (outcome === 'accepted') {
-        console.log('PWA installée avec succès');
+        logger.info('PWA installée avec succès');
         setIsInstalled(true);
         localStorage.setItem('pwa-banner-dismissed', 'true');
       }
 
       // Ne pas cacher la bannière si refusé, garder visible pour réessayer
     } catch (error) {
-      console.error('Erreur lors de l\'installation PWA:', error);
+      logger.error('Erreur lors de l\'installation PWA:', error);
     }
   };
 

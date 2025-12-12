@@ -1,5 +1,6 @@
 'use client';
 
+import { logger } from '@/lib/logger';
 import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -53,7 +54,7 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Convertir Timestamp Firebase en string YYYY-MM-DD pour l'input date
-  const formatDateForInput = (timestamp: any): string => {
+  const formatDateForInput = (timestamp: unknown): string => {
     if (!timestamp) return '';
     try {
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -148,10 +149,10 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
       }
 
       // Construire le contact d'urgence sans champs undefined
-      const emergencyContact: any = {
+      const emergencyContact: Record<string, string | number> = {
         name: data.emergencyContactName,
         phone: data.emergencyContactPhone,
-        relationship: data.emergencyContactRelation as any,
+        relationship: data.emergencyContactRelation,
         priority: 1,
       };
 
@@ -180,7 +181,7 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
         setError(result.error || 'Erreur lors de la mise à jour');
       }
     } catch (err) {
-      console.error('Error updating profile:', err);
+      logger.error('Error updating profile:', err);
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
       setIsSubmitting(false);

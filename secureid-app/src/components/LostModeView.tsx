@@ -25,15 +25,8 @@ interface LostModeViewProps {
 }
 
 export function LostModeView({ bracelet, ownerPhone }: LostModeViewProps) {
-  const [phone, setPhone] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Récupérer le numéro du propriétaire depuis Firestore
-    // TODO: Passer via props depuis le server component
-    if (ownerPhone) {
-      setPhone(ownerPhone);
-    }
-  }, [ownerPhone]);
+  // Initialiser directement avec ownerPhone au lieu d'utiliser useEffect
+  const [phone] = useState<string | null>(ownerPhone || null);
 
   const handleCall = () => {
     if (phone) {

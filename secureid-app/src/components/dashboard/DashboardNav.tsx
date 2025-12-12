@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Home, Bell, LogOut, Shield, Clock, MapPin, X, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { LogoutConfirmDialog } from '@/components/auth/LogoutConfirmDialog';
+import { logger } from '@/lib/logger';
 import { collection, query, where, onSnapshot, writeBatch, doc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useProfiles } from '@/hooks/useProfiles';
@@ -98,7 +99,7 @@ export function DashboardNav() {
       // Redirection forcée vers /login
       router.replace('/login');
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout failed', error);
       setIsLoggingOut(false);
     }
   };
@@ -114,10 +115,9 @@ export function DashboardNav() {
         });
 
         await batch.commit();
-        console.log(`${allScans.length} scan(s) marqué(s) comme lu(s)`);
         // Le listener onSnapshot va automatiquement mettre à jour les états
       } catch (error) {
-        console.error('Error marking scans as read:', error);
+        logger.error('Failed to mark scans as read', error);
       }
     }
 

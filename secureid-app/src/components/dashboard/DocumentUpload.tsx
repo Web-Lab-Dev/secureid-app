@@ -61,7 +61,7 @@ export function DocumentUpload({ profileId }: DocumentUploadProps) {
 
       setDocuments(docs);
     } catch (err) {
-      console.error('Error loading documents:', err);
+      logger.error('Error loading documents:', err);
       // Si le dossier n'existe pas encore, c'est normal
       setDocuments([]);
     } finally {
@@ -121,7 +121,7 @@ export function DocumentUpload({ profileId }: DocumentUploadProps) {
       // Recharger la liste
       await loadDocuments();
     } catch (err) {
-      console.error('Error uploading document:', err);
+      logger.error('Error uploading document:', err);
       setError('Erreur lors de l\'upload du document');
     } finally {
       setUploading(false);
@@ -138,7 +138,7 @@ export function DocumentUpload({ profileId }: DocumentUploadProps) {
       // Recharger la liste
       await loadDocuments();
     } catch (err) {
-      console.error('Error deleting document:', err);
+      logger.error('Error deleting document:', err);
       alert('Erreur lors de la suppression');
     }
   };

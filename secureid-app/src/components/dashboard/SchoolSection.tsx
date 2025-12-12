@@ -1,5 +1,6 @@
 'use client';
 
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { GraduationCap, Plus, Trash2, Lock, Calendar, User } from 'lucide-react';
 import Image from 'next/image';
@@ -70,12 +71,12 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
     try {
       await deletePickup({ profileId: profile.id, pickupId });
     } catch (error) {
-      console.error('Error deleting pickup:', error);
+      logger.error('Error deleting pickup:', error);
     }
   };
 
   // Vérifier si un pass est temporaire et obtenir les infos
-  const getExpirationBadge = (pickup: any) => {
+  const getExpirationBadge = (pickup: Record<string, unknown>) => {
     if (pickup.type !== 'TEMPORARY' || !pickup.expiresAt) return null;
 
     const expiresDate = pickup.expiresAt.toDate();

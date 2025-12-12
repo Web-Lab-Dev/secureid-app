@@ -1,5 +1,6 @@
 'use client';
 
+import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { X, Upload, Calendar, User } from 'lucide-react';
 import Image from 'next/image';
@@ -109,7 +110,7 @@ export function AddPickupDialog({ isOpen, onClose, profileId }: AddPickupDialogP
         setError(result.message || 'Erreur lors de l\'ajout');
       }
     } catch (err) {
-      console.error('Error adding pickup:', err);
+      logger.error('Error adding pickup:', err);
       setError('Une erreur est survenue');
     } finally {
       setLoading(false);

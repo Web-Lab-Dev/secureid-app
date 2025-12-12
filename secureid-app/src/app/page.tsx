@@ -1,10 +1,10 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, Radio, User, Phone, Battery, Droplet, ChevronLeft, ChevronRight, Sparkles, ShieldCheck, X } from 'lucide-react';
+import { Shield, Radio, User, Battery, Droplet, ChevronLeft, ChevronRight, Sparkles, ShieldCheck, X } from 'lucide-react';
 import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import { logger } from '@/lib/logger';
 import Header from '@/components/landing/Header';
 import HeroSection from '@/components/landing/HeroSection';
 import TrustBar from '@/components/landing/TrustBar';
@@ -96,7 +96,7 @@ function PartnershipModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
         message: '',
       });
     } catch (err) {
-      console.error('Erreur:', err);
+      logger.error('Partnership form submission failed', err);
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'envoi. Veuillez réessayer.');
     } finally {
       setIsLoading(false);
@@ -269,55 +269,6 @@ function PartnershipModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
 /**
  * PHASE 13 - Composant Phone Mockup (iPhone Style)
  */
-interface PhoneMockupProps {
-  src: string;
-  alt: string;
-  className?: string;
-  floatAnimation?: boolean;
-  priority?: boolean;
-}
-
-function PhoneMockup({ src, alt, className = '', floatAnimation = false, priority = false }: PhoneMockupProps) {
-  return (
-    <motion.div
-      animate={
-        floatAnimation
-          ? {
-              y: [0, -15, 0],
-              transition: {
-                duration: 4,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              },
-            }
-          : undefined
-      }
-      className={`relative ${className}`}
-    >
-      {/* iPhone Mockup Frame */}
-      <div className="relative overflow-hidden rounded-[3rem] border-[12px] border-gray-900 bg-gray-900 shadow-2xl shadow-black/40">
-        {/* Notch iPhone */}
-        <div className="absolute left-1/2 top-0 z-10 h-7 w-40 -translate-x-1/2 rounded-b-3xl bg-gray-900" />
-
-        {/* Screenshot */}
-        <div className="relative aspect-[9/19.5] overflow-hidden bg-white">
-          <Image
-            src={src}
-            alt={alt}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 80vw, 400px"
-            priority={priority}
-          />
-        </div>
-      </div>
-
-      {/* Subtle glow effect */}
-      <div className="absolute -inset-4 -z-10 rounded-[4rem] bg-gradient-to-b from-blue-500/10 to-purple-500/10 blur-2xl opacity-50" />
-    </motion.div>
-  );
-}
-
 /**
  * PHASE 13 - Section Dashboard Carrousel
  */
@@ -401,7 +352,7 @@ function DashboardCarouselSection() {
             <h2 className="mb-6 font-playfair text-4xl font-bold text-[#1c1917] sm:text-5xl lg:text-6xl">
               Veillez sur eux,{' '}
               <span className="bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-                d'un simple regard.
+                d&apos;un simple regard.
               </span>
             </h2>
 
@@ -778,20 +729,16 @@ export default function LandingPage() {
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
 
   // Récupérer les paramètres URL pour scan INACTIVE
-  const [braceletParams, setBraceletParams] = useState<{ id?: string; token?: string; welcome?: boolean }>({});
-
-  useEffect(() => {
+  const braceletParams = useMemo(() => {
     // Côté client uniquement
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-      const token = params.get('token');
-      const welcome = params.get('welcome') === 'true';
+    if (typeof window === 'undefined') return {};
 
-      if (id && token) {
-        setBraceletParams({ id, token, welcome });
-      }
-    }
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const token = params.get('token');
+    const welcome = params.get('welcome') === 'true';
+
+    return id && token ? { id, token, welcome } : {};
   }, []);
 
   return (

@@ -35,7 +35,7 @@ export async function createOrder(formData: OrderFormData): Promise<{
 }> {
   try {
     logger.info('createOrder called', { customerName: formData.customerName });
-    console.log('🛒 Starting order creation...');
+    logger.info('🛒 Starting order creation...');
 
     // Validation des données
     if (
@@ -64,11 +64,11 @@ export async function createOrder(formData: OrderFormData): Promise<{
     // Génération de l'ID de commande
     const orderId = generateOrderId();
 
-    console.log('📋 Order prepared (Firestore save skipped for now)', { orderId });
+    logger.info('📋 Order prepared (Firestore save skipped for now)', { orderId });
 
     // Envoi de l'email de notification via SMTP (Nodemailer)
     try {
-      console.log('📧 Sending email notification via SMTP API...', { orderId });
+      logger.info('📧 Sending email notification via SMTP API...', { orderId });
 
       const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/order`, {
         method: 'POST',
@@ -88,7 +88,7 @@ export async function createOrder(formData: OrderFormData): Promise<{
 
       if (emailResponse.ok) {
         const emailResult = await emailResponse.json();
-        console.log('✅ Email sent successfully via SMTP', { emailResult });
+        logger.info('✅ Email sent successfully via SMTP', { emailResult });
         logger.info('Order notification email sent via SMTP', { orderId, emailResult });
       } else {
         const errorData = await emailResponse.json();
@@ -100,7 +100,7 @@ export async function createOrder(formData: OrderFormData): Promise<{
         error: emailError instanceof Error ? emailError.message : String(emailError),
         orderId,
       });
-      console.error('❌ SMTP email error details:', emailError);
+      logger.error('❌ SMTP email error details:', emailError);
     }
 
     return {

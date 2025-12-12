@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,7 +61,7 @@ Date : ${new Date().toLocaleString('fr-FR')}
       html: `<pre style="font-family: monospace; white-space: pre-wrap;">${emailContent}</pre>`,
     });
 
-    console.log('Email envoyé:', info.messageId);
+    logger.info('Email envoyé:', info.messageId);
 
     return NextResponse.json(
       {
@@ -70,7 +71,7 @@ Date : ${new Date().toLocaleString('fr-FR')}
       { status: 200 }
     );
   } catch (error) {
-    console.error('Erreur envoi email:', error);
+    logger.error('Erreur envoi email:', error);
     return NextResponse.json(
       {
         error: 'Erreur lors de l\'envoi de la demande',

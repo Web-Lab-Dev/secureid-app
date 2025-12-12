@@ -53,7 +53,7 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
           setTokenValid(false);
           setError(result.error || 'Token invalide');
         }
-      } catch (err) {
+      } catch (_err) {
         setTokenValid(false);
         setError('Erreur lors de la validation du bracelet');
       } finally {
@@ -125,7 +125,7 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
       // Succès! Passer à l'écran de confirmation
       setCreatedProfileName(formData.fullName);
       setStep('success');
-    } catch (err) {
+    } catch (_err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   }, [user, braceletId, token]);
@@ -152,7 +152,7 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
       // Succès! Passer à l'écran de confirmation
       setCreatedProfileName(selectedProfile.fullName);
       setStep('success');
-    } catch (err) {
+    } catch (_err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   }, [user, selectedProfile, braceletId, token]);

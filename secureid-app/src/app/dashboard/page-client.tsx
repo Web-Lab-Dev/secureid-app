@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { logger } from '@/lib/logger';
-import Link from 'next/link';
 import { Plus, Loader2, Users } from 'lucide-react';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -28,7 +27,7 @@ import type { ProfileDocument } from '@/types/profile';
  */
 
 export function DashboardPageClient() {
-  const { user } = useAuthContext();
+  const {} = useAuthContext();
   const { profiles, loading, refetch } = useProfiles();
   const [bracelets, setBracelets] = useState<Record<string, BraceletDocument>>({});
   const [loadingBracelets, setLoadingBracelets] = useState(true);

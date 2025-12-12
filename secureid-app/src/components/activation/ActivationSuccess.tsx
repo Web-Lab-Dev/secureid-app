@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, Home, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useMemo } from 'react';
 
 interface ActivationSuccessProps {
   /** Nom de l'enfant dont le profil a été activé */
@@ -25,6 +26,19 @@ export function ActivationSuccess({
   mode,
 }: ActivationSuccessProps) {
   const router = useRouter();
+
+  // Générer les particules une seule fois au montage
+  const particles = useMemo(() =>
+    Array.from({ length: 20 }, () => ({
+      x: 50 + (Math.random() - 0.5) * 100,
+      y: 50 + (Math.random() - 0.5) * 100,
+      duration: 1 + Math.random(),
+      delay: 0.3 + Math.random() * 0.3,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+    })),
+    []
+  );
 
   const handleGoHome = () => {
     router.push('/dashboard');
@@ -143,7 +157,7 @@ export function ActivationSuccess({
           className="absolute inset-0 pointer-events-none"
         >
           {/* Particules de célébration */}
-          {[...Array(20)].map((_, i) => (
+          {particles.map((particle, i) => (
             <motion.div
               key={i}
               initial={{
@@ -153,17 +167,17 @@ export function ActivationSuccess({
               }}
               animate={{
                 opacity: 0,
-                x: `${50 + (Math.random() - 0.5) * 100}%`,
-                y: `${50 + (Math.random() - 0.5) * 100}%`,
+                x: `${particle.x}%`,
+                y: `${particle.y}%`,
               }}
               transition={{
-                duration: 1 + Math.random(),
-                delay: 0.3 + Math.random() * 0.3,
+                duration: particle.duration,
+                delay: particle.delay,
               }}
               className="absolute w-2 h-2 bg-brand-orange rounded-full"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
+                left: `${particle.left}%`,
+                top: `${particle.top}%`,
               }}
             />
           ))}

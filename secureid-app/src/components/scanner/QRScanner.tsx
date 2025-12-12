@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/library';
 import { X, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { logger } from '@/lib/logger';
 
 interface QRScannerProps {
   isOpen: boolean;
@@ -42,7 +43,6 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
             (result, error) => {
               if (result) {
                 const text = result.getText();
-                console.log('QR Code détecté:', text);
                 onScan(text);
                 stopScanner();
                 onClose();
@@ -51,7 +51,7 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
           );
         }
       } catch (err) {
-        console.error('Erreur caméra:', err);
+        logger.error('Camera access failed', err);
         setHasPermission(false);
         setError('Impossible d\'accéder à la caméra. Veuillez autoriser l\'accès.');
       }

@@ -65,7 +65,7 @@ export async function getAuthorizedPickups(data: {
     }
 
     // Filtrer les pass temporaires expirés
-    const pickups: any[] = [];
+    const pickups: Array<Record<string, unknown>> = [];
     snapshot.forEach((doc) => {
       const data = doc.data();
 

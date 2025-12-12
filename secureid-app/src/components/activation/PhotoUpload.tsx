@@ -67,7 +67,7 @@ export function PhotoUpload({
       onPhotoUploaded(photoUrl);
 
     } catch (err) {
-      console.error('Upload error:', err);
+      logger.error('Upload error:', err);
       setError(err instanceof Error ? err.message : 'Erreur lors de l\'upload');
       setPreview(existingPhotoUrl || null);
     } finally {

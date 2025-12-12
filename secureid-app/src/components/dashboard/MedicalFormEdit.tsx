@@ -117,7 +117,7 @@ export function MedicalFormEdit({ profile, onUpdate }: MedicalFormEditProps) {
       // Masquer le message de succès après 3s
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      console.error('Error updating profile:', err);
+      logger.error('Error updating profile:', err);
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
       setIsSubmitting(false);

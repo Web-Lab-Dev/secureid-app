@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, MapPin, Loader2, ShoppingCart, CheckCircle } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface OrderModalProps {
   isOpen: boolean;
@@ -95,8 +96,6 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
       const orderId = generateOrderId();
       const totalAmount = formData.quantity * PRICE_PER_BRACELET;
 
-      console.log('📧 Envoi de la commande...', { orderId });
-
       // Appeler l'API directement (comme le partenariat)
       const response = await fetch('/api/order', {
         method: 'POST',
@@ -117,7 +116,6 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        console.log('✅ Commande envoyée avec succès!', result);
         setSubmitSuccess(true);
         // Réinitialiser le formulaire après 3 secondes
         setTimeout(() => {
@@ -136,7 +134,7 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
         throw new Error(result.details || result.error || 'Erreur lors de l\'envoi');
       }
     } catch (error) {
-      console.error('❌ Erreur lors de l\'envoi de la commande:', error);
+      logger.error('Failed to submit order', error);
       setSubmitError(error instanceof Error ? error.message : 'Une erreur est survenue');
     } finally {
       setIsSubmitting(false);

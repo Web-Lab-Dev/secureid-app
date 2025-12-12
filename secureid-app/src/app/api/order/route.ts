@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,11 +17,9 @@ export async function POST(request: NextRequest) {
       deliveryNotes,
     } = body;
 
-    console.log('📧 API /api/order called', { orderId, customerName });
-
     // Validation basique
     if (!orderId || !customerName || !customerPhone || !deliveryAddress) {
-      console.error('❌ Validation failed - missing required fields');
+      logger.error('Order validation failed - missing required fields', { orderId, customerName });
       return NextResponse.json(
         { error: 'Champs requis manquants' },
         { status: 400 }
@@ -91,7 +90,7 @@ Email envoyé automatiquement depuis SecureID
       html: `<pre style="font-family: monospace; white-space: pre-wrap;">${emailContent}</pre>`,
     });
 
-    console.log('✅ Email commande envoyé:', info.messageId);
+    logger.info('Order email sent successfully', { orderId, messageId: info.messageId });
 
     return NextResponse.json(
       {
@@ -102,7 +101,7 @@ Email envoyé automatiquement depuis SecureID
       { status: 200 }
     );
   } catch (error) {
-    console.error('❌ Erreur envoi email commande:', error);
+    logger.error('Failed to send order email', error);
     return NextResponse.json(
       {
         error: "Erreur lors de l'envoi de l'email",

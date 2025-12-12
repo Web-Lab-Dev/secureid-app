@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { logger } from '@/lib/logger';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';

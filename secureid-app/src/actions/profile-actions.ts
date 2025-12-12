@@ -2,7 +2,7 @@
 
 import { adminDb, admin } from '@/lib/firebase-admin';
 import { logger } from '@/lib/logger';
-import type { ProfileDocument, MedicalInfo, EmergencyContact, BloodType } from '@/types/profile';
+import type { MedicalInfo, EmergencyContact, BloodType } from '@/types/profile';
 import type { MedicalFormData, EmergencyContactFormData } from '@/schemas/activation';
 
 /**
@@ -205,7 +205,7 @@ export async function updateProfile(
 
     if (updates.emergencyContacts !== undefined) {
       updateData.emergencyContacts = updates.emergencyContacts.map((contact, index) => {
-        const emergencyContact: any = {
+        const emergencyContact: Record<string, string | number> = {
           name: contact.name,
           relationship: contact.relationship,
           phone: contact.phone,

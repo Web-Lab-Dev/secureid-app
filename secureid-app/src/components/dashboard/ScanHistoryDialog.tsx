@@ -1,5 +1,6 @@
 'use client';
 
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { X, Clock, MapPin, Loader2 } from 'lucide-react';
 import { collection, query, where, orderBy, getDocs, writeBatch, doc } from 'firebase/firestore';
@@ -53,9 +54,9 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
 
           // Marquer tous les scans comme lus
           await markScansAsRead(scansSnap.docs);
-        } catch (indexError: any) {
+        } catch (indexError: unknown) {
           // Fallback sans orderBy si l'index n'existe pas
-          console.warn('Index Firestore manquant, fallback sans orderBy:', indexError);
+          logger.warn('Index Firestore manquant, fallback sans orderBy:', indexError);
 
           const scansQuerySimple = query(
             collection(db, 'scans'),
@@ -78,7 +79,7 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
           await markScansAsRead(scansSnap.docs);
         }
       } catch (err) {
-        console.error('Error loading scans:', err);
+        logger.error('Error loading scans:', err);
         setError('Impossible de charger l\'historique des scans');
       } finally {
         setLoading(false);
@@ -86,7 +87,7 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
     };
 
     // Fonction pour marquer les scans comme lus
-    const markScansAsRead = async (scanDocs: any[]) => {
+    const markScansAsRead = async (scanDocs: Array<{ id: string }>) => {
       try {
         const batch = writeBatch(db);
         const unreadScans = scanDocs.filter((doc) => doc.data().isRead === false);
@@ -98,16 +99,15 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
         });
 
         await batch.commit();
-        console.log(`${unreadScans.length} scan(s) marqué(s) comme lu(s)`);
       } catch (error) {
-        console.error('Error marking scans as read:', error);
+        logger.error('Error marking scans as read:', error);
       }
     };
 
     loadScans();
   }, [isOpen, profile.currentBraceletId]);
 
-  const formatDate = (timestamp: any): string => {
+  const formatDate = (timestamp: unknown): string => {
     if (!timestamp) return 'Date inconnue';
     try {
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);

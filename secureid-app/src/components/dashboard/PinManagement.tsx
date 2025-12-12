@@ -63,7 +63,7 @@ export function PinManagement({ profile }: PinManagementProps) {
 
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      console.error('Error updating PIN:', err);
+      logger.error('Error updating PIN:', err);
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
       setIsSubmitting(false);
