@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Home, Bell, LogOut, Shield, Clock, MapPin, X } from 'lucide-react';
+import { Home, Bell, LogOut, Shield, Clock, MapPin, X, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { LogoutConfirmDialog } from '@/components/auth/LogoutConfirmDialog';
-import { collection, query, where, onSnapshot, writeBatch, doc, getDocs, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, writeBatch, doc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useProfiles } from '@/hooks/useProfiles';
 import type { ScanDocument } from '@/types/scan';
@@ -105,9 +105,6 @@ export function DashboardNav() {
 
   // Marquer tous les scans comme lus quand le modal se ferme
   const handleCloseNotifications = async () => {
-    // Fermer immédiatement le modal pour une meilleure UX
-    setIsNotificationsOpen(false);
-
     if (allScans.length > 0) {
       try {
         const batch = writeBatch(db);
@@ -118,10 +115,17 @@ export function DashboardNav() {
 
         await batch.commit();
         console.log(`${allScans.length} scan(s) marqué(s) comme lu(s)`);
+
+        // Réinitialiser les états localement après succès
+        setAllScans([]);
+        setUnreadScansCount(0);
       } catch (error) {
         console.error('Error marking scans as read:', error);
       }
     }
+
+    // Fermer le modal à la fin
+    setIsNotificationsOpen(false);
   };
 
   const formatDate = (timestamp: Timestamp | null | undefined): string => {
@@ -183,6 +187,14 @@ export function DashboardNav() {
             >
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline">Accueil</span>
+            </Link>
+
+            <Link
+              href="/"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
+            >
+              <ExternalLink className="h-4 w-4" />
+              <span className="hidden sm:inline">Site</span>
             </Link>
 
             <button
