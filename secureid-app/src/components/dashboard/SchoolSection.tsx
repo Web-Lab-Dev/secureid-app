@@ -9,6 +9,7 @@ import { usePickups } from '@/hooks/usePickups';
 import { updateSchoolPin, deletePickup } from '@/actions/school-actions';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { AddPickupDialog } from './AddPickupDialog';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 8 - SCHOOL SECTION
@@ -121,12 +122,14 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
               <span className="font-mono text-2xl tracking-widest text-white">••••</span>
               <span className="text-sm text-green-400">✓ Code configuré</span>
             </div>
-            <button
+            <Button
               onClick={() => setIsEditingPin(true)}
-              className="text-sm text-indigo-400 transition-colors hover:text-indigo-300"
+              variant="link"
+              size="sm"
+              className="text-indigo-400 hover:text-indigo-300"
             >
               Modifier
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="space-y-3">
@@ -146,24 +149,27 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
             />
             {pinError && <p className="text-sm text-red-400">{pinError}</p>}
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={handleUpdatePin}
                 disabled={newPin.length !== 4 || pinLoading}
-                className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                variant="indigo"
+                size="sm"
+                className="flex-1"
               >
                 {pinLoading ? 'Enregistrement...' : profile.schoolPin ? 'Mettre à jour' : 'Définir le code'}
-              </button>
+              </Button>
               {isEditingPin && (
-                <button
+                <Button
                   onClick={() => {
                     setIsEditingPin(false);
                     setNewPin('');
                     setPinError('');
                   }}
-                  className="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-400 transition-colors hover:bg-slate-800"
+                  variant="outline"
+                  size="sm"
                 >
                   Annuler
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -184,13 +190,14 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
               </p>
             </div>
           </div>
-          <button
+          <Button
             onClick={() => setIsAddDialogOpen(true)}
-            className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+            variant="indigo"
+            size="sm"
           >
             <Plus className="h-4 w-4" />
             Ajouter
-          </button>
+          </Button>
         </div>
 
         {/* Liste des récupérateurs */}
@@ -255,13 +262,15 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
                   </div>
 
                   {/* Bouton Supprimer */}
-                  <button
+                  <Button
                     onClick={() => handleDeletePickup(pickup.id)}
-                    className="absolute bottom-2 right-2 rounded-full bg-red-500/10 p-2 text-red-400 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500/20"
+                    variant="danger"
+                    size="sm"
+                    className="absolute bottom-2 right-2 rounded-full p-2 opacity-0 group-hover:opacity-100"
                     title="Supprimer"
                   >
                     <Trash2 className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               );
             })}

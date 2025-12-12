@@ -7,6 +7,7 @@ import { collection, query, where, orderBy, getDocs, writeBatch, doc } from 'fir
 import { db } from '@/lib/firebase';
 import type { ScanDocument } from '@/types/scan';
 import type { ProfileDocument } from '@/types/profile';
+import { Button } from '@/components/ui/button';
 
 /**
  * DASHBOARD - SCAN HISTORY DIALOG
@@ -167,12 +168,14 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
                   {profile.fullName} - {scans.length} scan{scans.length > 1 ? 's' : ''} enregistré{scans.length > 1 ? 's' : ''}
                 </p>
               </div>
-              <button
+              <Button
                 onClick={onClose}
-                className="rounded-full bg-slate-800/50 p-3 text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+                variant="outline"
+                size="sm"
+                className="rounded-full bg-slate-800/50 p-3 hover:bg-slate-700"
               >
                 <X className="h-6 w-6" />
-              </button>
+              </Button>
             </div>
 
             {/* Content */}

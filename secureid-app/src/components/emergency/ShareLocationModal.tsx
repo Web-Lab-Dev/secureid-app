@@ -3,6 +3,7 @@
 import { MessageCircle, MessageSquare, Copy, X, Share2 } from 'lucide-react';
 import { useState } from 'react';
 import type { GeolocationData } from '@/types/scan';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 6.5 - SHARE LOCATION MODAL
@@ -105,21 +106,24 @@ export function ShareLocationModal({
             <h3 className="text-lg font-bold text-white">
               Transmettre la position
             </h3>
-            <button
+            <Button
               onClick={onClose}
-              className="rounded-full p-2 text-gray-400 hover:bg-slate-800 hover:text-white transition-colors"
+              variant="outline"
+              size="sm"
+              className="rounded-full p-2"
             >
               <X className="h-5 w-5" />
-            </button>
+            </Button>
           </div>
 
           {/* Options */}
           <div className="space-y-3">
             {/* Option: Web Share (si disponible) */}
             {navigator.share !== undefined && (
-              <button
+              <Button
                 onClick={handleNativeShare}
-                className="w-full flex items-center gap-4 rounded-xl bg-slate-800 hover:bg-slate-700 px-5 py-4 text-left transition-all transform hover:scale-[1.02]"
+                variant="secondary"
+                className="w-full flex items-center gap-4 px-5 py-4 text-left transition-all transform hover:scale-[1.02]"
               >
                 <div className="rounded-full bg-purple-500/20 p-3">
                   <Share2 className="h-6 w-6 text-purple-400" />
@@ -128,13 +132,14 @@ export function ShareLocationModal({
                   <p className="font-semibold text-white">Partager</p>
                   <p className="text-sm text-gray-400">Ouvrir le menu de partage</p>
                 </div>
-              </button>
+              </Button>
             )}
 
             {/* Option: WhatsApp */}
-            <button
+            <Button
               onClick={handleWhatsApp}
-              className="w-full flex items-center gap-4 rounded-xl bg-slate-800 hover:bg-slate-700 px-5 py-4 text-left transition-all transform hover:scale-[1.02]"
+              variant="secondary"
+              className="w-full flex items-center gap-4 px-5 py-4 text-left transition-all transform hover:scale-[1.02]"
             >
               <div className="rounded-full bg-green-500/20 p-3">
                 <MessageCircle className="h-6 w-6 text-green-400" />
@@ -143,12 +148,13 @@ export function ShareLocationModal({
                 <p className="font-semibold text-white">WhatsApp</p>
                 <p className="text-sm text-gray-400">Ouvrir dans WhatsApp</p>
               </div>
-            </button>
+            </Button>
 
             {/* Option: SMS */}
-            <button
+            <Button
               onClick={handleSMS}
-              className="w-full flex items-center gap-4 rounded-xl bg-slate-800 hover:bg-slate-700 px-5 py-4 text-left transition-all transform hover:scale-[1.02]"
+              variant="secondary"
+              className="w-full flex items-center gap-4 px-5 py-4 text-left transition-all transform hover:scale-[1.02]"
             >
               <div className="rounded-full bg-blue-500/20 p-3">
                 <MessageSquare className="h-6 w-6 text-blue-400" />
@@ -157,12 +163,13 @@ export function ShareLocationModal({
                 <p className="font-semibold text-white">SMS</p>
                 <p className="text-sm text-gray-400">Sans connexion internet</p>
               </div>
-            </button>
+            </Button>
 
             {/* Option: Copier */}
-            <button
+            <Button
               onClick={handleCopy}
-              className="w-full flex items-center gap-4 rounded-xl bg-slate-800 hover:bg-slate-700 px-5 py-4 text-left transition-all transform hover:scale-[1.02]"
+              variant="secondary"
+              className="w-full flex items-center gap-4 px-5 py-4 text-left transition-all transform hover:scale-[1.02]"
             >
               <div className="rounded-full bg-gray-500/20 p-3">
                 <Copy className="h-6 w-6 text-gray-400" />
@@ -175,7 +182,7 @@ export function ShareLocationModal({
                   {copied ? 'Dans le presse-papier' : 'Copier le lien'}
                 </p>
               </div>
-            </button>
+            </Button>
           </div>
 
           {/* Footer info */}

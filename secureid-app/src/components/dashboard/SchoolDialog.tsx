@@ -3,6 +3,7 @@
 import { X, GraduationCap } from 'lucide-react';
 import { SchoolSection } from './SchoolSection';
 import type { ProfileDocument } from '@/types/profile';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 9 - SCHOOL DIALOG
@@ -48,12 +49,14 @@ export function SchoolDialog({ isOpen, onClose, profile }: SchoolDialogProps) {
                 </p>
               </div>
             </div>
-            <button
+            <Button
               onClick={onClose}
-              className="rounded-full bg-slate-800/50 p-3 text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+              variant="outline"
+              size="sm"
+              className="rounded-full bg-slate-800/50 p-3 hover:bg-slate-700"
             >
               <X className="h-6 w-6" />
-            </button>
+            </Button>
           </div>
 
           {/* Contenu - SchoolSection */}
