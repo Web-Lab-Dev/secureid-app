@@ -1,6 +1,7 @@
 'use client';
 
 import { X, LogOut, Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 9 - LOGOUT CONFIRM DIALOG
@@ -68,23 +69,25 @@ export function LogoutConfirmDialog({
 
           {/* Actions */}
           <div className="flex gap-3">
-            <button
+            <Button
               onClick={onClose}
               disabled={loading}
-              className="flex-1 rounded-lg border border-slate-700 py-3 font-semibold text-slate-300 transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+              variant="outline"
+              size="md"
+              className="flex-1 border-slate-700 text-slate-300"
             >
               Annuler
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={onConfirm}
               disabled={loading}
-              className="flex-1 rounded-lg bg-red-600 py-3 font-semibold text-white transition-colors hover:bg-red-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              variant="danger"
+              size="md"
+              className="flex-1"
             >
-              <span className="flex items-center justify-center gap-2">
-                <LogOut className="h-4 w-4" />
-                {loading ? 'Déconnexion...' : 'Se déconnecter'}
-              </span>
-            </button>
+              <LogOut className="h-4 w-4" />
+              {loading ? 'Déconnexion...' : 'Se déconnecter'}
+            </Button>
           </div>
         </div>
       </div>

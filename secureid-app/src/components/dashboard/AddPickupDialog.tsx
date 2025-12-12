@@ -8,6 +8,7 @@ import { addPickup } from '@/actions/school-actions';
 import type { PickupType } from '@/types/profile';
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 8 - ADD PICKUP DIALOG
@@ -315,21 +316,25 @@ export function AddPickupDialog({ isOpen, onClose, profileId }: AddPickupDialogP
 
             {/* Actions */}
             <div className="flex gap-3 pt-2">
-              <button
+              <Button
                 type="button"
                 onClick={handleClose}
-                className="flex-1 rounded-lg border border-slate-700 py-2 text-sm font-semibold text-slate-400 transition-colors hover:bg-slate-800"
+                variant="outline"
+                size="sm"
+                className="flex-1 border-slate-700 text-slate-400"
                 disabled={loading}
               >
                 Annuler
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={loading || !photoFile}
-                className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                variant="indigo"
+                size="sm"
+                className="flex-1"
               >
                 {loading ? 'Ajout en cours...' : 'Ajouter'}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
