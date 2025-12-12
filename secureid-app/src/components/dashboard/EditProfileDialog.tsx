@@ -13,6 +13,7 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { uploadProfilePhoto } from '@/lib/storage-helpers';
 import type { ProfileDocument } from '@/types/profile';
 import { phoneSchema } from '@/schemas/activation';
+import { Button } from '@/components/ui/button';
 
 /**
  * RÉORGANISATION DASHBOARD
@@ -256,15 +257,17 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
                       className="hidden"
                       disabled={isSubmitting}
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isSubmitting}
-                      className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm text-white transition-colors hover:bg-slate-700 disabled:opacity-50"
+                      variant="secondary"
+                      size="sm"
+                      className="border border-slate-700"
                     >
                       <Upload className="h-4 w-4" />
                       {photoFile ? 'Changer la photo' : 'Ajouter une photo'}
-                    </button>
+                    </Button>
                     <p className="mt-2 text-xs text-slate-500">PNG, JPG (max 10MB)</p>
                   </div>
                 </div>
@@ -448,31 +451,35 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
 
               {/* Actions */}
               <div className="flex gap-3 pt-4">
-                <button
+                <Button
                   type="button"
                   onClick={onClose}
                   disabled={isSubmitting}
-                  className="flex-1 rounded-lg border border-slate-700 py-3 font-semibold text-slate-300 transition-colors hover:bg-slate-800 disabled:opacity-50"
+                  variant="outline"
+                  size="md"
+                  className="flex-1 border-slate-700 text-slate-300"
                 >
                   Annuler
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={isSubmitting || isUploadingPhoto}
-                  className="flex-1 rounded-lg bg-brand-orange py-3 font-semibold text-white transition-colors hover:bg-brand-orange/90 disabled:opacity-50"
+                  variant="primary"
+                  size="md"
+                  className="flex-1"
                 >
                   {isSubmitting || isUploadingPhoto ? (
-                    <span className="flex items-center justify-center gap-2">
+                    <>
                       <Loader2 className="h-5 w-5 animate-spin" />
                       {isUploadingPhoto ? 'Upload photo...' : 'Enregistrement...'}
-                    </span>
+                    </>
                   ) : (
-                    <span className="flex items-center justify-center gap-2">
+                    <>
                       <Save className="h-5 w-5" />
                       Enregistrer
-                    </span>
+                    </>
                   )}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

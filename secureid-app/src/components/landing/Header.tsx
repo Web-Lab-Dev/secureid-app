@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface HeaderProps {
   braceletParams?: { id?: string; token?: string; welcome?: boolean };
@@ -33,12 +34,11 @@ export default function Header({ braceletParams }: HeaderProps) {
         </Link>
 
         {/* Navigation CTA */}
-        <Link
-          href={getActivateUrl()}
-          className="rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-6 py-2 font-outfit text-sm font-semibold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
-        >
-          {getButtonText()}
-        </Link>
+        <Button variant="gradient" size="sm" rounded="full" asChild>
+          <Link href={getActivateUrl()}>
+            {getButtonText()}
+          </Link>
+        </Button>
       </div>
     </header>
   );

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function CTASection() {
   return (
@@ -37,13 +38,12 @@ export default function CTASection() {
           <p className="mb-10 font-outfit text-lg leading-relaxed text-white/90 drop-shadow-lg sm:text-xl">
             Rejoignez les centaines de familles burkinabé qui ont choisi la tranquillité.
           </p>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 px-8 py-4 font-outfit text-base font-semibold text-white shadow-2xl shadow-orange-500/50 transition-all hover:scale-105 hover:shadow-orange-500/70"
-          >
-            <Shield className="h-5 w-5" aria-hidden="true" />
-            Activer sa protection maintenant
-          </Link>
+          <Button variant="gradient" size="lg" rounded="full" asChild>
+            <Link href="/login">
+              <Shield className="h-5 w-5" aria-hidden="true" />
+              Activer sa protection maintenant
+            </Link>
+          </Button>
         </motion.div>
       </div>
     </section>

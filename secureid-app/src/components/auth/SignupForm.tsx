@@ -7,6 +7,7 @@ import { signupSchema, type SignupFormData } from '@/schemas/activation';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Phone, Lock, User, Loader2 } from 'lucide-react';
 import { getErrorMessage } from '@/lib/error-helpers';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 3B - FORMULAIRE D'INSCRIPTION
@@ -175,11 +176,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
         </div>
 
         {/* Bouton soumettre */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full py-3 bg-brand-orange hover:bg-brand-orange/90 disabled:bg-brand-orange/50 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
-        >
+        <Button type="submit" disabled={isSubmitting} variant="primary" size="md" fullWidth>
           {isSubmitting ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -188,7 +185,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
           ) : (
             'Créer mon compte'
           )}
-        </button>
+        </Button>
 
         {/* Lien connexion */}
         {onSwitchToLogin && (

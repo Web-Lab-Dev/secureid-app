@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, MapPin, Loader2, ShoppingCart, CheckCircle } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { Button } from '@/components/ui/button';
 
 interface OrderModalProps {
   isOpen: boolean;
@@ -297,14 +298,16 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
                     </span>
                   </div>
                 ) : (
-                  <button
+                  <Button
                     type="button"
                     onClick={detectGPS}
-                    className="flex items-center gap-2 rounded-lg border border-orange-500 px-4 py-2 font-outfit text-sm font-semibold text-orange-500 transition-colors hover:bg-orange-50"
+                    variant="outline"
+                    size="sm"
+                    className="border-orange-500 text-orange-500 hover:bg-orange-50"
                   >
                     <MapPin className="h-4 w-4" />
                     Détecter ma position
-                  </button>
+                  </Button>
                 )}
               </div>
               {gpsError && (
@@ -352,27 +355,31 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
 
           {/* Boutons */}
           <div className="mt-6 flex gap-3">
-            <button
+            <Button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border-2 border-slate-300 px-6 py-3 font-outfit font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              variant="outline"
+              size="md"
+              className="flex-1 border-2 border-slate-300 text-slate-700 hover:bg-slate-50"
             >
               Annuler
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 rounded-lg bg-gradient-to-r from-orange-500 to-amber-600 px-6 py-3 font-outfit font-semibold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl disabled:opacity-50 disabled:hover:scale-100"
+              variant="gradient"
+              size="md"
+              className="flex-1"
             >
               {isSubmitting ? (
-                <span className="flex items-center justify-center gap-2">
+                <>
                   <Loader2 className="h-5 w-5 animate-spin" />
                   Envoi...
-                </span>
+                </>
               ) : (
                 'Confirmer la commande'
               )}
-            </button>
+            </Button>
           </div>
 
           <p className="mt-4 text-center font-outfit text-xs text-slate-500">

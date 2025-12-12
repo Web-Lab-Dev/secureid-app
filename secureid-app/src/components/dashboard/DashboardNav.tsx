@@ -7,6 +7,7 @@ import { Home, Bell, LogOut, Shield, Clock, MapPin, X, ExternalLink } from 'luci
 import Link from 'next/link';
 import { LogoutConfirmDialog } from '@/components/auth/LogoutConfirmDialog';
 import { logger } from '@/lib/logger';
+import { NotificationBadge } from '@/components/ui/notification-badge';
 import { collection, query, where, onSnapshot, writeBatch, doc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useProfiles } from '@/hooks/useProfiles';
@@ -202,11 +203,7 @@ export function DashboardNav() {
             >
               <Bell className="h-4 w-4" />
               <span className="hidden sm:inline">Notifications</span>
-              {unreadScansCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                  {unreadScansCount > 99 ? '99+' : unreadScansCount}
-                </span>
-              )}
+              <NotificationBadge count={unreadScansCount} />
             </button>
 
             {/* User Info & Logout */}

@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
 import { getBraceletBadgeVariant, getBraceletStatusLabel } from '@/lib/bracelet-helpers';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import type { ProfileDocument } from '@/types/profile';
 import type { BraceletDocument } from '@/types/bracelet';
 import { reportBraceletLost, reactivateBracelet } from '@/actions/bracelet-actions';
@@ -154,40 +155,28 @@ export function ProfileCard({
         {/* Boutons d'action - 4 sections séparées */}
         <div className="space-y-2">
           {/* Bouton 1: Modifier le Profil */}
-          <button
-            onClick={onEditProfile}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-600"
-          >
+          <Button onClick={onEditProfile} variant="secondary" size="sm" fullWidth>
             <Edit3 className="h-4 w-4" />
             Modifier le Profil
-          </button>
+          </Button>
 
           {/* Bouton 2: Son Carnet de Santé */}
-          <button
-            onClick={onManageMedical}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-orange px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-orange/90"
-          >
+          <Button onClick={onManageMedical} variant="primary" size="sm" fullWidth>
             <FileHeart className="h-4 w-4" />
             Son Carnet de Santé
-          </button>
+          </Button>
 
           {/* Bouton 3: Portail Scolaire */}
-          <button
-            onClick={onManageSchool}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
-          >
+          <Button onClick={onManageSchool} variant="indigo" size="sm" fullWidth>
             <GraduationCap className="h-4 w-4" />
             Portail Scolaire
-          </button>
+          </Button>
 
           {/* Bouton 4: Historique des Scans */}
-          <button
-            onClick={onViewScans}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-500"
-          >
+          <Button onClick={onViewScans} variant="secondary" size="sm" fullWidth className="bg-slate-600 hover:bg-slate-500">
             <History className="h-4 w-4" />
             Historique des Scans
-          </button>
+          </Button>
         </div>
       </div>
     </Card>
