@@ -5,6 +5,7 @@ import { MapPin, Stethoscope, Loader2, AlertCircle, CheckCircle, GraduationCap }
 import { ShareLocationModal } from './ShareLocationModal';
 import type { UseGeolocationReturn } from '@/hooks/useGeolocation';
 import type { ProfileDocument } from '@/types/profile';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 5 V2 + 6.5 + 8 - ACTIONS FOOTER
@@ -73,10 +74,12 @@ export function ActionsFooter({ profile, geolocation, onOpenMedicalPortal, onOpe
         )}
 
         {/* Bouton GPS (Large, Orange) */}
-        <button
+        <Button
           onClick={handleRequestLocation}
           disabled={geolocation.isLoading}
-          className="flex w-full items-center justify-center gap-3 rounded-lg bg-brand-orange px-6 py-4 font-semibold text-white transition-colors hover:bg-brand-orange/90 active:bg-brand-orange/80 disabled:cursor-not-allowed disabled:opacity-50"
+          variant="primary"
+          size="lg"
+          fullWidth
         >
           {geolocation.isLoading ? (
             <>
@@ -94,25 +97,31 @@ export function ActionsFooter({ profile, geolocation, onOpenMedicalPortal, onOpe
               <span>Envoyer ma Position GPS</span>
             </>
           )}
-        </button>
+        </Button>
 
         {/* Bouton Contrôle École (Outline, Indigo) - PHASE 8 */}
-        <button
+        <Button
           onClick={onOpenSchoolPortal}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-indigo-600 bg-transparent px-6 py-3 font-medium text-indigo-400 transition-colors hover:bg-indigo-600/10 active:bg-indigo-600/20"
+          variant="outline"
+          size="md"
+          fullWidth
+          className="border-2 border-indigo-600 text-indigo-400 hover:bg-indigo-600/10"
         >
           <GraduationCap className="h-5 w-5" />
           <span>Contrôle Sortie École 🎓</span>
-        </button>
+        </Button>
 
         {/* Bouton Portail Médecin (Outline, Bleu, Discret) */}
-        <button
+        <Button
           onClick={onOpenMedicalPortal}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-blue-600 bg-transparent px-6 py-3 font-medium text-blue-400 transition-colors hover:bg-blue-600/10 active:bg-blue-600/20"
+          variant="outline"
+          size="md"
+          fullWidth
+          className="border-2 border-blue-600 text-blue-400 hover:bg-blue-600/10"
         >
           <Stethoscope className="h-5 w-5" />
           <span>Accès Personnel Médical 🔒</span>
-        </button>
+        </Button>
 
         {/* Note de confidentialité */}
         <p className="text-center text-xs text-slate-500">

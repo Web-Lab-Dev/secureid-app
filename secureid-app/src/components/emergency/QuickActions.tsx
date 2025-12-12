@@ -5,6 +5,7 @@ import { Phone, MapPin, Stethoscope, Loader2, AlertCircle } from 'lucide-react';
 import { ShareLocationModal } from './ShareLocationModal';
 import type { ProfileDocument } from '@/types/profile';
 import type { UseGeolocationReturn } from '@/hooks/useGeolocation';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 5 + 6.5 - QUICK ACTIONS
@@ -87,10 +88,11 @@ export function QuickActions({
           )}
 
           {/* Bouton 2: Position GPS (PHASE 6.5) */}
-          <button
+          <Button
             onClick={handleRequestLocation}
             disabled={geolocation.isLoading}
-            className="flex flex-col items-center justify-center gap-2 rounded-lg bg-brand-orange px-4 py-4 font-semibold text-white transition-colors hover:bg-brand-orange/90 active:bg-brand-orange/80 disabled:cursor-not-allowed disabled:opacity-50"
+            variant="primary"
+            className="flex flex-col gap-2 py-4"
           >
             {geolocation.isLoading ? (
               <Loader2 className="h-6 w-6 animate-spin" />
@@ -100,16 +102,17 @@ export function QuickActions({
             <span className="text-sm">
               {geolocation.data ? 'Partager Position' : 'Envoyer Position'}
             </span>
-          </button>
+          </Button>
 
           {/* Bouton 3: Accès Médecin */}
-          <button
+          <Button
             onClick={onOpenMedicalPortal}
-            className="flex flex-col items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-4 font-semibold text-white transition-colors hover:bg-blue-700 active:bg-blue-800"
+            variant="info"
+            className="flex flex-col gap-2 py-4"
           >
             <Stethoscope className="h-6 w-6" />
             <span className="text-sm">Accès Médecin</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

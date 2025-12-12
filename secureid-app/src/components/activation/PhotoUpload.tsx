@@ -155,13 +155,15 @@ export function PhotoUpload({
 
       {/* Bouton texte (si photo déjà présente) */}
       {preview && !uploading && (
-        <button
+        <Button
           type="button"
           onClick={handleClick}
-          className="text-sm text-brand-orange hover:text-brand-orange/80 transition-colors"
+          variant="link"
+          size="sm"
+          className="text-brand-orange"
         >
           Changer la photo
-        </button>
+        </Button>
       )}
 
       {/* Texte d'instruction */}
