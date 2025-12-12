@@ -143,7 +143,7 @@ export default function RootLayout({
       "ratingValue": "4.8",
       "reviewCount": "127",
     },
-    "image": "https://secureid-app.vercel.app/landing/shield-protection-3d.png",
+    "image": "https://secureid-app.vercel.app/landing/bouclier.png",
     "url": "https://secureid-app.vercel.app",
   };
 

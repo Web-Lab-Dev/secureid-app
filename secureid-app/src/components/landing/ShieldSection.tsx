@@ -29,15 +29,13 @@ export default function ShieldSection() {
             >
               <div className="relative h-full w-full">
                 <Image
-                  src="/landing/shield-protection-3d.webp"
+                  src="/landing/bouclier.png"
                   alt="Bouclier de protection 3D"
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                  className="object-contain drop-shadow-2xl"
+                  className="object-contain drop-shadow-2xl rounded-3xl"
                   loading="lazy"
                 />
-                {/* Masque logo Gemini en bas à droite */}
-                <div className="absolute bottom-0 right-0 h-[100px] w-[150px] bg-gradient-to-tl from-orange-50 via-amber-50/90 to-transparent" />
               </div>
             </motion.div>
           </motion.div>
