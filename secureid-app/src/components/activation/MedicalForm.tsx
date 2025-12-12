@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash2, Loader2 } from 'lucide-react';
 import { medicalFormSchema, type MedicalFormData } from '@/schemas/activation';
 import { PhotoUpload } from './PhotoUpload';
+import { Button } from '@/components/ui/button';
 
 interface MedicalFormProps {
   /** ID temporaire du profil (généré côté client avant submission) */
@@ -524,10 +525,12 @@ export function MedicalForm({
       </div>
 
       {/* Bouton de soumission */}
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting}
-        className="w-full py-4 bg-brand-orange hover:bg-brand-orange/90 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+        variant="primary"
+        size="lg"
+        fullWidth
       >
         {isSubmitting ? (
           <>
@@ -537,7 +540,7 @@ export function MedicalForm({
         ) : (
           submitButtonText
         )}
-      </button>
+      </Button>
     </form>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { X, Lock, GraduationCap } from 'lucide-react';
 import { verifySchoolPin } from '@/actions/school-actions';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 8 - SCHOOL PIN DIALOG
@@ -127,13 +128,15 @@ export function SchoolPinDialog({
               )}
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={pin.length !== 4 || loading}
-              className="w-full rounded-lg bg-indigo-600 py-3 font-semibold text-white transition-colors hover:bg-indigo-700 active:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50"
+              variant="indigo"
+              size="md"
+              fullWidth
             >
               {loading ? 'Vérification...' : 'Valider'}
-            </button>
+            </Button>
           </form>
 
           {/* Info */}
