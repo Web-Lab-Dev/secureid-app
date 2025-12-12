@@ -115,10 +115,7 @@ export function DashboardNav() {
 
         await batch.commit();
         console.log(`${allScans.length} scan(s) marqué(s) comme lu(s)`);
-
-        // Réinitialiser les états localement après succès
-        setAllScans([]);
-        setUnreadScansCount(0);
+        // Le listener onSnapshot va automatiquement mettre à jour les états
       } catch (error) {
         console.error('Error marking scans as read:', error);
       }
@@ -174,10 +171,20 @@ export function DashboardNav() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo & Brand */}
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Shield className="h-6 w-6 text-brand-orange" />
-            <span className="text-lg font-bold text-white">SecureID</span>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <Shield className="h-6 w-6 text-brand-orange" />
+              <span className="text-lg font-bold text-white">SecureID</span>
+            </Link>
+            <Link
+              href="/"
+              className="hidden sm:flex items-center gap-1.5 rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:border-brand-orange hover:text-brand-orange"
+              title="Retour au site public"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              <span>Site public</span>
+            </Link>
+          </div>
 
           {/* Navigation Links */}
           <div className="flex items-center gap-4">
@@ -187,14 +194,6 @@ export function DashboardNav() {
             >
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline">Accueil</span>
-            </Link>
-
-            <Link
-              href="/"
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
-            >
-              <ExternalLink className="h-4 w-4" />
-              <span className="hidden sm:inline">Site</span>
             </Link>
 
             <button
