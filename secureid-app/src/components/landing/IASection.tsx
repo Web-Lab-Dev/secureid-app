@@ -31,15 +31,13 @@ export default function IASection() {
               className="relative aspect-square w-full max-w-md mx-auto"
             >
               <Image
-                src="/landing/section-ia.webp"
+                src="/landing/section ia.png"
                 alt="Intelligence Artificielle SecureID - Protection bienveillante"
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-contain"
+                className="object-contain rounded-3xl"
                 loading="lazy"
               />
-              {/* Masque logo Gemini en bas à droite */}
-              <div className="absolute bottom-0 right-0 h-[150px] w-[200px] bg-gradient-to-tl from-purple-50 via-violet-50/95 to-transparent" />
 
               {/* Effet de brillance IA */}
               <motion.div

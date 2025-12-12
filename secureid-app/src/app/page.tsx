@@ -853,13 +853,11 @@ export default function LandingPage() {
               muted
               loop
               playsInline
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover rounded-3xl"
             >
-              <source src="/landing/product-demo.mp4" type="video/mp4" />
+              <source src="/landing/video-demo.mp4" type="video/mp4" />
               Votre navigateur ne supporte pas la vidéo HTML5.
             </video>
-            {/* Overlay subtil pour masquer le logo Gemini en bas à droite */}
-            <div className="absolute bottom-0 right-0 h-[50px] w-[80px] bg-gradient-to-tl from-stone-900/90 via-stone-900/50 to-transparent" />
           </motion.div>
 
           {/* Grid Features */}
