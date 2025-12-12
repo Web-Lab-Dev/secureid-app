@@ -5,6 +5,7 @@ import { X, Loader2, Lock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MedicalDocuments } from './MedicalDocuments';
 import { verifyDoctorPin } from '@/actions/emergency-actions';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 5 - PIN DIALOG
@@ -106,20 +107,22 @@ export function PinDialog({ isOpen, onClose, profileId }: PinDialogProps) {
               </div>
             )}
 
-            <button
+            <Button
               type="submit"
               disabled={isVerifying || pin.length !== 4}
-              className="w-full rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              variant="info"
+              size="md"
+              fullWidth
             >
               {isVerifying ? (
-                <span className="flex items-center justify-center gap-2">
+                <>
                   <Loader2 className="h-5 w-5 animate-spin" />
                   Vérification...
-                </span>
+                </>
               ) : (
                 'Valider'
               )}
-            </button>
+            </Button>
 
             <p className="text-center text-xs text-slate-500">
               Code réservé au personnel médical autorisé
