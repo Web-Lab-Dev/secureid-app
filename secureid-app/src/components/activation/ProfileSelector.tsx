@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { UserPlus, Users, Loader2, AlertCircle } from 'lucide-react';
 import { useProfiles } from '@/hooks/useProfiles';
 import type { ProfileDocument } from '@/types/profile';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 3C - SÉLECTEUR DE PROFIL
@@ -71,9 +72,10 @@ export const ProfileSelector = React.memo(function ProfileSelector({
 
       <div className="space-y-4">
         {/* Card: Nouvel enfant */}
-        <button
+        <Button
           onClick={onNewProfile}
-          className="w-full bg-slate-900 hover:bg-slate-800 border-2 border-brand-orange rounded-lg p-6 transition-all group text-left"
+          variant="secondary"
+          className="w-full border-2 border-brand-orange p-6 transition-all group text-left h-auto"
         >
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0 w-16 h-16 rounded-full bg-brand-orange/10 flex items-center justify-center group-hover:bg-brand-orange/20 transition-colors">
@@ -91,7 +93,7 @@ export const ProfileSelector = React.memo(function ProfileSelector({
               →
             </div>
           </div>
-        </button>
+        </Button>
 
         {/* Séparateur si des profils existent */}
         {profiles.length > 0 && (
@@ -111,10 +113,11 @@ export const ProfileSelector = React.memo(function ProfileSelector({
         {profiles.length > 0 ? (
           <div className="space-y-3">
             {profiles.map((profile) => (
-              <button
+              <Button
                 key={profile.id}
                 onClick={() => onSelectProfile(profile)}
-                className="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 rounded-lg p-4 transition-all group text-left"
+                variant="secondary"
+                className="w-full p-4 transition-all group text-left h-auto"
               >
                 <div className="flex items-center gap-4">
                   {/* Photo ou initiale */}
@@ -161,7 +164,7 @@ export const ProfileSelector = React.memo(function ProfileSelector({
                     </p>
                   </div>
                 )}
-              </button>
+              </Button>
             ))}
           </div>
         ) : (

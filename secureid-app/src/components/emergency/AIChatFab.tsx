@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Bot } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 6C - AI CHATBOT FAB
@@ -29,15 +30,14 @@ export function AIChatFab({ onClick }: AIChatFabProps) {
   }, []);
 
   return (
-    <button
+    <Button
       onClick={onClick}
+      variant="gradient"
       className={`
         fixed bottom-6 right-6 z-40
         flex items-center gap-2
         rounded-full
         bg-gradient-to-r from-blue-600 to-purple-600
-        px-4 py-3
-        font-semibold text-white
         shadow-[0_8px_32px_rgba(59,130,246,0.5)]
         transition-all duration-300
         hover:scale-105 hover:shadow-[0_12px_48px_rgba(59,130,246,0.6)]
@@ -47,6 +47,6 @@ export function AIChatFab({ onClick }: AIChatFabProps) {
     >
       <Bot className="h-6 w-6 shrink-0" />
       {!isScrolled && <span className="text-sm">Assistant IA</span>}
-    </button>
+    </Button>
   );
 }

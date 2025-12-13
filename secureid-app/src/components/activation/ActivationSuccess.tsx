@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { CheckCircle2, Home, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface ActivationSuccessProps {
   /** Nom de l'enfant dont le profil a été activé */
@@ -131,21 +132,25 @@ export function ActivationSuccess({
             transition={{ delay: 1 }}
             className="space-y-3 pt-4"
           >
-            <button
+            <Button
               onClick={handleGoHome}
-              className="w-full py-4 bg-brand-orange hover:bg-brand-orange/90 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+              variant="primary"
+              size="lg"
+              fullWidth
             >
               <Home className="w-5 h-5" />
               Retour au tableau de bord
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={handleScanAnother}
-              className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg transition-colors border border-slate-700 flex items-center justify-center gap-2"
+              variant="secondary"
+              size="lg"
+              fullWidth
             >
               <QrCode className="w-5 h-5" />
               Activer un autre bracelet
-            </button>
+            </Button>
           </motion.div>
         </div>
 
