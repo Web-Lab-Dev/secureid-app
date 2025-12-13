@@ -3,6 +3,8 @@
  *
  * Route: /api/diagnostic
  *
+ * SÉCURITÉ: Cette route est désactivée en production pour éviter toute fuite d'information
+ *
  * Permet de vérifier:
  * - Les variables d'environnement sont-elles présentes?
  * - L'Admin SDK s'initialise-t-il correctement?
@@ -13,6 +15,13 @@ import { NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 
 export async function GET() {
+  // 🔒 SÉCURITÉ: Désactiver en production
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: 'Diagnostic route is disabled in production' },
+      { status: 404 }
+    );
+  }
   const diagnostic = {
     timestamp: new Date().toISOString(),
     environment: {
@@ -22,18 +31,14 @@ export async function GET() {
       },
       clientEmail: {
         exists: !!process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-        value: process.env.FIREBASE_ADMIN_CLIENT_EMAIL || 'MISSING',
+        // 🔒 Ne jamais exposer l'email complet
+        masked: process.env.FIREBASE_ADMIN_CLIENT_EMAIL
+          ? process.env.FIREBASE_ADMIN_CLIENT_EMAIL.replace(/(.{3}).*(@.*)/, '$1***$2')
+          : 'MISSING',
       },
       privateKey: {
         exists: !!process.env.FIREBASE_ADMIN_PRIVATE_KEY,
-        firstChars: process.env.FIREBASE_ADMIN_PRIVATE_KEY
-          ? process.env.FIREBASE_ADMIN_PRIVATE_KEY.substring(0, 30)
-          : 'MISSING',
-        lastChars: process.env.FIREBASE_ADMIN_PRIVATE_KEY
-          ? process.env.FIREBASE_ADMIN_PRIVATE_KEY.substring(
-              process.env.FIREBASE_ADMIN_PRIVATE_KEY.length - 30
-            )
-          : 'MISSING',
+        // 🔒 Ne jamais exposer des parties de la clé privée
         length: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.length || 0,
         hasRealNewlines: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.includes('\n') || false,
         hasEscapedNewlines: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.includes('\\n') || false,
@@ -93,7 +98,7 @@ export async function GET() {
           id: 'TEST-001',
           status: data?.status,
           hasSecretToken: !!data?.secretToken,
-          secretTokenPreview: data?.secretToken?.substring(0, 20) + '...',
+          // 🔒 Ne jamais exposer le token secret (même partiellement)
         };
       }
     } catch (error) {

@@ -165,6 +165,12 @@ export const quickProfileSchema = z.object({
 });
 
 /**
+ * Schema partiel pour mise à jour de profil
+ * Toutes les propriétés sont optionnelles pour permettre les updates partiels
+ */
+export const updateProfileSchema = medicalFormSchema.partial();
+
+/**
  * Types inférés des schemas (utiles pour TypeScript)
  */
 export type SignupFormData = z.infer<typeof signupSchema>;

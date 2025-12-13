@@ -4,6 +4,7 @@ import { adminDb, admin } from '@/lib/firebase-admin';
 import { logger } from '@/lib/logger';
 import type { BraceletDocument, BraceletStatus } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
+import { z } from 'zod';
 
 /**
  * BRACELET SERVER ACTIONS - Gestion des bracelets (activation, transfert, gestion de statuts)
@@ -16,8 +17,19 @@ import type { ProfileDocument } from '@/types/profile';
  * 2. Transfert: Remplacer un bracelet perdu/volé par un nouveau
  * 3. Changement de statut: LOST, STOLEN, DEACTIVATED
  *
+ * SÉCURITÉ (Defense-in-Depth):
+ * - Validation stricte des formats (ID bracelet, tokens)
+ * - Vérification ownership (user possède le profil)
+ * - Transactions atomiques Firestore (évite race conditions)
+ *
  * @see {@link https://firebase.google.com/docs/firestore/manage-data/transactions Transactions Firestore}
  */
+
+// Schéma de validation pour les IDs de bracelet (format BF-XXX)
+const braceletIdSchema = z.string().regex(/^[A-Z]{2,3}-\d{3,4}$/, 'Format d\'ID bracelet invalide');
+
+// Schéma de validation pour les tokens secrets (64 caractères hexadécimaux)
+const secretTokenSchema = z.string().length(64, 'Le token doit contenir exactement 64 caractères').regex(/^[a-f0-9]{64}$/, 'Le token doit être en format hexadécimal');
 
 interface ValidateBraceletTokenInput {
   braceletId: string;
@@ -57,6 +69,23 @@ export async function validateBraceletToken(
 ): Promise<ValidateBraceletTokenResult> {
   try {
     const { braceletId, token } = input;
+
+    // 🔒 DEFENSE-IN-DEPTH: Validation format côté serveur
+    const braceletIdValidation = braceletIdSchema.safeParse(braceletId);
+    if (!braceletIdValidation.success) {
+      return {
+        valid: false,
+        error: 'Format d\'ID bracelet invalide',
+      };
+    }
+
+    const tokenValidation = secretTokenSchema.safeParse(token);
+    if (!tokenValidation.success) {
+      return {
+        valid: false,
+        error: 'Format de token invalide',
+      };
+    }
 
     const braceletRef = adminDb.collection('bracelets').doc(braceletId);
     const braceletSnap = await braceletRef.get();

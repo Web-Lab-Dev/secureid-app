@@ -4,11 +4,18 @@ import { adminDb, admin } from '@/lib/firebase-admin';
 import { logger } from '@/lib/logger';
 import type { MedicalInfo, EmergencyContact, BloodType } from '@/types/profile';
 import type { MedicalFormData, EmergencyContactFormData } from '@/schemas/activation';
+import { medicalFormSchema } from '@/schemas/activation';
+import { z } from 'zod';
 
 /**
  * PHASE 3D - SERVER ACTIONS PROFILES
  *
  * Actions serveur pour la gestion des profils enfants
+ *
+ * SÉCURITÉ (Defense-in-Depth):
+ * - Revalidation Zod côté serveur (protection contre requêtes malveillantes)
+ * - Validation parentId (seul le parent peut modifier ses profils)
+ * - Utilisation Firebase Admin SDK avec validations manuelles
  */
 
 interface CreateProfileInput {
@@ -27,6 +34,11 @@ interface CreateProfileResult {
 /**
  * Crée un nouveau profil enfant dans Firestore
  *
+ * SÉCURITÉ:
+ * 1. Revalide les données avec Zod côté serveur (defense-in-depth)
+ * 2. Vérifie que parentId est valide
+ * 3. Sanitize les entrées avant stockage
+ *
  * @param input - Données du formulaire et ID parent
  * @returns Résultat avec ID du profil créé ou erreur
  */
@@ -35,6 +47,21 @@ export async function createProfile(
 ): Promise<CreateProfileResult> {
   try {
     const { formData, parentId } = input;
+
+    // 🔒 DEFENSE-IN-DEPTH: Revalidation Zod côté serveur
+    // Protection contre les requêtes malveillantes qui bypassent la validation client
+    try {
+      medicalFormSchema.parse(formData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessages = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+        return {
+          success: false,
+          error: `Données invalides: ${errorMessages}`,
+        };
+      }
+      throw error;
+    }
 
     // Générer un ID unique pour le profil
     const profileId = `profile_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
