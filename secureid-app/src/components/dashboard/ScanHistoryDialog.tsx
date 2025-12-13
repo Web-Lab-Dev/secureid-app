@@ -3,7 +3,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { X, Clock, MapPin, Loader2 } from 'lucide-react';
-import { collection, query, where, orderBy, getDocs, writeBatch, doc } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, writeBatch, doc, QueryDocumentSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { ScanDocument } from '@/types/scan';
 import type { ProfileDocument } from '@/types/profile';
@@ -94,7 +94,7 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
     };
 
     // Fonction pour marquer les scans comme lus
-    const markScansAsRead = async (scanDocs: Array<{ id: string }>) => {
+    const markScansAsRead = async (scanDocs: Array<QueryDocumentSnapshot>) => {
       try {
         const batch = writeBatch(db);
         const unreadScans = scanDocs.filter((doc) => doc.data().isRead === false);
@@ -117,7 +117,8 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
   const formatDate = (timestamp: unknown): string => {
     if (!timestamp) return 'Date inconnue';
     try {
-      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      const firebaseTimestamp = timestamp as { toDate?: () => Date };
+      const date = firebaseTimestamp.toDate ? firebaseTimestamp.toDate() : new Date(timestamp as string | number | Date);
       return new Intl.DateTimeFormat('fr-FR', {
         dateStyle: 'full',
         timeStyle: 'short',

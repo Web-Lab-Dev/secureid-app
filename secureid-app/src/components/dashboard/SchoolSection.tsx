@@ -77,10 +77,10 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
   };
 
   // Vérifier si un pass est temporaire et obtenir les infos
-  const getExpirationBadge = (pickup: Record<string, unknown>) => {
+  const getExpirationBadge = (pickup: PickupDocument) => {
     if (pickup.type !== 'TEMPORARY' || !pickup.expiresAt) return null;
 
-    const expiresDate = pickup.expiresAt.toDate();
+    const expiresDate = new Date(pickup.expiresAt);
     const now = new Date();
     const isExpired = expiresDate < now;
     const isToday = expiresDate.toDateString() === now.toDateString();
