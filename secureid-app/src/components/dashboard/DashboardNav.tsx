@@ -78,8 +78,8 @@ export function DashboardNav() {
             childName: matchingProfile.fullName,
           });
 
-          // Collecter les IDs des scans non lus
-          if (!scanData.isRead) {
+          // Collecter les IDs des scans non lus (isRead === false ou undefined)
+          if (scanData.isRead !== true) {
             unreadIds.push(docSnap.id);
           }
         }
@@ -287,7 +287,7 @@ export function DashboardNav() {
                       {/* Nom de l'enfant */}
                       <div className="mb-2 flex items-center justify-between">
                         <h3 className="text-lg font-bold text-white">{scan.childName}</h3>
-                        {!scan.isRead && (
+                        {scan.isRead !== true && (
                           <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-semibold text-red-400">
                             Nouveau
                           </span>
