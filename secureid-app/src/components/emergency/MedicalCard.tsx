@@ -66,8 +66,8 @@ export function MedicalCard({ profile }: MedicalCardProps) {
               </p>
             </div>
             <ul className="ml-6 list-disc space-y-1">
-              {allergies.map((allergy, index) => (
-                <li key={index} className="text-red-400">
+              {allergies.map((allergy) => (
+                <li key={`allergy-${allergy}`} className="text-red-400">
                   {allergy}
                 </li>
               ))}
@@ -85,8 +85,8 @@ export function MedicalCard({ profile }: MedicalCardProps) {
               </p>
             </div>
             <ul className="ml-6 list-disc space-y-1">
-              {conditions.map((condition, index) => (
-                <li key={index} className="text-slate-300">
+              {conditions.map((condition) => (
+                <li key={`condition-${condition}`} className="text-slate-300">
                   {condition}
                 </li>
               ))}
@@ -104,8 +104,8 @@ export function MedicalCard({ profile }: MedicalCardProps) {
               </p>
             </div>
             <ul className="ml-6 list-disc space-y-1">
-              {medications.map((medication, index) => (
-                <li key={index} className="text-slate-300">
+              {medications.map((medication) => (
+                <li key={`medication-${medication}`} className="text-slate-300">
                   {medication}
                 </li>
               ))}

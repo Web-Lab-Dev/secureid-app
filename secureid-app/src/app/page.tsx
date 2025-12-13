@@ -530,9 +530,9 @@ function DashboardCarouselSection() {
 
             {/* Indicateurs de slide */}
             <div className="mt-6 flex justify-center gap-2">
-              {dashboardSlides.map((_, index) => (
+              {dashboardSlides.map((slide, index) => (
                 <button
-                  key={index}
+                  key={`slide-${slide.title}`}
                   onClick={() => setCurrentSlide(index)}
                   className={`h-2 rounded-full transition-all ${
                     index === currentSlide
@@ -702,9 +702,9 @@ function TestimonialsCarousel() {
 
           {/* Indicateurs de pagination */}
           <div className="mt-8 flex justify-center gap-2">
-            {testimonials.map((_, index) => (
+            {testimonials.map((testimonial, index) => (
               <button
-                key={index}
+                key={`testimonial-${testimonial.id}`}
                 onClick={() => {
                   setDirection(index > currentIndex ? 1 : -1);
                   setCurrentIndex(index);

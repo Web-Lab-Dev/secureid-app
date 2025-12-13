@@ -47,8 +47,8 @@ export function VitalAlert({ profile }: VitalAlertProps) {
               <h3 className="font-semibold text-orange-500">Allergies</h3>
             </div>
             <ul className="ml-6 list-disc space-y-1">
-              {allergies.map((allergy, index) => (
-                <li key={index} className="text-white">
+              {allergies.map((allergy) => (
+                <li key={`allergy-${allergy}`} className="text-white">
                   {allergy}
                 </li>
               ))}
@@ -64,8 +64,8 @@ export function VitalAlert({ profile }: VitalAlertProps) {
               <h3 className="font-semibold text-yellow-500">Conditions Médicales</h3>
             </div>
             <ul className="ml-6 list-disc space-y-1">
-              {conditions.map((condition, index) => (
-                <li key={index} className="text-white">
+              {conditions.map((condition) => (
+                <li key={`condition-${condition}`} className="text-white">
                   {condition}
                 </li>
               ))}
@@ -81,8 +81,8 @@ export function VitalAlert({ profile }: VitalAlertProps) {
               <h3 className="font-semibold text-blue-500">Médicaments</h3>
             </div>
             <ul className="ml-6 list-disc space-y-1">
-              {medications.map((medication, index) => (
-                <li key={index} className="text-white">
+              {medications.map((medication) => (
+                <li key={`medication-${medication}`} className="text-white">
                   {medication}
                 </li>
               ))}

@@ -49,7 +49,10 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
           );
 
           const scansSnap = await getDocs(scansQuery);
-          const scansData = scansSnap.docs.map((doc) => doc.data() as ScanDocument);
+          const scansData = scansSnap.docs.map((doc) => ({
+            ...doc.data() as ScanDocument,
+            id: doc.id,
+          }));
 
           setScans(scansData);
 
@@ -66,7 +69,10 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
 
           const scansSnap = await getDocs(scansQuerySimple);
           const scansData = scansSnap.docs
-            .map((doc) => doc.data() as ScanDocument)
+            .map((doc) => ({
+              ...doc.data() as ScanDocument,
+              id: doc.id,
+            }))
             .sort((a, b) => {
               // Tri manuel en mémoire
               const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
@@ -200,9 +206,9 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
               </div>
             ) : (
               <div className="space-y-3">
-                {scans.map((scan, index) => (
+                {scans.map((scan) => (
                   <div
-                    key={index}
+                    key={scan.id || `${scan.braceletId}-${scan.timestamp?.toMillis()}`}
                     className="rounded-lg border border-slate-800 bg-slate-900/50 p-5 transition-colors hover:border-slate-700"
                   >
                     <div className="flex items-start justify-between">

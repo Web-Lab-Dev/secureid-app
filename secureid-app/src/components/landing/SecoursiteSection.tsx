@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { Heart } from 'lucide-react';
 
 // Import du composant PhoneMockup - à définir ou importer depuis page.tsx
@@ -37,10 +38,13 @@ function PhoneMockup({ src, alt, className = '', floatAnimation = false, priorit
 
         {/* Screenshot */}
         <div className="relative aspect-[9/19.5] overflow-hidden bg-white">
-          <img
+          <Image
             src={src}
             alt={alt}
-            className="h-full w-full object-cover"
+            fill
+            sizes="(max-width: 768px) 300px, 400px"
+            className="object-cover"
+            priority={priority}
           />
         </div>
       </div>

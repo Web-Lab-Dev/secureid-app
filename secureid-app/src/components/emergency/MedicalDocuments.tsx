@@ -85,9 +85,9 @@ export function MedicalDocuments({ profileId, pin }: MedicalDocumentsProps) {
       </p>
 
       <div className="space-y-2">
-        {documents.map((doc, index) => (
+        {documents.map((doc) => (
           <a
-            key={index}
+            key={`doc-${doc.name}`}
             href={doc.url}
             target="_blank"
             rel="noopener noreferrer"
