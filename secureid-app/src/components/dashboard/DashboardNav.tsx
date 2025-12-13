@@ -106,8 +106,11 @@ export function DashboardNav() {
     }
   };
 
-  // Marquer tous les scans comme lus quand le modal se ferme
-  const handleCloseNotifications = async () => {
+  // Marquer tous les scans comme lus dès l'ouverture du modal
+  const handleOpenNotifications = async () => {
+    setIsNotificationsOpen(true);
+
+    // Marquer immédiatement tous les scans non lus comme lus
     if (allScans.length > 0) {
       try {
         const batch = writeBatch(db);
@@ -122,8 +125,10 @@ export function DashboardNav() {
         logger.error('Failed to mark scans as read', error);
       }
     }
+  };
 
-    // Fermer le modal à la fin
+  // Fermer le modal de notifications
+  const handleCloseNotifications = () => {
     setIsNotificationsOpen(false);
   };
 
@@ -199,7 +204,7 @@ export function DashboardNav() {
             </Link>
 
             <button
-              onClick={() => setIsNotificationsOpen(true)}
+              onClick={handleOpenNotifications}
               className="relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
             >
               <Bell className="h-4 w-4" />
