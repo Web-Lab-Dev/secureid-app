@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { GraduationCap, Plus, Trash2, Lock, Calendar, User } from 'lucide-react';
 import Image from 'next/image';
-import type { ProfileDocument } from '@/types/profile';
+import type { ProfileDocument, PickupDocument } from '@/types/profile';
 import { usePickups } from '@/hooks/usePickups';
 import { updateSchoolPin, deletePickup } from '@/actions/school-actions';
 import { useAuthContext } from '@/contexts/AuthContext';
