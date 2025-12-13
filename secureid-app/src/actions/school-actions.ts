@@ -65,7 +65,7 @@ export async function getAuthorizedPickups(data: {
     }
 
     // Filtrer les pass temporaires expirés
-    const pickups: Array<Record<string, unknown>> = [];
+    const pickups: PickupDocument[] = [];
     snapshot.forEach((doc) => {
       const data = doc.data();
 
@@ -84,7 +84,7 @@ export async function getAuthorizedPickups(data: {
         name: data.name,
         relation: data.relation,
         photoUrl: data.photoUrl,
-        type: data.type,
+        type: data.type as 'PERMANENT' | 'TEMPORARY',
         expiresAt: data.expiresAt ? data.expiresAt.toDate().toISOString() : null,
         createdAt: data.createdAt ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
       });

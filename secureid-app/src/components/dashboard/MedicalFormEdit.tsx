@@ -11,6 +11,7 @@ import type { ProfileDocument } from '@/types/profile';
 import { phoneSchema } from '@/schemas/activation';
 import type { RelationshipType } from '@/types/profile';
 import { logger } from '@/lib/logger';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 4B - FORMULAIRE ÉDITION PROFIL

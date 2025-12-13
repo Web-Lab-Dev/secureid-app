@@ -54,7 +54,7 @@ export async function createProfile(
       medicalFormSchema.parse(formData);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+        const errorMessages = error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
         return {
           success: false,
           error: `Données invalides: ${errorMessages}`,

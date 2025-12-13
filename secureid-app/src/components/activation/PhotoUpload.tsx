@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Camera, Loader2, X } from 'lucide-react';
 import { uploadProfilePhoto, validateImageFile } from '@/lib/storage-helpers';
 import { logger } from '@/lib/logger';
+import { Button } from '@/components/ui/button';
 
 interface PhotoUploadProps {
   /** ID du profil pour organiser le storage */

@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X, Save, Upload, User, Loader2, Calendar } from 'lucide-react';
 import Image from 'next/image';
-import { Timestamp } from 'firebase/firestore';
 import { updateProfile } from '@/actions/profile-actions';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { uploadProfilePhoto } from '@/lib/storage-helpers';
@@ -58,7 +57,8 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
   const formatDateForInput = (timestamp: unknown): string => {
     if (!timestamp) return '';
     try {
-      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      const firebaseTimestamp = timestamp as { toDate?: () => Date };
+      const date = firebaseTimestamp.toDate ? firebaseTimestamp.toDate() : new Date(timestamp as string | number | Date);
       return date.toISOString().split('T')[0];
     } catch {
       return '';
@@ -150,11 +150,10 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
       }
 
       // Construire le contact d'urgence sans champs undefined
-      const emergencyContact: Record<string, string | number> = {
+      const emergencyContact = {
         name: data.emergencyContactName,
         phone: data.emergencyContactPhone,
-        relationship: data.emergencyContactRelation,
-        priority: 1,
+        relationship: data.emergencyContactRelation as 'PARENT' | 'MOTHER' | 'FATHER' | 'GUARDIAN' | 'GRANDPARENT' | 'SIBLING' | 'DOCTOR' | 'OTHER',
       };
 
       const result = await updateProfile({

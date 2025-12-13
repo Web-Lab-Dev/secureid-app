@@ -66,7 +66,8 @@ export default function LoginPage() {
       logger.error('Login error', { error: err, phone });
 
       // Messages d'erreur user-friendly
-      switch (err.code) {
+      const firebaseError = err as { code?: string };
+      switch (firebaseError.code) {
         case 'auth/invalid-credential':
         case 'auth/user-not-found':
         case 'auth/wrong-password':
