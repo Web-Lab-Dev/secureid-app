@@ -8,6 +8,9 @@ import type { Timestamp } from 'firebase/firestore';
  */
 
 export interface ScanDocument {
+  /** ID unique du document scan dans Firestore */
+  id: string;
+
   /** ID du bracelet scanné */
   braceletId: string;
 
