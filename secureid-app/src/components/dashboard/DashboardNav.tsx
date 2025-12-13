@@ -299,14 +299,16 @@ export function DashboardNav() {
 
             {/* Liste des scans */}
             <div className="max-h-[70vh] overflow-y-auto p-4">
-              {displayedScans.length === 0 ? (
+              {displayedScans.filter(scan => scan.isRead !== true).length === 0 ? (
                 <div className="py-12 text-center text-slate-400">
                   <Bell className="mx-auto mb-3 h-12 w-12 opacity-50" />
                   <p>Aucune notification</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {displayedScans.map((scan) => (
+                  {displayedScans
+                    .filter(scan => scan.isRead !== true)
+                    .map((scan) => (
                     <div
                       key={scan.scanId}
                       className="rounded-lg border border-slate-800 bg-slate-800/50 p-4"
@@ -314,11 +316,9 @@ export function DashboardNav() {
                       {/* Nom de l'enfant */}
                       <div className="mb-2 flex items-center justify-between">
                         <h3 className="text-lg font-bold text-white">{scan.childName}</h3>
-                        {scan.isRead !== true && (
-                          <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-semibold text-red-400">
-                            Nouveau
-                          </span>
-                        )}
+                        <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-semibold text-red-400">
+                          Nouveau
+                        </span>
                       </div>
 
                       {/* Date */}
