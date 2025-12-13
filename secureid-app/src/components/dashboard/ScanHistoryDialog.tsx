@@ -207,7 +207,7 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
               </div>
             ) : (
               <div className="space-y-3">
-                {scans.map((scan) => (
+                {scans.map((scan, index) => (
                   <div
                     key={scan.id || `${scan.braceletId}-${scan.timestamp?.toMillis()}`}
                     className="rounded-lg border border-slate-800 bg-slate-900/50 p-5 transition-colors hover:border-slate-700"
