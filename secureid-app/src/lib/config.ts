@@ -360,9 +360,11 @@ export function isValidFileSize(sizeInBytes: number, type: 'document' | 'photo')
  */
 export function isValidFileType(mimeType: string, category: 'image' | 'document'): boolean {
   if (category === 'image') {
-    return [...LIMITS.documents.allowedTypes.images, ...LIMITS.photos.allowedTypes].includes(mimeType);
+    const imageTypes: readonly string[] = [...LIMITS.documents.allowedTypes.images, ...LIMITS.photos.allowedTypes];
+    return imageTypes.includes(mimeType);
   }
-  return LIMITS.documents.allowedTypes.documents.includes(mimeType);
+  const docTypes: readonly string[] = LIMITS.documents.allowedTypes.documents;
+  return docTypes.includes(mimeType);
 }
 
 /**

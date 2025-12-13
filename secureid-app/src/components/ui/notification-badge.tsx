@@ -33,7 +33,7 @@ const notificationBadgeVariants = cva(
 );
 
 export interface NotificationBadgeProps
-  extends React.HTMLAttributes<HTMLSpanElement>,
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'color'>,
     VariantProps<typeof notificationBadgeVariants> {
   count: number;
   max?: number;
@@ -51,7 +51,7 @@ const NotificationBadge = React.forwardRef<HTMLSpanElement, NotificationBadgePro
     return (
       <span
         ref={ref}
-        className={cn(notificationBadgeVariants({ size, color, position }), className)}
+        className={cn(notificationBadgeVariants({ size, color: color as 'red' | 'orange' | 'green' | 'blue' | null | undefined, position }), className)}
         {...props}
       >
         {displayCount}

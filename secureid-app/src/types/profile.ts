@@ -169,11 +169,11 @@ export interface PickupDocument {
   /** Type de pass */
   type: PickupType;
 
-  /** Date d'expiration si pass temporaire */
-  expiresAt?: Timestamp | null;
+  /** Date d'expiration si pass temporaire (Timestamp Firestore ou string ISO) */
+  expiresAt?: Timestamp | string | null;
 
-  /** Date de création */
-  createdAt: Timestamp;
+  /** Date de création (Timestamp Firestore ou string ISO) */
+  createdAt: Timestamp | string;
 }
 
 /**

@@ -50,11 +50,19 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
   if (!isOpen) return null;
 
   // Vérifier si un pass est temporaire et quand il expire
-  const getExpirationInfo = (pickup: Record<string, unknown>) => {
+  const getExpirationInfo = (pickup: PickupDocument) => {
     if (pickup.type !== 'TEMPORARY' || !pickup.expiresAt) return null;
 
-    // Convertir la string ISO en Date
-    const expiresDate = new Date(pickup.expiresAt);
+    // expiresAt peut être un Timestamp Firestore ou une string ISO (depuis server actions)
+    let expiresDate: Date;
+    if (typeof pickup.expiresAt === 'string') {
+      expiresDate = new Date(pickup.expiresAt);
+    } else if (pickup.expiresAt && typeof pickup.expiresAt === 'object' && 'toDate' in pickup.expiresAt) {
+      expiresDate = pickup.expiresAt.toDate();
+    } else {
+      return null;
+    }
+
     const now = new Date();
     const isToday = expiresDate.toDateString() === now.toDateString();
 
