@@ -35,9 +35,10 @@ export function DashboardNav() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [unreadScansCount, setUnreadScansCount] = useState(0);
-  const [allScans, setAllScans] = useState<ScanWithProfile[]>([]);
+  const [displayedScans, setDisplayedScans] = useState<ScanWithProfile[]>([]); // Scans affichés dans le modal
+  const [unreadScanIds, setUnreadScanIds] = useState<string[]>([]); // IDs des scans non lus (pour le batch update)
 
-  // Écouter les scans non lus en temps réel
+  // Écouter TOUS les scans récents (lus et non lus) pour l'affichage dans le modal
   useEffect(() => {
     if (!user || !profiles || profiles.length === 0) return;
 
@@ -46,21 +47,22 @@ export function DashboardNav() {
       .filter((id): id is string => id !== null);
 
     if (braceletIds.length === 0) {
-      setAllScans([]);
+      setDisplayedScans([]);
       setUnreadScansCount(0);
+      setUnreadScanIds([]);
       return;
     }
 
     // IMPORTANT: Firestore limite le where('in') à 10 éléments max
-    // Si un parent a plus de 10 enfants, il faudra paginer
+    // Query pour TOUS les scans récents (pas de filtre isRead)
     const scansQuery = query(
       collection(db, 'scans'),
-      where('braceletId', 'in', braceletIds.slice(0, 10)),
-      where('isRead', '==', false)
+      where('braceletId', 'in', braceletIds.slice(0, 10))
     );
 
     const unsubscribe = onSnapshot(scansQuery, (snapshot) => {
       const scans: ScanWithProfile[] = [];
+      const unreadIds: string[] = [];
 
       snapshot.forEach((docSnap) => {
         const scanData = docSnap.data() as ScanDocument;
@@ -75,6 +77,11 @@ export function DashboardNav() {
             scanId: docSnap.id,
             childName: matchingProfile.fullName,
           });
+
+          // Collecter les IDs des scans non lus
+          if (!scanData.isRead) {
+            unreadIds.push(docSnap.id);
+          }
         }
       });
 
@@ -85,8 +92,9 @@ export function DashboardNav() {
         return timeB - timeA;
       });
 
-      setAllScans(scans);
-      setUnreadScansCount(scans.length);
+      setDisplayedScans(scans);
+      setUnreadScanIds(unreadIds);
+      setUnreadScansCount(unreadIds.length);
     });
 
     return () => unsubscribe();
@@ -111,12 +119,12 @@ export function DashboardNav() {
     setIsNotificationsOpen(true);
 
     // Marquer immédiatement tous les scans non lus comme lus
-    if (allScans.length > 0) {
+    if (unreadScanIds.length > 0) {
       try {
         const batch = writeBatch(db);
 
-        allScans.forEach((scan) => {
-          batch.update(doc(db, 'scans', scan.scanId), { isRead: true });
+        unreadScanIds.forEach((scanId) => {
+          batch.update(doc(db, 'scans', scanId), { isRead: true });
         });
 
         await batch.commit();
@@ -264,14 +272,14 @@ export function DashboardNav() {
 
             {/* Liste des scans */}
             <div className="max-h-[70vh] overflow-y-auto p-4">
-              {allScans.length === 0 ? (
+              {displayedScans.length === 0 ? (
                 <div className="py-12 text-center text-slate-400">
                   <Bell className="mx-auto mb-3 h-12 w-12 opacity-50" />
                   <p>Aucune notification</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {allScans.map((scan) => (
+                  {displayedScans.map((scan) => (
                     <div
                       key={scan.scanId}
                       className="rounded-lg border border-slate-800 bg-slate-800/50 p-4"
@@ -279,9 +287,11 @@ export function DashboardNav() {
                       {/* Nom de l'enfant */}
                       <div className="mb-2 flex items-center justify-between">
                         <h3 className="text-lg font-bold text-white">{scan.childName}</h3>
-                        <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-semibold text-red-400">
-                          Nouveau
-                        </span>
+                        {!scan.isRead && (
+                          <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-semibold text-red-400">
+                            Nouveau
+                          </span>
+                        )}
                       </div>
 
                       {/* Date */}
