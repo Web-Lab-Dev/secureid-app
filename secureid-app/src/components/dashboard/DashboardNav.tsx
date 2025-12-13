@@ -116,10 +116,18 @@ export function DashboardNav() {
 
   // Marquer tous les scans comme lus dès l'ouverture du modal
   const handleOpenNotifications = async () => {
-    setIsNotificationsOpen(true);
-
-    // Marquer immédiatement tous les scans non lus comme lus
+    // Marquer immédiatement tous les scans non lus comme lus (optimistic update)
     if (unreadScanIds.length > 0) {
+      // 1. Mise à jour optimiste locale IMMÉDIATE
+      setDisplayedScans((prevScans) =>
+        prevScans.map((scan) =>
+          unreadScanIds.includes(scan.scanId) ? { ...scan, isRead: true } : scan
+        )
+      );
+      setUnreadScansCount(0);
+      setUnreadScanIds([]);
+
+      // 2. Mise à jour Firestore en arrière-plan
       try {
         const batch = writeBatch(db);
 
@@ -128,11 +136,15 @@ export function DashboardNav() {
         });
 
         await batch.commit();
-        // Le listener onSnapshot va automatiquement mettre à jour les états
+        // Le listener onSnapshot confirmera la mise à jour
       } catch (error) {
         logger.error('Failed to mark scans as read', error);
+        // En cas d'erreur, le listener onSnapshot rétablira l'état correct
       }
     }
+
+    // 3. Ouvrir le modal (après la mise à jour optimiste)
+    setIsNotificationsOpen(true);
   };
 
   // Fermer le modal de notifications
