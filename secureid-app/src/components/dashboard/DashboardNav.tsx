@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Home, Bell, LogOut, Shield, Clock, MapPin, X, ExternalLink } from 'lucide-react';
@@ -37,6 +37,7 @@ export function DashboardNav() {
   const [unreadScansCount, setUnreadScansCount] = useState(0);
   const [displayedScans, setDisplayedScans] = useState<ScanWithProfile[]>([]); // Scans affichés dans le modal
   const [unreadScanIds, setUnreadScanIds] = useState<string[]>([]); // IDs des scans non lus (pour le batch update)
+  const isMarkingAsReadRef = useRef(false); // Flag ref pour éviter écrasement par onSnapshot
 
   // Écouter TOUS les scans récents (lus et non lus) pour l'affichage dans le modal
   useEffect(() => {
@@ -92,9 +93,15 @@ export function DashboardNav() {
         return timeB - timeA;
       });
 
+      // Toujours mettre à jour displayedScans (pour avoir les nouvelles notifications)
       setDisplayedScans(scans);
-      setUnreadScanIds(unreadIds);
-      setUnreadScansCount(unreadIds.length);
+
+      // MAIS ne pas écraser les compteurs si on est en train de marquer comme lu
+      // (évite la race condition avec l'optimistic update)
+      if (!isMarkingAsReadRef.current) {
+        setUnreadScanIds(unreadIds);
+        setUnreadScansCount(unreadIds.length);
+      }
     });
 
     return () => unsubscribe();
@@ -118,6 +125,9 @@ export function DashboardNav() {
   const handleOpenNotifications = async () => {
     // Marquer immédiatement tous les scans non lus comme lus (optimistic update)
     if (unreadScanIds.length > 0) {
+      // 0. Activer le flag pour bloquer les mises à jour du listener
+      isMarkingAsReadRef.current = true;
+
       // 1. Mise à jour optimiste locale IMMÉDIATE
       setDisplayedScans((prevScans) =>
         prevScans.map((scan) =>
@@ -140,10 +150,15 @@ export function DashboardNav() {
       } catch (error) {
         logger.error('Failed to mark scans as read', error);
         // En cas d'erreur, le listener onSnapshot rétablira l'état correct
+      } finally {
+        // 3. Réactiver les mises à jour du listener après un délai
+        setTimeout(() => {
+          isMarkingAsReadRef.current = false;
+        }, 3000); // 3 secondes pour être sûr que Firestore a propagé
       }
     }
 
-    // 3. Ouvrir le modal (après la mise à jour optimiste)
+    // 4. Ouvrir le modal (après la mise à jour optimiste)
     setIsNotificationsOpen(true);
   };
 
