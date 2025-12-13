@@ -82,7 +82,7 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
 
     // expiresAt peut être un Timestamp Firestore ou une string ISO (depuis server actions)
     const firebaseTimestamp = pickup.expiresAt as { toDate?: () => Date };
-    const expiresDate = firebaseTimestamp.toDate ? firebaseTimestamp.toDate() : new Date(pickup.expiresAt as string);
+    const expiresDate = firebaseTimestamp.toDate ? firebaseTimestamp.toDate() : new Date(pickup.expiresAt as unknown as string);
     const now = new Date();
     const isExpired = expiresDate < now;
     const isToday = expiresDate.toDateString() === now.toDateString();
