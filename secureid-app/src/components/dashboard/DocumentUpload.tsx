@@ -5,6 +5,7 @@ import { Upload, File, X, Loader2, FileText, Image as ImageIcon } from 'lucide-r
 import { ref, uploadBytes, listAll, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 import { logger } from '@/lib/logger';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 4C - UPLOAD DOCUMENTS MÉDICAUX
@@ -211,12 +212,14 @@ export function DocumentUpload({ profileId }: DocumentUploadProps) {
             <p className="mt-4 text-sm font-medium text-white">
               Glissez-déposez un document ou
             </p>
-            <button
+            <Button
               onClick={() => fileInputRef.current?.click()}
-              className="mt-2 rounded-lg bg-brand-orange px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-orange/90"
+              variant="primary"
+              size="sm"
+              className="mt-2"
             >
               Parcourir les fichiers
-            </button>
+            </Button>
             <p className="mt-2 text-xs text-slate-500">
               PDF, JPG, PNG ou WebP - Max 10MB
             </p>
@@ -267,13 +270,15 @@ export function DocumentUpload({ profileId }: DocumentUploadProps) {
                   >
                     Voir
                   </a>
-                  <button
+                  <Button
                     onClick={() => handleDelete(doc)}
-                    className="rounded-lg bg-red-500/10 p-2 text-red-500 transition-colors hover:bg-red-500/20"
+                    variant="danger"
+                    size="sm"
+                    className="p-2"
                     aria-label="Supprimer"
                   >
                     <X className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}

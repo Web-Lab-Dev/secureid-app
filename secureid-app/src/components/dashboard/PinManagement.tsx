@@ -5,6 +5,7 @@ import { Eye, EyeOff, Edit2, Check, X, Loader2 } from 'lucide-react';
 import { updateProfile } from '@/actions/profile-actions';
 import type { ProfileDocument } from '@/types/profile';
 import { logger } from '@/lib/logger';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 4C - GESTION CODE PIN MÉDECIN
@@ -115,10 +116,12 @@ export function PinManagement({ profile }: PinManagementProps) {
         </div>
 
         <div className="flex gap-2">
-          <button
+          <Button
             onClick={handleSavePin}
             disabled={isSubmitting}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+            variant="success"
+            size="sm"
+            className="flex-1"
           >
             {isSubmitting ? (
               <>
@@ -131,16 +134,17 @@ export function PinManagement({ profile }: PinManagementProps) {
                 Enregistrer
               </>
             )}
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={handleCancelEdit}
             disabled={isSubmitting}
-            className="flex items-center justify-center gap-2 rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
+            variant="outline"
+            size="sm"
           >
             <X className="h-4 w-4" />
             Annuler
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -162,22 +166,26 @@ export function PinManagement({ profile }: PinManagementProps) {
           </p>
         </div>
 
-        <button
+        <Button
           onClick={() => setShowPin(!showPin)}
-          className="rounded-lg bg-slate-800 p-2 text-slate-400 transition-colors hover:bg-slate-700 hover:text-white"
+          variant="outline"
+          size="sm"
+          className="p-2"
           aria-label={showPin ? 'Masquer le PIN' : 'Afficher le PIN'}
         >
           {showPin ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-        </button>
+        </Button>
       </div>
 
-      <button
+      <Button
         onClick={() => setIsEditing(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-700"
+        variant="secondary"
+        size="sm"
+        fullWidth
       >
         <Edit2 className="h-4 w-4" />
         Modifier le code PIN
-      </button>
+      </Button>
     </div>
   );
 }
