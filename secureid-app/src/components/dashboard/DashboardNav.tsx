@@ -12,6 +12,7 @@ import { collection, query, where, onSnapshot, writeBatch, doc, Timestamp } from
 import { db } from '@/lib/firebase';
 import { useProfiles } from '@/hooks/useProfiles';
 import type { ScanDocument } from '@/types/scan';
+import { APP_CONFIG } from '@/lib/config';
 
 /**
  * PHASE 4 - NAVIGATION DASHBOARD
@@ -175,7 +176,7 @@ export function DashboardNav() {
           <div className="flex items-center gap-4">
             <Link href="/dashboard" className="flex items-center gap-2">
               <Shield className="h-6 w-6 text-brand-orange" />
-              <span className="text-lg font-bold text-white">SecureID</span>
+              <span className="text-lg font-bold text-white">{APP_CONFIG.name}</span>
             </Link>
             <Link
               href="/"

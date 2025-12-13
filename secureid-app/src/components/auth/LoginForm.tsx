@@ -8,6 +8,7 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Phone, Lock, Loader2 } from 'lucide-react';
 import { getErrorMessage } from '@/lib/error-helpers';
 import { Button } from '@/components/ui/button';
+import { APP_CONFIG } from '@/lib/config';
 
 /**
  * PHASE 3B - FORMULAIRE DE CONNEXION
@@ -58,7 +59,7 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
         {/* Titre */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-white mb-2">Connexion</h2>
-          <p className="text-gray-400">Accédez à votre compte SecureID</p>
+          <p className="text-gray-400">Accédez à votre compte {APP_CONFIG.name}</p>
         </div>
 
         {/* Erreur serveur */}

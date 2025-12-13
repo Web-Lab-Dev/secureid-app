@@ -3,6 +3,7 @@
 import { Phone, MessageCircle, ShieldAlert } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { BraceletDocument } from '@/types/bracelet';
+import { getWhatsAppUrl, APP_CONFIG } from '@/lib/config';
 
 /**
  * PHASE 6.5 - LOST MODE VIEW
@@ -36,10 +37,8 @@ export function LostModeView({ bracelet, ownerPhone }: LostModeViewProps) {
 
   const handleWhatsApp = () => {
     if (phone) {
-      const message = encodeURIComponent(
-        `Bonjour, j'ai trouvé votre bracelet SecureID (${bracelet.id}). Je souhaite vous le restituer.`
-      );
-      window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${message}`, '_blank');
+      const message = `Bonjour, j'ai trouvé votre bracelet ${APP_CONFIG.name} (${bracelet.id}). Je souhaite vous le restituer.`;
+      window.open(getWhatsAppUrl(phone, message), '_blank');
     }
   };
 

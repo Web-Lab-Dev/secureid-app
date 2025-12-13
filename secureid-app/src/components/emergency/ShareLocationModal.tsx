@@ -4,6 +4,7 @@ import { MessageCircle, MessageSquare, Copy, X, Share2 } from 'lucide-react';
 import { useState } from 'react';
 import type { GeolocationData } from '@/types/scan';
 import { Button } from '@/components/ui/button';
+import { getGoogleMapsUrl, getWhatsAppUrl, getEmergencyAlertMessage, APP_CONFIG } from '@/lib/config';
 
 /**
  * PHASE 6.5 - SHARE LOCATION MODAL
@@ -32,15 +33,15 @@ export function ShareLocationModal({
 
   if (!isOpen) return null;
 
-  const googleMapsLink = `https://www.google.com/maps?q=${location.lat},${location.lng}`;
-  const message = `🚨 Alerte SecureID - Bracelet scanné ici: ${googleMapsLink}`;
+  const googleMapsLink = getGoogleMapsUrl(location.lat, location.lng);
+  const message = getEmergencyAlertMessage(location);
 
   // Web Share API (natif mobile)
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Alerte SecureID',
+          title: `Alerte ${APP_CONFIG.name}`,
           text: 'Bracelet scanné ici:',
           url: googleMapsLink,
         });
@@ -53,7 +54,7 @@ export function ShareLocationModal({
 
   // WhatsApp
   const handleWhatsApp = () => {
-    const whatsappUrl = `https://wa.me/${contactPhone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = getWhatsAppUrl(contactPhone, message);
     window.open(whatsappUrl, '_blank');
     onClose();
   };

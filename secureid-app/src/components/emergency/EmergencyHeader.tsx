@@ -2,6 +2,7 @@
 
 import { Shield, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { APP_CONFIG } from '@/lib/config';
 
 /**
  * PHASE 5 - EMERGENCY HEADER
@@ -24,7 +25,7 @@ export function EmergencyHeader({ hasAlert }: EmergencyHeaderProps) {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <Shield className="h-8 w-8 text-brand-orange" />
-            <span className="text-xl font-bold text-white">SecureID</span>
+            <span className="text-xl font-bold text-white">{APP_CONFIG.name}</span>
           </div>
 
           {/* Badge Statut */}

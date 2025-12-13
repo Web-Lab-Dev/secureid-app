@@ -7,6 +7,7 @@ import type { ProfileDocument } from '@/types/profile';
 import { logger } from '@/lib/logger';
 import { ScanEffect } from './ScanEffect';
 import { translateRelationship } from '@/lib/relationship-helpers';
+import { getWhatsAppUrl } from '@/lib/config';
 
 /**
  * PHASE 5 V2 - IDENTITY CARD (Badge Sécurité)
@@ -43,7 +44,7 @@ export function IdentityCard({ profile }: IdentityCardProps) {
 
   // Construire l'URL WhatsApp
   const whatsappUrl = primaryContact?.phone
-    ? `https://wa.me/${primaryContact.phone.replace(/[^0-9]/g, '')}`
+    ? getWhatsAppUrl(primaryContact.phone, '')
     : null;
 
   // Copier le numéro dans le presse-papier

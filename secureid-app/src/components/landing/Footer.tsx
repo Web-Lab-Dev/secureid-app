@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Shield, Phone, MessageCircle, Mail, Linkedin } from 'lucide-react';
+import { APP_CONFIG, CONTACT_INFO } from '@/lib/config';
 
 export default function Footer() {
   return (
@@ -12,10 +13,10 @@ export default function Footer() {
           <div>
             <div className="mb-4 flex items-center gap-2">
               <Shield className="h-8 w-8 text-amber-600" strokeWidth={2} aria-hidden="true" />
-              <span className="font-playfair text-2xl font-bold text-[#1c1917]">SecureID</span>
+              <span className="font-playfair text-2xl font-bold text-[#1c1917]">{APP_CONFIG.name}</span>
             </div>
             <p className="font-outfit text-sm leading-relaxed text-[#78716c]">
-              Protégez ce qui compte le plus. Un lien invisible qui veille sur vos enfants.
+              {APP_CONFIG.tagline}
             </p>
           </div>
 
@@ -62,11 +63,11 @@ export default function Footer() {
 
               {/* WhatsApp */}
               <a
-                href="https://wa.me/22677040492"
+                href={`${CONTACT_INFO.social.facebook.replace('facebook.com/secureid', 'wa.me')}/${CONTACT_INFO.phone.support.replace(/\D/g, '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-[#25D366] text-white transition-all hover:bg-[#20BD5A] hover:scale-110"
-                aria-label="WhatsApp +226 77 04 04 92"
+                aria-label={`WhatsApp ${CONTACT_INFO.phone.support}`}
                 title="WhatsApp"
               >
                 <MessageCircle className="h-5 w-5" />
@@ -74,9 +75,9 @@ export default function Footer() {
 
               {/* Email */}
               <a
-                href="mailto:tko364796@gmail.com"
+                href={`mailto:${CONTACT_INFO.email.contact}`}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EA4335] text-white transition-all hover:bg-[#D33426] hover:scale-110"
-                aria-label="Email tko364796@gmail.com"
+                aria-label={`Email ${CONTACT_INFO.email.contact}`}
                 title="Email"
               >
                 <Mail className="h-5 w-5" />
