@@ -10,21 +10,36 @@ import type { BraceletDocument, BraceletStatus } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
 
 /**
- * PHASE 5 - SCANNER PAGE (SERVER COMPONENT)
+ * SCANNER PAGE - Point d'entrée principal de l'application (Server Component)
  *
- * Page dynamique de scan des bracelets QR Code
- * Route: /s/[slug]?t=token
+ * Cette page gère l'intégralité du flux de scan de QR code.
+ * Route dynamique: /s/[slug]?token=xxxxx
  *
- * Améliorations Phase 5:
- * - Fetch profile data pour affichage informations vitales
- * - Remplacement EmergencyModePlaceholder par EmergencyViewClient
+ * LOGIQUE DE SÉCURITÉ ANTI-FRAUDE:
+ * 1. Vérification de l'existence du bracelet dans Firestore
+ * 2. Validation du token secret pour empêcher le clonage de QR codes
+ *    → Sans token valide, impossible d'accéder aux données (protection contre photocopies)
+ * 3. Aiguillage selon le statut du bracelet (FACTORY_LOCKED, INACTIVE, ACTIVE, LOST, STOLEN)
+ *
+ * FLUX D'URGENCE:
+ * - Si bracelet ACTIVE → Affiche les informations vitales de l'enfant (allergies, groupe sanguin, contacts)
+ * - Si bracelet LOST → Permet à un bon samaritain de contacter le parent
+ * - Si bracelet STOLEN → Affiche un message piège et enregistre l'IP/localisation du voleur
+ *
+ * @see https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes
  */
 
-// Helper pour sérialiser les Firestore Timestamps en plain objects
+/**
+ * Sérialise les Timestamps Firestore en ISO strings pour compatibilité client
+ *
+ * Problème: Les Timestamps Firestore ({seconds, nanoseconds}) ne sont pas sérialisables en JSON
+ * Solution: Convertir récursivement tous les Timestamps en chaînes ISO-8601
+ *
+ * @param data - Objet contenant potentiellement des Timestamps Firestore
+ * @returns Objet avec Timestamps convertis en strings ISO
+ */
 function serializeFirestoreData<T>(data: T): T {
-  // Utiliser JSON.parse(JSON.stringify()) pour convertir les Timestamps
   return JSON.parse(JSON.stringify(data, (key, value) => {
-    // Convertir les Timestamps Firestore en strings ISO
     if (value && typeof value === 'object' && 'seconds' in value && 'nanoseconds' in value) {
       return new Date(value.seconds * 1000).toISOString();
     }
@@ -37,35 +52,52 @@ interface PageProps {
     slug: string;
   }>;
   searchParams: Promise<{
-    t?: string; // Token de sécurité (ancienne version)
-    token?: string; // Token de sécurité (nouvelle version)
+    t?: string; // Rétrocompatibilité avec anciennes URLs
+    token?: string; // Format actuel recommandé
   }>;
 }
 
+/**
+ * Composant serveur principal - Gère la logique d'authentification et de routage
+ *
+ * ARCHITECTURE DE SÉCURITÉ:
+ * Cette fonction effectue 2 vérifications critiques AVANT d'afficher quoi que ce soit:
+ * 1. Le bracelet existe dans notre base de données
+ * 2. Le token secret correspond (empêche les QR codes clonés/photocopiés)
+ *
+ * LOGIQUE MÉTIER - Pourquoi valider le token?
+ * → Un QR code peut être photographié/photocopié
+ * → Sans validation du token secret, un attaquant pourrait créer de faux bracelets
+ * → Le token (64 caractères cryptographiques) est impossible à deviner
+ * → Il est stocké dans Firestore ET encodé dans l'URL du QR code gravé
+ *
+ * @param params - Paramètres de route Next.js (slug = ID du bracelet)
+ * @param searchParams - Query parameters (token de sécurité)
+ */
 export default async function ScanPage({ params, searchParams }: PageProps) {
-  // Récupération des paramètres (await pour Next.js 16)
   const { slug } = await params;
   const searchParamsResolved = await searchParams;
-  // Accepter à la fois 't' et 'token' pour compatibilité
   const token = searchParamsResolved.token || searchParamsResolved.t;
 
-  // Interroger Firestore pour récupérer le bracelet
   const braceletRef = doc(db, 'bracelets', slug);
   const braceletSnap = await getDoc(braceletRef);
 
   // ============================================================================
-  // VÉRIFICATION 1 - Le bracelet existe-t-il?
+  // VÉRIFICATION 1 - Existence du bracelet
   // ============================================================================
   if (!braceletSnap.exists()) {
     return <ErrorPage type="not-found" slug={slug} />;
   }
 
-  // Récupérer les données du bracelet avec typage strict
   const braceletData = braceletSnap.data() as BraceletDocument;
 
   // ============================================================================
-  // VÉRIFICATION 2 - Le token est-il valide? (Anti-Fraude)
+  // VÉRIFICATION 2 - Validation du token secret (CRITIQUE)
   // ============================================================================
+  // On vérifie le token ici pour éviter le clonage de QR code:
+  // - Le QR code contient l'URL avec le token
+  // - Le token est aussi stocké dans Firestore lors de la fabrication
+  // - Si les deux ne correspondent pas → QR code falsifié
   const storedToken = braceletData.secretToken;
   const isTokenValid = token && token === storedToken;
 
@@ -74,25 +106,32 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
   }
 
   // ============================================================================
-  // TOUTES LES VÉRIFICATIONS SONT PASSÉES ✅
-  // ÉTAPE 4: AIGUILLAGE SELON LE STATUS
+  // AIGUILLAGE SELON LE STATUT DU BRACELET
   // ============================================================================
+  // Les statuts possibles:
+  // - FACTORY_LOCKED: Bracelet en transit depuis l'usine (non activable)
+  // - INACTIVE: Bracelet neuf non encore activé par un parent
+  // - ACTIVE: Bracelet en service normal (affiche données d'urgence)
+  // - LOST: Mode "bracelet perdu" (affiche contact parent pour restitution)
+  // - STOLEN: Mode piège (enregistre les données du voleur)
 
   const status: BraceletStatus | string = braceletData.status;
 
-  // CAS A: Bracelet FACTORY_LOCKED (en transit usine) → Afficher message maintenance
+  // CAS A: FACTORY_LOCKED - Bracelet en transit depuis l'usine
+  // Le bracelet a été fabriqué mais n'est pas encore disponible à la vente
   if (status === 'FACTORY_LOCKED') {
     return <ErrorPage type="factory-locked" slug={slug} />;
   }
 
-  // CAS B: Bracelet INACTIVE (neuf) → Rediriger vers landing page
+  // CAS B: INACTIVE - Bracelet neuf non activé
+  // Redirection vers la landing page avec paramètres pour initier l'activation
   if (status === 'INACTIVE') {
     redirect(`/?welcome=true&id=${slug}&token=${token}`);
   }
 
-  // CAS C: Bracelet ACTIVE → Afficher mode urgence complet
+  // CAS C: ACTIVE - Mode urgence complet
+  // Affiche toutes les informations vitales de l'enfant (allergies, groupe sanguin, contacts, etc.)
   if (status === 'ACTIVE') {
-    // Récupérer le profil lié au bracelet
     const profileId = braceletData.linkedProfileId;
 
     if (!profileId) {
@@ -121,16 +160,18 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
       ...profileSnap.data(),
     };
 
-    // Sérialiser les Timestamps pour les passer au composant client
+    // Sérialiser les Timestamps Firestore avant de passer au composant client
+    // (les composants client ne peuvent pas recevoir d'objets non-sérialisables)
     const profileData = serializeFirestoreData(rawProfileData) as ProfileDocument;
     const serializedBracelet = serializeFirestoreData(braceletData) as BraceletDocument;
 
     return <EmergencyViewClient bracelet={serializedBracelet} profile={profileData} />;
   }
 
-  // CAS D: Bracelet LOST → Afficher écran de restitution (PHASE 6.5)
+  // CAS D: LOST - Mode restitution
+  // Affiche uniquement le contact du propriétaire pour qu'un bon samaritain puisse le recontacter
+  // Les données médicales restent masquées (pas d'urgence médicale détectée)
   if (status === 'LOST') {
-    // Récupérer le numéro du propriétaire
     const ownerContactResult = await getOwnerContact({ braceletId: slug });
     const ownerPhone = ownerContactResult.success ? ownerContactResult.phone : undefined;
 
@@ -139,11 +180,14 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
     return <LostModeView bracelet={serializedBracelet} ownerPhone={ownerPhone} />;
   }
 
-  // CAS E: Bracelet STOLEN → Afficher message piège
+  // CAS E: STOLEN - Mode piège
+  // Affiche un message neutre mais enregistre en background l'IP, user-agent et géolocalisation
+  // Permet au propriétaire de récupérer des indices sur le voleur
   if (status === 'STOLEN') {
     return <ErrorPage type="stolen" slug={slug} token={token} />;
   }
 
-  // CAS PAR DÉFAUT: Status inconnu
+  // CAS PAR DÉFAUT: Statut non reconnu
+  // Affiche un message d'erreur générique sans révéler d'informations techniques
   return <UnknownStatusPage slug={slug} status={status} />;
 }

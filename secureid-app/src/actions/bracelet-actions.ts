@@ -6,15 +6,21 @@ import type { BraceletDocument, BraceletStatus } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
 
 /**
- * PHASE 3E - SERVER ACTIONS BRACELETS
+ * BRACELET SERVER ACTIONS - Gestion des bracelets (activation, transfert, gestion de statuts)
  *
- * Actions serveur pour la liaison et le transfert de bracelets
+ * Ce module contient toutes les opérations côté serveur liées aux bracelets.
+ * Il utilise Firebase Admin SDK pour garantir la sécurité et l'atomicité des transactions.
+ *
+ * FLUX PRINCIPAUX:
+ * 1. Activation: Lier un bracelet INACTIVE à un nouveau profil enfant
+ * 2. Transfert: Remplacer un bracelet perdu/volé par un nouveau
+ * 3. Changement de statut: LOST, STOLEN, DEACTIVATED
+ *
+ * @see {@link https://firebase.google.com/docs/firestore/manage-data/transactions Transactions Firestore}
  */
 
 interface ValidateBraceletTokenInput {
-  /** ID du bracelet (ex: BF-0001) */
   braceletId: string;
-  /** Token secret fourni par l'utilisateur */
   token: string;
 }
 
@@ -25,10 +31,26 @@ interface ValidateBraceletTokenResult {
 }
 
 /**
- * Valide le token d'un bracelet
+ * Valide le token secret d'un bracelet (première étape de sécurité)
+ *
+ * LOGIQUE DE SÉCURITÉ:
+ * Cette fonction est la première barrière contre la fraude. Elle vérifie:
+ * 1. Que le bracelet existe dans notre base de données
+ * 2. Que le token fourni correspond au token gravé lors de la fabrication
+ * 3. Que le bracelet n'est pas dans un état bloquant (STOLEN, DEACTIVATED)
+ *
+ * POURQUOI C'EST CRITIQUE:
+ * - Un QR code peut être photocopié → Sans token, on ne peut pas prouver l'authenticité
+ * - Le token est un secret partagé entre Firestore et le QR code physique
+ * - Si les deux ne correspondent pas → C'est un clone/faux
+ *
+ * CAS D'USAGE:
+ * - Avant toute activation de bracelet
+ * - Avant tout transfert vers un nouveau bracelet
+ * - Pour vérifier qu'un bracelet est légitime
  *
  * @param input - ID du bracelet et token à valider
- * @returns Résultat de la validation
+ * @returns Validation + statut actuel du bracelet
  */
 export async function validateBraceletToken(
   input: ValidateBraceletTokenInput
@@ -36,7 +58,6 @@ export async function validateBraceletToken(
   try {
     const { braceletId, token } = input;
 
-    // Récupérer le bracelet depuis Firestore
     const braceletRef = adminDb.collection('bracelets').doc(braceletId);
     const braceletSnap = await braceletRef.get();
 
@@ -49,7 +70,7 @@ export async function validateBraceletToken(
 
     const bracelet = braceletSnap.data() as BraceletDocument;
 
-    // Vérifier le token
+    // Vérification du token secret (clé de sécurité principale)
     if (bracelet.secretToken !== token) {
       return {
         valid: false,
@@ -57,7 +78,7 @@ export async function validateBraceletToken(
       };
     }
 
-    // Vérifier le statut du bracelet
+    // Vérifications de statut bloquant
     if (bracelet.status === 'STOLEN') {
       return {
         valid: false,
@@ -102,11 +123,28 @@ interface LinkBraceletToProfileResult {
 }
 
 /**
- * Lie un bracelet INACTIF à un nouveau profil
- * Utilisé lors de l'activation d'un nouveau bracelet
+ * Lie un bracelet INACTIVE à un nouveau profil enfant (première activation)
  *
- * @param input - Données de liaison
- * @returns Résultat de la liaison
+ * FLUX D'ACTIVATION:
+ * 1. Parent achète un bracelet (statut INACTIVE)
+ * 2. Parent scanne le QR code → Redirigé vers page d'activation
+ * 3. Parent crée un profil enfant (allergies, contacts urgence, etc.)
+ * 4. Cette fonction lie le bracelet au profil et passe le statut à ACTIVE
+ *
+ * TRANSACTION ATOMIQUE:
+ * Utilise une transaction Firestore pour garantir la cohérence:
+ * - Impossible qu'un bracelet soit lié à 2 profils simultanément
+ * - Impossible qu'un profil ait 2 bracelets en même temps
+ * - Si une étape échoue, tout est rollback automatiquement
+ *
+ * VÉRIFICATIONS DE SÉCURITÉ:
+ * 1. Token valide (anti-clonage)
+ * 2. Profil appartient bien à l'utilisateur connecté
+ * 3. Bracelet est bien INACTIVE (pas déjà utilisé)
+ * 4. Profil n'a pas déjà un bracelet actif
+ *
+ * @param input - IDs du bracelet, profil, user + token de validation
+ * @returns Succès ou erreur détaillée
  */
 export async function linkBraceletToProfile(
   input: LinkBraceletToProfileInput
@@ -114,7 +152,6 @@ export async function linkBraceletToProfile(
   try {
     const { braceletId, profileId, token, userId } = input;
 
-    // Valider d'abord le token
     const validation = await validateBraceletToken({ braceletId, token });
     if (!validation.valid) {
       return {
@@ -124,11 +161,11 @@ export async function linkBraceletToProfile(
     }
 
     // Transaction atomique pour éviter les race conditions
+    // (ex: 2 parents qui activent le même bracelet au même moment)
     const result = await adminDb.runTransaction(async (transaction: FirebaseFirestore.Transaction) => {
       const braceletRef = adminDb.collection('bracelets').doc(braceletId);
       const profileRef = adminDb.collection('profiles').doc(profileId);
 
-      // Récupérer le bracelet et le profil
       const braceletSnap = await transaction.get(braceletRef);
       const profileSnap = await transaction.get(profileRef);
 
@@ -143,31 +180,31 @@ export async function linkBraceletToProfile(
       const bracelet = braceletSnap.data() as BraceletDocument;
       const profile = profileSnap.data() as ProfileDocument;
 
-      // Vérifier que le profil appartient bien à l'utilisateur
+      // SÉCURITÉ: Vérifier que l'utilisateur possède bien le profil
       if (profile.parentId !== userId) {
         throw new Error('Vous n\'êtes pas autorisé à lier ce profil');
       }
 
-      // Vérifier que le bracelet est INACTIVE
+      // LOGIQUE MÉTIER: Un bracelet INACTIVE ne peut être activé qu'une seule fois
       if (bracelet.status !== 'INACTIVE') {
         throw new Error(
           'Ce bracelet est déjà activé. Utilisez la fonction de transfert.'
         );
       }
 
-      // Vérifier que le profil n'a pas déjà un bracelet
+      // COHÉRENCE: Un profil ne peut avoir qu'un seul bracelet actif à la fois
       if (profile.currentBraceletId) {
         throw new Error('Ce profil a déjà un bracelet lié');
       }
 
-      // Mettre à jour le bracelet
+      // Mise à jour atomique du bracelet: INACTIVE → ACTIVE
       transaction.update(braceletRef, {
         status: 'ACTIVE',
         linkedUserId: userId,
         linkedProfileId: profileId,
       });
 
-      // Mettre à jour le profil
+      // Mise à jour du profil avec référence au bracelet
       transaction.update(profileRef, {
         currentBraceletId: braceletId,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),

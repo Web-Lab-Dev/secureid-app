@@ -63,28 +63,60 @@ const db = admin.firestore();
 // ============================================================================
 
 /**
- * Génère un ID au format BF-XXX (3 chiffres)
+ * Génère un ID de bracelet au format BF-XXX
+ *
+ * @param {number} index - Numéro séquentiel (1-120)
+ * @returns {string} ID formaté (ex: "BF-001", "BF-042", "BF-120")
  */
 function generateBraceletId(index) {
   return `${CONFIG.ID_PREFIX}-${String(index).padStart(3, '0')}`;
 }
 
 /**
- * Génère un token secret cryptographiquement sûr (32 bytes = 64 caractères hex)
+ * Génère un token secret cryptographiquement sûr
+ *
+ * SÉCURITÉ:
+ * - Utilise crypto.randomBytes() (CSPRNG) au lieu de Math.random()
+ * - 32 bytes = 256 bits d'entropie = impossible à brute-force
+ * - Format hexadécimal (64 caractères) pour compatibilité URL
+ *
+ * Ce token est la clé de sécurité principale du système:
+ * - Il est gravé dans le QR code (partie de l'URL)
+ * - Il est stocké dans Firestore lors de la fabrication
+ * - Au scan, on vérifie que les deux correspondent
+ * - Sans correspondance = QR code cloné/falsifié
+ *
+ * @returns {string} Token de 64 caractères hexadécimaux
  */
 function generateSecretToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
 /**
- * Génère l'URL complète du bracelet
+ * Construit l'URL complète qui sera gravée dans le QR code
+ *
+ * Format: https://secureid-app.vercel.app/s/BF-001?token=abc123...
+ *
+ * @param {string} braceletId - ID du bracelet (ex: "BF-001")
+ * @param {string} secretToken - Token de sécurité (64 caractères)
+ * @returns {string} URL complète pour le QR code
  */
 function generateBraceletUrl(braceletId, secretToken) {
   return `${CONFIG.PRODUCTION_URL}/s/${braceletId}?token=${secretToken}`;
 }
 
 /**
- * Génère le QR Code optimisé pour gravure laser
+ * Génère un fichier PNG de QR code optimisé pour gravure laser
+ *
+ * PARAMÈTRES DE GRAVURE:
+ * - Résolution 800x800px (haute définition pour précision laser)
+ * - Niveau de correction Medium (compromis entre densité et résilience)
+ * - Marge minimale de 2 modules (réduit la taille sans compromettre la lecture)
+ * - Contraste maximal noir/blanc pour gravure nette
+ *
+ * @param {string} url - URL à encoder dans le QR code
+ * @param {string} outputPath - Chemin du fichier PNG de sortie
+ * @returns {Promise<boolean>} true si succès, false si erreur
  */
 async function generateQRCode(url, outputPath) {
   try {
@@ -105,7 +137,20 @@ async function generateQRCode(url, outputPath) {
 }
 
 /**
- * Crée un document bracelet dans Firestore
+ * Crée un document bracelet dans Firestore avec statut FACTORY_LOCKED
+ *
+ * LOGIQUE MÉTIER - Pourquoi FACTORY_LOCKED?
+ * 1. Les QR codes sont générés AVANT la production physique
+ * 2. Il y a un délai entre génération et réception des bracelets (shipping)
+ * 3. Le statut FACTORY_LOCKED empêche toute activation prématurée:
+ *    - Si quelqu'un scanne un QR code en transit → Message "bracelet non disponible"
+ *    - Protège contre les fuites de QR codes avant livraison
+ * 4. Une fois les bracelets reçus, on exécute le script unlock-batch.js
+ *    - FACTORY_LOCKED → INACTIVE (prêt à l'activation)
+ *
+ * @param {string} braceletId - ID unique du bracelet
+ * @param {string} secretToken - Token de sécurité généré
+ * @returns {Promise<Object>} Document Firestore créé
  */
 async function createBraceletDocument(braceletId, secretToken) {
   const docRef = db.collection('bracelets').doc(braceletId);
@@ -113,7 +158,7 @@ async function createBraceletDocument(braceletId, secretToken) {
   const data = {
     id: braceletId,
     secretToken: secretToken,
-    status: 'FACTORY_LOCKED', // 🔒 CRITIQUE - Statut verrouillé usine
+    status: 'FACTORY_LOCKED',
     batchId: CONFIG.BATCH_ID,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     linkedUserId: null,
