@@ -121,12 +121,17 @@ export function DashboardNav() {
     }
   };
 
-  // Marquer tous les scans comme lus dès l'ouverture du modal
-  const handleOpenNotifications = async () => {
-    // Ouvrir le modal immédiatement
+  // Ouvrir le modal de notifications
+  const handleOpenNotifications = () => {
     setIsNotificationsOpen(true);
+  };
 
-    // Marquer immédiatement tous les scans non lus comme lus (optimistic update)
+  // Fermer le modal et marquer tous les scans comme lus
+  const handleCloseNotifications = async () => {
+    // Fermer immédiatement pour UX rapide
+    setIsNotificationsOpen(false);
+
+    // Marquer tous les scans affichés comme lus
     if (unreadScanIds.length > 0) {
       const idsToMark = [...unreadScanIds]; // Copie pour éviter la modification pendant l'async
 
@@ -142,7 +147,7 @@ export function DashboardNav() {
       // 2. Bloquer temporairement le listener pendant la mise à jour Firestore
       isMarkingAsReadRef.current = true;
 
-      // 3. Mise à jour Firestore (AWAIT pour attendre la propagation)
+      // 3. Mise à jour Firestore en arrière-plan
       try {
         const batch = writeBatch(db);
 
@@ -152,10 +157,8 @@ export function DashboardNav() {
 
         await batch.commit();
 
-        // 4. Attendre 1 seconde supplémentaire pour la propagation Firestore
+        // 4. Attendre la propagation Firestore
         await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Le listener onSnapshot confirmera la mise à jour
       } catch (error) {
         logger.error('Failed to mark scans as read', error);
         // En cas d'erreur, le listener onSnapshot rétablira l'état correct
@@ -164,11 +167,6 @@ export function DashboardNav() {
         isMarkingAsReadRef.current = false;
       }
     }
-  };
-
-  // Fermer le modal de notifications
-  const handleCloseNotifications = () => {
-    setIsNotificationsOpen(false);
   };
 
   const formatDate = (timestamp: Timestamp | null | undefined): string => {

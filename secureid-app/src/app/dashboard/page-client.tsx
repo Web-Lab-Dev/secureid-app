@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { Plus, Loader2, Users } from 'lucide-react';
 import { useProfiles } from '@/hooks/useProfiles';
@@ -28,6 +29,7 @@ import type { ProfileDocument } from '@/types/profile';
 
 export function DashboardPageClient() {
   const {} = useAuthContext();
+  const router = useRouter();
   const { profiles, loading, refetch } = useProfiles();
   const [bracelets, setBracelets] = useState<Record<string, BraceletDocument>>({});
   const [loadingBracelets, setLoadingBracelets] = useState(true);
@@ -165,7 +167,7 @@ export function DashboardPageClient() {
 
         {/* Bouton Ajouter */}
         <button
-          onClick={() => alert('📱 Scannez le QR code sur votre nouveau bracelet SecureID pour continuer l\'activation.\n\nSi vous n\'avez pas encore de bracelet, commandez-en un sur notre site.')}
+          onClick={() => router.push('/activate')}
           className="flex items-center gap-2 rounded-lg bg-brand-orange px-4 py-2 font-semibold text-white transition-colors hover:bg-brand-orange/90"
         >
           <Plus className="h-5 w-5" />
@@ -181,7 +183,7 @@ export function DashboardPageClient() {
           description="Commencez par scanner un bracelet QR code pour créer le premier profil de votre enfant."
           action={
             <button
-              onClick={() => alert('📱 Scannez le QR code sur votre bracelet SecureID avec l\'appareil photo de votre téléphone.\n\nSi vous n\'avez pas encore de bracelet, commandez-en un sur notre site.')}
+              onClick={() => router.push('/activate')}
               className="inline-flex items-center gap-2 rounded-lg bg-brand-orange px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-orange/90"
             >
               <Plus className="h-5 w-5" />
