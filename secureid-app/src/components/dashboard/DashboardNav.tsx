@@ -123,43 +123,47 @@ export function DashboardNav() {
 
   // Marquer tous les scans comme lus dès l'ouverture du modal
   const handleOpenNotifications = async () => {
+    // Ouvrir le modal immédiatement
+    setIsNotificationsOpen(true);
+
     // Marquer immédiatement tous les scans non lus comme lus (optimistic update)
     if (unreadScanIds.length > 0) {
-      // 0. Activer le flag pour bloquer les mises à jour du listener
-      isMarkingAsReadRef.current = true;
+      const idsToMark = [...unreadScanIds]; // Copie pour éviter la modification pendant l'async
 
       // 1. Mise à jour optimiste locale IMMÉDIATE
       setDisplayedScans((prevScans) =>
         prevScans.map((scan) =>
-          unreadScanIds.includes(scan.scanId) ? { ...scan, isRead: true } : scan
+          idsToMark.includes(scan.scanId) ? { ...scan, isRead: true } : scan
         )
       );
       setUnreadScansCount(0);
       setUnreadScanIds([]);
 
-      // 2. Mise à jour Firestore en arrière-plan
+      // 2. Bloquer temporairement le listener pendant la mise à jour Firestore
+      isMarkingAsReadRef.current = true;
+
+      // 3. Mise à jour Firestore (AWAIT pour attendre la propagation)
       try {
         const batch = writeBatch(db);
 
-        unreadScanIds.forEach((scanId) => {
+        idsToMark.forEach((scanId) => {
           batch.update(doc(db, 'scans', scanId), { isRead: true });
         });
 
         await batch.commit();
+
+        // 4. Attendre 1 seconde supplémentaire pour la propagation Firestore
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
         // Le listener onSnapshot confirmera la mise à jour
       } catch (error) {
         logger.error('Failed to mark scans as read', error);
         // En cas d'erreur, le listener onSnapshot rétablira l'état correct
       } finally {
-        // 3. Réactiver les mises à jour du listener après un délai
-        setTimeout(() => {
-          isMarkingAsReadRef.current = false;
-        }, 3000); // 3 secondes pour être sûr que Firestore a propagé
+        // 5. Débloquer le listener maintenant que Firestore est à jour
+        isMarkingAsReadRef.current = false;
       }
     }
-
-    // 4. Ouvrir le modal (après la mise à jour optimiste)
-    setIsNotificationsOpen(true);
   };
 
   // Fermer le modal de notifications

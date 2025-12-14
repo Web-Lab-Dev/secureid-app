@@ -237,8 +237,16 @@ service cloud.firestore {
       // LECTURE: Réservée aux parents (via bracelet lié au profile)
       allow read: if isAuthenticated();
 
-      // Pas de modification ni suppression
-      allow update, delete: if false;
+      // MISE À JOUR: Permettre aux parents de marquer les scans comme lus
+      // Uniquement pour le champ isRead
+      allow update: if isAuthenticated() &&
+                       // Vérifier que seul le champ isRead est modifié
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']) &&
+                       // Vérifier que isRead est un booléen
+                       request.resource.data.isRead is bool;
+
+      // SUPPRESSION: Interdite
+      allow delete: if false;
     }
 
     // ============================================================================
