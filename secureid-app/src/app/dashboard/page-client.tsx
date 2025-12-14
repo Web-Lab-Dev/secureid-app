@@ -140,6 +140,11 @@ export function DashboardPageClient() {
     refetch();
   };
 
+  const handleAddChild = () => {
+    logger.info('Navigating to scan page');
+    router.push('/scan');
+  };
+
   if (loading || loadingBracelets) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -167,7 +172,7 @@ export function DashboardPageClient() {
 
         {/* Bouton Ajouter */}
         <button
-          onClick={() => router.push('/activate')}
+          onClick={handleAddChild}
           className="flex items-center gap-2 rounded-lg bg-brand-orange px-4 py-2 font-semibold text-white transition-colors hover:bg-brand-orange/90"
         >
           <Plus className="h-5 w-5" />
@@ -183,7 +188,7 @@ export function DashboardPageClient() {
           description="Commencez par scanner un bracelet QR code pour créer le premier profil de votre enfant."
           action={
             <button
-              onClick={() => router.push('/activate')}
+              onClick={handleAddChild}
               className="inline-flex items-center gap-2 rounded-lg bg-brand-orange px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-orange/90"
             >
               <Plus className="h-5 w-5" />
