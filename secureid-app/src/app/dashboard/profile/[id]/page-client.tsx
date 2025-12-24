@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, Shield } from 'lucide-react';
+import { ArrowLeft, Loader2, Shield, MapPin, FileHeart, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -125,8 +125,61 @@ export function ProfileDetailClient({ profileId }: ProfileDetailClientProps) {
         </div>
       </div>
 
+      {/* PHASE 15 - Actions Rapides */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        {/* Carte 1: Suivi GPS */}
+        <Link
+          href={`/dashboard/profile/${profile.id}/tracking`}
+          className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6 transition-all hover:border-brand-orange hover:shadow-lg hover:shadow-brand-orange/20"
+        >
+          <div className="mb-3 flex items-center justify-between">
+            <div className="rounded-full bg-brand-orange/20 p-3">
+              <MapPin className="h-6 w-6 text-brand-orange" />
+            </div>
+            <span className="rounded-full bg-brand-orange px-2 py-1 text-xs font-bold uppercase tracking-wider text-white">
+              PRO
+            </span>
+          </div>
+          <h3 className="mb-1 text-lg font-bold text-white">Suivi GPS & Signaux</h3>
+          <p className="text-sm text-slate-400">Position temps réel</p>
+          <div className="pointer-events-none absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-brand-orange/5 blur-2xl transition-all group-hover:bg-brand-orange/10" />
+        </Link>
+
+        {/* Carte 2: Dossier Médical */}
+        <button
+          onClick={() => {
+            const medicalSection = document.querySelector('[data-section="medical"]');
+            medicalSection?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6 text-left transition-all hover:border-red-500 hover:shadow-lg hover:shadow-red-500/20"
+        >
+          <div className="mb-3 rounded-full bg-red-500/20 p-3 w-fit">
+            <FileHeart className="h-6 w-6 text-red-500" />
+          </div>
+          <h3 className="mb-1 text-lg font-bold text-white">Dossier Médical</h3>
+          <p className="text-sm text-slate-400">Infos de santé</p>
+          <div className="pointer-events-none absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-red-500/5 blur-2xl transition-all group-hover:bg-red-500/10" />
+        </button>
+
+        {/* Carte 3: École & Sorties */}
+        <button
+          onClick={() => {
+            const schoolSection = document.querySelector('[data-section="school"]');
+            schoolSection?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-800 p-6 text-left transition-all hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/20"
+        >
+          <div className="mb-3 rounded-full bg-indigo-500/20 p-3 w-fit">
+            <GraduationCap className="h-6 w-6 text-indigo-500" />
+          </div>
+          <h3 className="mb-1 text-lg font-bold text-white">École & Sorties</h3>
+          <p className="text-sm text-slate-400">Anges Gardiens</p>
+          <div className="pointer-events-none absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-indigo-500/5 blur-2xl transition-all group-hover:bg-indigo-500/10" />
+        </button>
+      </div>
+
       {/* Dossier Médical - Tabs: Infos Publiques | Zone Confidentielle */}
-      <div className="rounded-lg border border-slate-800 bg-slate-900/30 p-4 sm:p-6">
+      <div className="rounded-lg border border-slate-800 bg-slate-900/30 p-4 sm:p-6" data-section="medical">
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-white">Dossier Médical</h2>
           <p className="text-sm text-slate-400">
@@ -171,7 +224,7 @@ export function ProfileDetailClient({ profileId }: ProfileDetailClientProps) {
       </div>
 
       {/* Section École & Sorties - En dehors du dossier médical */}
-      <div className="rounded-lg border border-indigo-800 bg-indigo-950/30 p-4 sm:p-6">
+      <div className="rounded-lg border border-indigo-800 bg-indigo-950/30 p-4 sm:p-6" data-section="school">
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-white">École & Sorties 🎓</h2>
           <p className="text-sm text-slate-400">
