@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { User, FileHeart, GraduationCap, Edit3, AlertCircle, History } from 'lucide-react';
+import Link from 'next/link';
+import { User, FileHeart, GraduationCap, Edit3, AlertCircle, History, MapPin } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { getBraceletBadgeVariant, getBraceletStatusLabel } from '@/lib/bracelet-helpers';
 import { Card } from '@/components/ui/Card';
@@ -152,27 +153,39 @@ export function ProfileCard({
           </div>
         )}
 
-        {/* Boutons d'action - 4 sections séparées */}
+        {/* Boutons d'action - 5 sections séparées */}
         <div className="space-y-2">
-          {/* Bouton 1: Modifier le Profil */}
+          {/* Bouton 1: Suivi GPS - PHASE 15 */}
+          <Link
+            href={`/dashboard/profile/${profile.id}/tracking`}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-orange-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:from-brand-orange/90 hover:to-orange-600/90 hover:shadow-lg hover:shadow-brand-orange/30"
+          >
+            <MapPin className="h-4 w-4" />
+            Suivi GPS & Signaux
+            <span className="ml-auto rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold">
+              PRO
+            </span>
+          </Link>
+
+          {/* Bouton 2: Modifier le Profil */}
           <Button onClick={onEditProfile} variant="secondary" size="sm" fullWidth>
             <Edit3 className="h-4 w-4" />
             Modifier le Profil
           </Button>
 
-          {/* Bouton 2: Son Carnet de Santé */}
+          {/* Bouton 3: Son Carnet de Santé */}
           <Button onClick={onManageMedical} variant="primary" size="sm" fullWidth>
             <FileHeart className="h-4 w-4" />
             Son Carnet de Santé
           </Button>
 
-          {/* Bouton 3: Portail Scolaire */}
+          {/* Bouton 4: Portail Scolaire */}
           <Button onClick={onManageSchool} variant="indigo" size="sm" fullWidth>
             <GraduationCap className="h-4 w-4" />
             Portail Scolaire
           </Button>
 
-          {/* Bouton 4: Historique des Scans */}
+          {/* Bouton 5: Historique des Scans */}
           <Button onClick={onViewScans} variant="secondary" size="sm" fullWidth className="bg-slate-600 hover:bg-slate-500">
             <History className="h-4 w-4" />
             Historique des Scans
