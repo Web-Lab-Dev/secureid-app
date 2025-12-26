@@ -106,50 +106,12 @@ export function GpsSimulationCard({
     }
   }, []);
 
-  // Simuler mouvement léger de l'enfant
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setChildLocation((prev) => {
-        // Petit mouvement aléatoire (±5m)
-        const newLocation = generateRandomLocation(prev, 0, 10);
-        setDistance(calculateDistance(parentLocation, newLocation));
-        return newLocation;
-      });
-    }, 5000); // Toutes les 5 secondes
-
-    return () => clearInterval(interval);
-  }, [parentLocation]);
-
-  // Mettre à jour la position du marqueur quand childLocation change
-  useEffect(() => {
-    if (mapRef) {
-      updateChildMarkerPosition(mapRef);
-    }
-  }, [childLocation, mapRef]);
-
-  // Animation ondulation des pointillés
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDashOffset((prev) => (prev + 1) % 20);
-    }, 50); // Animation fluide toutes les 50ms
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const onLoad = useCallback((map: google.maps.Map) => {
-    setMapRef(map);
-
-    // Écouter les changements de position/zoom pour mettre à jour la position du marqueur
-    map.addListener('bounds_changed', () => {
-      updateChildMarkerPosition(map);
-    });
-  }, []);
-
-  const updateChildMarkerPosition = (map: google.maps.Map) => {
+  // Fonction pour mettre à jour la position du marqueur enfant
+  const updateChildMarkerPosition = useCallback((map: google.maps.Map, location: LatLng) => {
     const projection = map.getProjection();
     const zoom = map.getZoom();
     if (projection && zoom !== undefined) {
-      const point = projection.fromLatLngToPoint(new google.maps.LatLng(childLocation.lat, childLocation.lng));
+      const point = projection.fromLatLngToPoint(new google.maps.LatLng(location.lat, location.lng));
       const bounds = map.getBounds();
       const ne = bounds?.getNorthEast();
       const sw = bounds?.getSouthWest();
@@ -181,7 +143,54 @@ export function GpsSimulationCard({
         }
       }
     }
-  };
+  }, []);
+
+  const onLoad = useCallback((map: google.maps.Map) => {
+    setMapRef(map);
+  }, []);
+
+  // Simuler mouvement léger de l'enfant
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setChildLocation((prev) => {
+        // Petit mouvement aléatoire (±5m)
+        const newLocation = generateRandomLocation(prev, 0, 10);
+        setDistance(calculateDistance(parentLocation, newLocation));
+        return newLocation;
+      });
+    }, 5000); // Toutes les 5 secondes
+
+    return () => clearInterval(interval);
+  }, [parentLocation]);
+
+  // Mettre à jour la position du marqueur quand childLocation change
+  useEffect(() => {
+    if (mapRef) {
+      updateChildMarkerPosition(mapRef, childLocation);
+    }
+  }, [childLocation, mapRef, updateChildMarkerPosition]);
+
+  // Mettre à jour la position lors des changements de carte (pan/zoom)
+  useEffect(() => {
+    if (mapRef) {
+      const listener = mapRef.addListener('bounds_changed', () => {
+        updateChildMarkerPosition(mapRef, childLocation);
+      });
+
+      return () => {
+        google.maps.event.removeListener(listener);
+      };
+    }
+  }, [mapRef, childLocation, updateChildMarkerPosition]);
+
+  // Animation ondulation des pointillés
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDashOffset((prev) => (prev + 1) % 20);
+    }, 50); // Animation fluide toutes les 50ms
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleRecenter = () => {
     if (mapRef) {
