@@ -13,7 +13,7 @@ import { darkModeMapStyles } from '@/lib/map-styles';
  *
  * Carte GPS interactive avec vraie Google Maps
  * - Géolocalisation position parent (dashboard)
- * - Position enfant simulée à 8-10km
+ * - Position enfant simulée à ~5km
  * - Polyline animée bleue avec pointillés ondulants
  * - Marqueurs personnalisés
  * - Calcul distance et temps réel
@@ -87,8 +87,8 @@ export function GpsSimulationCard({
           };
           setParentLocation(newParentLocation);
 
-          // Générer position enfant à 8-10km
-          const newChildLocation = generateRandomLocation(newParentLocation, 8000, 10000);
+          // Générer position enfant à ~5km
+          const newChildLocation = generateRandomLocation(newParentLocation, 4500, 5500);
           setChildLocation(newChildLocation);
 
           // Calculer distance
@@ -97,15 +97,15 @@ export function GpsSimulationCard({
         },
         (error) => {
           console.log('Geolocation denied, using default location:', error);
-          // Générer position enfant depuis position par défaut à 8-10km
-          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 8000, 10000);
+          // Générer position enfant depuis position par défaut à ~5km
+          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 4500, 5500);
           setChildLocation(newChildLocation);
           setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
         }
       );
     } else {
-      // Générer position enfant depuis position par défaut à 8-10km
-      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 8000, 10000);
+      // Générer position enfant depuis position par défaut à ~5km
+      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 4500, 5500);
       setChildLocation(newChildLocation);
       setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
     }
