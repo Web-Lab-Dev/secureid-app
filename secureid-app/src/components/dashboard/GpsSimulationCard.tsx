@@ -13,8 +13,8 @@ import { darkModeMapStyles } from '@/lib/map-styles';
  *
  * Carte GPS interactive avec vraie Google Maps
  * - Géolocalisation position parent (dashboard)
- * - Position enfant simulée à 800-1000m
- * - Polyline animée bleue
+ * - Position enfant simulée à 8-10km
+ * - Polyline animée bleue avec pointillés ondulants
  * - Marqueurs personnalisés
  * - Calcul distance et temps réel
  */
@@ -87,8 +87,8 @@ export function GpsSimulationCard({
           };
           setParentLocation(newParentLocation);
 
-          // Générer position enfant à 800-1000m
-          const newChildLocation = generateRandomLocation(newParentLocation, 800, 1000);
+          // Générer position enfant à 8-10km
+          const newChildLocation = generateRandomLocation(newParentLocation, 8000, 10000);
           setChildLocation(newChildLocation);
 
           // Calculer distance
@@ -97,15 +97,15 @@ export function GpsSimulationCard({
         },
         (error) => {
           console.log('Geolocation denied, using default location:', error);
-          // Générer position enfant depuis position par défaut
-          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 800, 1000);
+          // Générer position enfant depuis position par défaut à 8-10km
+          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 8000, 10000);
           setChildLocation(newChildLocation);
           setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
         }
       );
     } else {
-      // Générer position enfant depuis position par défaut
-      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 800, 1000);
+      // Générer position enfant depuis position par défaut à 8-10km
+      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 8000, 10000);
       setChildLocation(newChildLocation);
       setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
     }
@@ -185,10 +185,10 @@ export function GpsSimulationCard({
     return () => clearTimeout(timer);
   }, [childLocation, mapRef, updateChildMarkerPosition]);
 
-  // Animation ondulation des pointillés
+  // Animation ondulation des pointillés (0-100%)
   useEffect(() => {
     const interval = setInterval(() => {
-      setDashOffset((prev) => (prev + 1) % 20);
+      setDashOffset((prev) => (prev + 1) % 100);
     }, 50); // Animation fluide toutes les 50ms
 
     return () => clearInterval(interval);
@@ -240,23 +240,25 @@ export function GpsSimulationCard({
           fullscreenControl: false,
         }}
       >
-        {/* Polyline (trajet avec animation ondulante) - Seulement si positions valides */}
+        {/* Polyline (trajet avec pointillés ondulants) - Seulement si positions valides */}
         {parentLocation.lat !== DEFAULT_LOCATION.lat && childLocation.lat !== DEFAULT_LOCATION.lat && (
           <Polyline
             path={[parentLocation, childLocation]}
             options={{
               strokeColor: '#3b82f6',
-              strokeOpacity: 0.8,
+              strokeOpacity: 0, // Ligne invisible, on utilise seulement les icônes
               strokeWeight: 4,
               icons: [
                 {
                   icon: {
-                    path: 'M 0,-1 0,1',
+                    path: 'M 0,-1 0,1', // Petit trait vertical
                     strokeOpacity: 1,
-                    scale: 3,
+                    strokeColor: '#3b82f6',
+                    strokeWeight: 4,
+                    scale: 4,
                   },
-                  offset: `${dashOffset}px`,
-                  repeat: '20px',
+                  offset: `${dashOffset}%`,
+                  repeat: '20px', // Espacement entre les points
                 },
               ],
             }}
