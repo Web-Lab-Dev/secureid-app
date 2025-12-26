@@ -66,39 +66,6 @@ export default async function TrackingPage({ params }: TrackingPageProps) {
           childName={profile?.fullName}
           childPhotoUrl={profile?.photoUrl || undefined}
         />
-
-        {/* Info supplémentaire */}
-        <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-          <h3 className="mb-3 text-lg font-semibold text-white">
-            Comment ça marche ?
-          </h3>
-          <ul className="space-y-2 text-slate-400">
-            <li className="flex items-start gap-3">
-              <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-orange/20 text-xs font-bold text-brand-orange">
-                1
-              </span>
-              <span>
-                Le bracelet envoie sa position GPS toutes les 5 minutes via réseau cellulaire intégré
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-orange/20 text-xs font-bold text-brand-orange">
-                2
-              </span>
-              <span>
-                Définissez des zones de sécurité (maison, école) et recevez des alertes en cas de sortie
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-orange/20 text-xs font-bold text-brand-orange">
-                3
-              </span>
-              <span>
-                Consultez l&apos;historique des déplacements sur 30 jours pour comprendre les habitudes
-              </span>
-            </li>
-          </ul>
-        </div>
       </div>
     </div>
   );

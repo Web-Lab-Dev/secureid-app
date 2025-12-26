@@ -77,7 +77,19 @@ export function GpsSimulationCard({
       </svg>
 
       {/* Marker Layer: Pin avec photo enfant */}
-      <div className="absolute left-[75%] top-[40%] z-20 -translate-x-1/2 -translate-y-1/2">
+      <motion.div
+        className="absolute left-[75%] top-[40%] z-20 -translate-x-1/2 -translate-y-1/2"
+        animate={{
+          x: [0, 5, -3, 8, -2, 0],
+          y: [0, -4, 6, -2, 4, 0],
+        }}
+        transition={{
+          duration: 10,
+          repeat: Infinity,
+          ease: "easeInOut",
+          repeatDelay: 1
+        }}
+      >
         {/* Radar Ping (Signal GPS) */}
         <motion.div
           className="absolute inset-0 -m-12 rounded-full bg-blue-500"
@@ -135,7 +147,7 @@ export function GpsSimulationCard({
             </div>
           </div>
         </motion.div>
-      </div>
+      </motion.div>
 
       {/* HUD: Badge LIVE (top left) */}
       <motion.div
