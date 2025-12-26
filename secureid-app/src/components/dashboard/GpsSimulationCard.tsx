@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, Polyline } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer } from '@react-google-maps/api';
 import { motion } from 'framer-motion';
-import { MapPin, Target } from 'lucide-react';
+import { MapPin, Target, Navigation, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { generateRandomLocation, calculateDistance, calculateETA, formatDistance, type LatLng } from '@/lib/geo-utils';
 import { darkModeMapStyles } from '@/lib/map-styles';
@@ -35,12 +35,41 @@ export function GpsSimulationCard({
   const [childLocation, setChildLocation] = useState<LatLng>(DEFAULT_LOCATION);
   const [distance, setDistance] = useState<number>(0);
   const [mapRef, setMapRef] = useState<google.maps.Map | null>(null);
+  const [dashOffset, setDashOffset] = useState<number>(0);
+  const [showTraffic, setShowTraffic] = useState<boolean>(true);
+  const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('roadmap');
+  const [childMarkerPosition, setChildMarkerPosition] = useState<{ x: number; y: number } | null>(null);
 
   // Charger Google Maps
-  const { isLoaded } = useJsApiLoader({
+  const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
   });
+
+  // Afficher erreur si échec de chargement
+  if (loadError) {
+    return (
+      <div className="relative h-[500px] w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 shadow-2xl">
+        <div className="flex h-full items-center justify-center p-8">
+          <div className="text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20">
+              <MapPin className="h-8 w-8 text-red-500" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Erreur Google Maps</h3>
+            <p className="mt-2 text-sm text-slate-400">
+              Impossible de charger Google Maps.
+              <br />
+              Vérifiez que l&apos;API key est correcte et que les APIs suivantes sont activées:
+            </p>
+            <ul className="mt-4 space-y-1 text-left text-xs text-slate-500">
+              <li>• Maps JavaScript API</li>
+              <li>• Geolocation API</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Géolocalisation au chargement
   useEffect(() => {
@@ -91,14 +120,81 @@ export function GpsSimulationCard({
     return () => clearInterval(interval);
   }, [parentLocation]);
 
+  // Mettre à jour la position du marqueur quand childLocation change
+  useEffect(() => {
+    if (mapRef) {
+      updateChildMarkerPosition(mapRef);
+    }
+  }, [childLocation, mapRef]);
+
+  // Animation ondulation des pointillés
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDashOffset((prev) => (prev + 1) % 20);
+    }, 50); // Animation fluide toutes les 50ms
+
+    return () => clearInterval(interval);
+  }, []);
+
   const onLoad = useCallback((map: google.maps.Map) => {
     setMapRef(map);
+
+    // Écouter les changements de position/zoom pour mettre à jour la position du marqueur
+    map.addListener('bounds_changed', () => {
+      updateChildMarkerPosition(map);
+    });
   }, []);
+
+  const updateChildMarkerPosition = (map: google.maps.Map) => {
+    const projection = map.getProjection();
+    const zoom = map.getZoom();
+    if (projection && zoom !== undefined) {
+      const point = projection.fromLatLngToPoint(new google.maps.LatLng(childLocation.lat, childLocation.lng));
+      const bounds = map.getBounds();
+      const ne = bounds?.getNorthEast();
+      const sw = bounds?.getSouthWest();
+
+      if (point && ne && sw) {
+        const nePoint = projection.fromLatLngToPoint(ne);
+        const swPoint = projection.fromLatLngToPoint(sw);
+
+        if (nePoint && swPoint) {
+          const scale = Math.pow(2, zoom);
+          const worldPoint = new google.maps.Point(
+            point.x * scale,
+            point.y * scale
+          );
+          const worldNe = new google.maps.Point(
+            nePoint.x * scale,
+            nePoint.y * scale
+          );
+          const worldSw = new google.maps.Point(
+            swPoint.x * scale,
+            swPoint.y * scale
+          );
+
+          const mapSize = map.getDiv().getBoundingClientRect();
+          const x = ((worldPoint.x - worldSw.x) / (worldNe.x - worldSw.x)) * mapSize.width;
+          const y = ((worldPoint.y - worldNe.y) / (worldSw.y - worldNe.y)) * mapSize.height;
+
+          setChildMarkerPosition({ x, y });
+        }
+      }
+    }
+  };
 
   const handleRecenter = () => {
     if (mapRef) {
       mapRef.panTo(parentLocation);
       mapRef.setZoom(14);
+    }
+  };
+
+  const toggleMapType = () => {
+    if (mapRef) {
+      const newType = mapType === 'roadmap' ? 'satellite' : 'roadmap';
+      setMapType(newType);
+      mapRef.setMapTypeId(newType);
     }
   };
 
@@ -133,7 +229,7 @@ export function GpsSimulationCard({
           fullscreenControl: false,
         }}
       >
-        {/* Polyline (trajet) */}
+        {/* Polyline (trajet avec animation ondulante) */}
         <Polyline
           path={[parentLocation, childLocation]}
           options={{
@@ -147,12 +243,15 @@ export function GpsSimulationCard({
                   strokeOpacity: 1,
                   scale: 3,
                 },
-                offset: '0',
+                offset: `${dashOffset}px`,
                 repeat: '20px',
               },
             ],
           }}
         />
+
+        {/* Traffic Layer pour plus de réalisme */}
+        {showTraffic && <TrafficLayer />}
 
         {/* Marqueur parent (dashboard) */}
         <Marker
@@ -169,19 +268,17 @@ export function GpsSimulationCard({
           }}
         />
 
-        {/* Marqueur enfant (photo + pin) */}
+        {/* Marqueur enfant - Ne pas utiliser la photo directement, on va créer un overlay personnalisé */}
         <Marker
           position={childLocation}
           icon={{
-            url: childPhotoUrl || 'data:image/svg+xml;base64,' + btoa(`
-              <svg width="60" height="80" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="30" cy="30" r="28" fill="white" stroke="#3b82f6" stroke-width="4"/>
-                <circle cx="30" cy="30" r="20" fill="#3b82f6"/>
-                <path d="M 30 60 L 22 70 L 38 70 Z" fill="white"/>
+            url: 'data:image/svg+xml;base64,' + btoa(`
+              <svg width="1" height="1" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="0.5" cy="0.5" r="0.5" fill="transparent"/>
               </svg>
             `),
-            scaledSize: new google.maps.Size(60, 80),
-            anchor: new google.maps.Point(30, 80),
+            scaledSize: new google.maps.Size(1, 1),
+            anchor: new google.maps.Point(0, 0),
           }}
         />
       </GoogleMap>
@@ -199,32 +296,130 @@ export function GpsSimulationCard({
         </div>
       </motion.div>
 
-      {/* Tooltip distance et temps */}
+      {/* Marqueur enfant personnalisé avec photo (overlay DOM) */}
+      {childMarkerPosition && (
+        <div
+          className="absolute z-20 pointer-events-none transition-all duration-300"
+          style={{
+            left: `${childMarkerPosition.x}px`,
+            top: `${childMarkerPosition.y}px`,
+            transform: `translate(-50%, -100%)`,
+          }}
+        >
+        <motion.div
+          className="relative"
+          animate={{
+            y: [0, -8, 0],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          {/* Pin avec photo */}
+          <div className="relative flex flex-col items-center">
+            {/* Photo circulaire avec ombre */}
+            <div className="relative h-16 w-16 rounded-full bg-white p-1 shadow-2xl ring-4 ring-blue-500">
+              {childPhotoUrl ? (
+                <Image
+                  src={childPhotoUrl}
+                  alt={childName}
+                  width={64}
+                  height={64}
+                  className="h-full w-full rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center rounded-full bg-blue-500">
+                  <MapPin className="h-8 w-8 text-white" />
+                </div>
+              )}
+
+              {/* Pulse radar autour de la photo */}
+              <motion.div
+                className="absolute inset-0 -m-2 rounded-full bg-blue-500"
+                animate={{
+                  scale: [1, 1.8, 1],
+                  opacity: [0.5, 0, 0.5],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeOut",
+                }}
+              />
+            </div>
+
+            {/* Pointe du pin (triangle) */}
+            <div className="relative -mt-1">
+              <div className="h-0 w-0 border-l-12 border-r-12 border-t-16 border-l-transparent border-r-transparent border-t-white drop-shadow-lg" />
+            </div>
+          </div>
+        </motion.div>
+        </div>
+      )}
+
+      {/* Tooltip distance et temps - déplacé en haut à droite */}
       <motion.div
-        className="absolute left-1/2 top-20 z-10 -translate-x-1/2"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
+        className="absolute right-4 top-4 z-10"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.5 }}
       >
         <div className="rounded-lg bg-white px-4 py-2 shadow-xl">
-          <div className="text-center">
-            <p className="text-lg font-bold text-slate-800">{formatDistance(distance)}</p>
-            <p className="text-xs text-slate-600">~{calculateETA(distance)}</p>
+          <div className="flex items-center gap-2">
+            <Navigation className="h-4 w-4 text-blue-600" />
+            <div>
+              <p className="text-sm font-bold text-slate-800">{formatDistance(distance)}</p>
+              <p className="text-xs text-slate-600">~{calculateETA(distance)}</p>
+            </div>
           </div>
         </div>
       </motion.div>
 
-      {/* HUD: Bouton Recentrer (bottom right) */}
-      <motion.button
-        onClick={handleRecenter}
-        className="absolute bottom-4 right-4 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl"
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.5, type: "spring" }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <Target className="h-5 w-5 text-blue-600" />
-      </motion.button>
+      {/* Contrôles carte (bottom right) */}
+      <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
+        {/* Bouton Recentrer */}
+        <motion.button
+          onClick={handleRecenter}
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl"
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5, type: "spring" }}
+          whileTap={{ scale: 0.95 }}
+          title="Recentrer la carte"
+        >
+          <Target className="h-5 w-5 text-blue-600" />
+        </motion.button>
+
+        {/* Bouton Trafic */}
+        <motion.button
+          onClick={() => setShowTraffic(!showTraffic)}
+          className={`flex h-12 w-12 items-center justify-center rounded-full shadow-xl transition-all hover:scale-110 hover:shadow-2xl ${
+            showTraffic ? 'bg-green-500 text-white' : 'bg-white text-slate-600'
+          }`}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.6, type: "spring" }}
+          whileTap={{ scale: 0.95 }}
+          title="Afficher le trafic"
+        >
+          <Zap className="h-5 w-5" />
+        </motion.button>
+
+        {/* Bouton Type de carte */}
+        <motion.button
+          onClick={toggleMapType}
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl"
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.7, type: "spring" }}
+          whileTap={{ scale: 0.95 }}
+          title={mapType === 'roadmap' ? 'Vue satellite' : 'Vue carte'}
+        >
+          <Navigation className="h-5 w-5 text-blue-600" />
+        </motion.button>
+      </div>
 
       {/* Info nom enfant (bottom left) */}
       <motion.div
