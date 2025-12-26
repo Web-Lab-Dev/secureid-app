@@ -147,7 +147,12 @@ export function GpsSimulationCard({
 
   const onLoad = useCallback((map: google.maps.Map) => {
     setMapRef(map);
-  }, []);
+
+    // Écouter les changements de vue (pan/zoom) pour repositionner le marqueur
+    map.addListener('idle', () => {
+      updateChildMarkerPosition(map, childLocation);
+    });
+  }, [childLocation, updateChildMarkerPosition]);
 
   // Simuler mouvement léger de l'enfant
   useEffect(() => {
@@ -163,25 +168,17 @@ export function GpsSimulationCard({
     return () => clearInterval(interval);
   }, [parentLocation]);
 
-  // Mettre à jour la position du marqueur quand childLocation change
+  // Mettre à jour la position du marqueur quand la carte est prête
   useEffect(() => {
-    if (mapRef) {
+    if (!mapRef) return;
+
+    // Attendre que la carte soit complètement chargée
+    const timer = setTimeout(() => {
       updateChildMarkerPosition(mapRef, childLocation);
-    }
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [childLocation, mapRef, updateChildMarkerPosition]);
-
-  // Mettre à jour la position lors des changements de carte (pan/zoom)
-  useEffect(() => {
-    if (mapRef) {
-      const listener = mapRef.addListener('bounds_changed', () => {
-        updateChildMarkerPosition(mapRef, childLocation);
-      });
-
-      return () => {
-        google.maps.event.removeListener(listener);
-      };
-    }
-  }, [mapRef, childLocation, updateChildMarkerPosition]);
 
   // Animation ondulation des pointillés
   useEffect(() => {
