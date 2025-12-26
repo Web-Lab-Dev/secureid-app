@@ -45,7 +45,7 @@ export default async function TrackingPage({ params }: TrackingPageProps) {
         {/* Header */}
         <div className="mb-8 flex items-center gap-4">
           <Link
-            href={`/dashboard/profile/${id}`}
+            href="/dashboard"
             className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
           >
             <ArrowLeft className="h-5 w-5" />
