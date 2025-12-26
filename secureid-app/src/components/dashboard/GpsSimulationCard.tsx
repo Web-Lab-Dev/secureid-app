@@ -51,20 +51,25 @@ export function GpsSimulationCard({
     return (
       <div className="relative h-[500px] w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 shadow-2xl">
         <div className="flex h-full items-center justify-center p-8">
-          <div className="text-center">
+          <div className="text-center max-w-md">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20">
               <MapPin className="h-8 w-8 text-red-500" />
             </div>
             <h3 className="text-lg font-bold text-white">Erreur Google Maps</h3>
             <p className="mt-2 text-sm text-slate-400">
-              Impossible de charger Google Maps.
-              <br />
-              Vérifiez que l&apos;API key est correcte et que les APIs suivantes sont activées:
+              {loadError.message?.includes('ApiTargetBlockedMapError')
+                ? "Votre clé API Google Maps a des restrictions qui bloquent cette application."
+                : "Impossible de charger Google Maps."}
             </p>
-            <ul className="mt-4 space-y-1 text-left text-xs text-slate-500">
-              <li>• Maps JavaScript API</li>
-              <li>• Geolocation API</li>
-            </ul>
+            <div className="mt-4 rounded-lg bg-slate-800 p-4 text-left">
+              <p className="text-xs font-semibold text-white mb-2">Solution :</p>
+              <ol className="space-y-1 text-xs text-slate-400">
+                <li>1. Allez sur Google Cloud Console</li>
+                <li>2. Credentials → Votre API Key</li>
+                <li>3. Application Restrictions → None (ou ajoutez votre domaine)</li>
+                <li>4. API Restrictions → Maps JavaScript API activée</li>
+              </ol>
+            </div>
           </div>
         </div>
       </div>
@@ -235,26 +240,28 @@ export function GpsSimulationCard({
           fullscreenControl: false,
         }}
       >
-        {/* Polyline (trajet avec animation ondulante) */}
-        <Polyline
-          path={[parentLocation, childLocation]}
-          options={{
-            strokeColor: '#3b82f6',
-            strokeOpacity: 0.8,
-            strokeWeight: 4,
-            icons: [
-              {
-                icon: {
-                  path: 'M 0,-1 0,1',
-                  strokeOpacity: 1,
-                  scale: 3,
+        {/* Polyline (trajet avec animation ondulante) - Seulement si positions valides */}
+        {parentLocation.lat !== DEFAULT_LOCATION.lat && childLocation.lat !== DEFAULT_LOCATION.lat && (
+          <Polyline
+            path={[parentLocation, childLocation]}
+            options={{
+              strokeColor: '#3b82f6',
+              strokeOpacity: 0.8,
+              strokeWeight: 4,
+              icons: [
+                {
+                  icon: {
+                    path: 'M 0,-1 0,1',
+                    strokeOpacity: 1,
+                    scale: 3,
+                  },
+                  offset: `${dashOffset}px`,
+                  repeat: '20px',
                 },
-                offset: `${dashOffset}px`,
-                repeat: '20px',
-              },
-            ],
-          }}
-        />
+              ],
+            }}
+          />
+        )}
 
         {/* Traffic Layer pour plus de réalisme */}
         {showTraffic && <TrafficLayer />}
