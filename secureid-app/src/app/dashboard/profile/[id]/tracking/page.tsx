@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { GpsSimulationCard } from '@/components/dashboard/GpsSimulationCard';
+import { GpsDisclaimerModal } from '@/components/dashboard/GpsDisclaimerModal';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { ProfileDocument } from '@/types/profile';
@@ -41,6 +42,9 @@ export default async function TrackingPage({ params }: TrackingPageProps) {
 
   return (
     <div className="min-h-screen bg-slate-950">
+      {/* Modale Disclaimer */}
+      <GpsDisclaimerModal />
+
       <div className="container mx-auto max-w-4xl px-4 py-8">
         {/* Header */}
         <div className="mb-8 flex items-center gap-4">
