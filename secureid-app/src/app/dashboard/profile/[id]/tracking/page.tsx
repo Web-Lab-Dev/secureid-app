@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { GpsSimulationCard } from '@/components/dashboard/GpsSimulationCard';
 import { GpsDisclaimerModal } from '@/components/dashboard/GpsDisclaimerModal';
+import { HealthIndicators } from '@/components/dashboard/HealthIndicators';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { ProfileDocument } from '@/types/profile';
@@ -70,6 +71,11 @@ export default async function TrackingPage({ params }: TrackingPageProps) {
           childName={profile?.fullName}
           childPhotoUrl={profile?.photoUrl || undefined}
         />
+
+        {/* Indicateurs de santé */}
+        <div className="mt-6">
+          <HealthIndicators childName={profile?.fullName} />
+        </div>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer } from '@react-google-maps/api';
 import { motion } from 'framer-motion';
-import { MapPin, Target, Navigation, Zap, Heart, Thermometer, Activity, Battery } from 'lucide-react';
+import { MapPin, Target, Navigation, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { generateRandomLocation, calculateDistance, calculateETA, formatDistance, type LatLng } from '@/lib/geo-utils';
 import { darkModeMapStyles } from '@/lib/map-styles';
@@ -39,12 +39,6 @@ export function GpsSimulationCard({
   const [showTraffic, setShowTraffic] = useState<boolean>(true);
   const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('roadmap');
   const [childMarkerPosition, setChildMarkerPosition] = useState<{ x: number; y: number } | null>(null);
-
-  // Indicateurs de santé simulés
-  const [heartRate, setHeartRate] = useState<number>(72);
-  const [temperature, setTemperature] = useState<number>(36.8);
-  const [steps, setSteps] = useState<number>(3247);
-  const [battery, setBattery] = useState<number>(78);
 
   // Charger Google Maps
   const { isLoaded, loadError } = useJsApiLoader({
@@ -196,25 +190,6 @@ export function GpsSimulationCard({
     const interval = setInterval(() => {
       setDashOffset((prev) => (prev + 1) % 100);
     }, 50); // Animation fluide toutes les 50ms
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Simuler variations des indicateurs de santé
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Rythme cardiaque: 68-76 bpm (variation réaliste)
-      setHeartRate(68 + Math.floor(Math.random() * 9));
-
-      // Température: 36.6-37.0°C (variation légère)
-      setTemperature(36.6 + Math.random() * 0.4);
-
-      // Pas: augmentation progressive
-      setSteps((prev) => prev + Math.floor(Math.random() * 5));
-
-      // Batterie: diminution lente
-      setBattery((prev) => Math.max(1, prev - (Math.random() < 0.1 ? 1 : 0)));
-    }, 3000); // Mise à jour toutes les 3 secondes
 
     return () => clearInterval(interval);
   }, []);
@@ -461,73 +436,6 @@ export function GpsSimulationCard({
         </motion.button>
       </div>
 
-      {/* Indicateurs de santé (bottom - barre complète) */}
-      <motion.div
-        className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-r from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-lg border-t border-slate-700/50"
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, type: "spring" }}
-      >
-        <div className="grid grid-cols-4 gap-4 px-6 py-4">
-          {/* Rythme cardiaque */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/20">
-              <Heart className="h-5 w-5 text-red-400" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Rythme</p>
-              <p className="text-lg font-bold text-white">
-                {heartRate} <span className="text-xs font-normal text-slate-400">bpm</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Température */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/20">
-              <Thermometer className="h-5 w-5 text-orange-400" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Température</p>
-              <p className="text-lg font-bold text-white">
-                {temperature.toFixed(1)} <span className="text-xs font-normal text-slate-400">°C</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Activité (pas) */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/20">
-              <Activity className="h-5 w-5 text-green-400" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Activité</p>
-              <p className="text-lg font-bold text-white">
-                {steps.toLocaleString()} <span className="text-xs font-normal text-slate-400">pas</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Batterie */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/20">
-              <Battery className="h-5 w-5 text-blue-400" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Batterie</p>
-              <p className="text-lg font-bold text-white">
-                {battery} <span className="text-xs font-normal text-slate-400">%</span>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Nom enfant intégré dans la barre */}
-        <div className="border-t border-slate-700/30 bg-slate-900/50 px-6 py-2">
-          <p className="text-xs font-semibold text-slate-300">{childName}</p>
-          <p className="font-mono text-xs text-slate-500">Indicateurs en temps réel</p>
-        </div>
-      </motion.div>
     </div>
   );
 }
