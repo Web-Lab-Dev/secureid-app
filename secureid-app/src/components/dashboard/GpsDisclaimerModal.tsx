@@ -99,14 +99,8 @@ export function GpsDisclaimerModal() {
                     <p className="text-sm leading-relaxed text-slate-300">
                       Cette interface présente les <span className="font-medium text-white">capacités de notre système</span> de géolocalisation.
                       Les données affichées sont générées pour démonstration technique.
-                      La localisation réelle nécessite l'activation du module Premium.
+                      Les fonctionnalités de localisation réelle seront bientôt disponibles.
                     </p>
-                    <div className="flex items-center gap-2 pt-1">
-                      <div className="h-1 w-1 rounded-full bg-slate-600" />
-                      <p className="text-xs text-slate-400">
-                        Conforme RGPD • Données chiffrées • Consentement requis
-                      </p>
-                    </div>
                   </div>
                 </div>
               </div>
