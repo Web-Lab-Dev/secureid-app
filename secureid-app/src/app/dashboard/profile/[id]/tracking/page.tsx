@@ -1,6 +1,9 @@
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { GpsSimulationCard } from '@/components/dashboard/GpsSimulationCard';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import type { ProfileDocument } from '@/types/profile';
 
 /**
  * PHASE 15 - PAGE TRACKING GPS (SERVER COMPONENT)
@@ -9,6 +12,7 @@ import { GpsSimulationCard } from '@/components/dashboard/GpsSimulationCard';
  * - Header avec bouton retour
  * - Affichage du composant GpsSimulationCard
  * - Layout sombre immersif
+ * - Chargement du profil pour afficher la photo
  *
  * Route: /dashboard/profile/[id]/tracking
  * Protection: AuthGuard dans dashboard/layout.tsx
@@ -22,6 +26,18 @@ interface TrackingPageProps {
 
 export default async function TrackingPage({ params }: TrackingPageProps) {
   const { id } = await params;
+
+  // Charger le profil de l'enfant
+  let profile: ProfileDocument | null = null;
+  try {
+    const profileRef = doc(db, 'profiles', id);
+    const profileSnap = await getDoc(profileRef);
+    if (profileSnap.exists()) {
+      profile = profileSnap.data() as ProfileDocument;
+    }
+  } catch (error) {
+    console.error('Error loading profile:', error);
+  }
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -40,13 +56,16 @@ export default async function TrackingPage({ params }: TrackingPageProps) {
               Localisation Temps Réel
             </h1>
             <p className="mt-1 text-slate-400">
-              Suivez la position de votre enfant en direct
+              Suivez la position de {profile?.fullName || 'votre enfant'} en direct
             </p>
           </div>
         </div>
 
         {/* Composant GPS Simulé */}
-        <GpsSimulationCard />
+        <GpsSimulationCard
+          childName={profile?.fullName}
+          childPhotoUrl={profile?.photoUrl || undefined}
+        />
 
         {/* Info supplémentaire */}
         <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
