@@ -174,7 +174,7 @@ export async function deleteProfilePhoto(photoUrl: string): Promise<void> {
  */
 export function validateImageFile(file: File): { valid: boolean; error?: string } {
   // Types acceptés
-  const allowedTypes: string[] = LIMITS.photos.allowedTypes;
+  const allowedTypes = LIMITS.photos.allowedTypes as readonly string[];
   if (!allowedTypes.includes(file.type)) {
     return {
       valid: false,
