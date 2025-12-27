@@ -25,11 +25,19 @@ export function AppLockScreen() {
   useEffect(() => {
     // Vérifier si l'app a été verrouillée
     const lockTime = localStorage.getItem('app-lock-time');
+    const isCurrentlyLocked = localStorage.getItem('app-is-locked') === 'true';
     const now = Date.now();
+
+    // Si déjà verrouillé, rester verrouillé même après navigation
+    if (isCurrentlyLocked) {
+      setIsLocked(true);
+      return;
+    }
 
     // Verrouiller si l'utilisateur a quitté l'app il y a plus de 3 secondes
     if (lockTime && (now - parseInt(lockTime)) > 3000) {
       setIsLocked(true);
+      localStorage.setItem('app-is-locked', 'true');
     }
 
     // Détecter quand l'utilisateur quitte/revient sur l'app
@@ -44,6 +52,7 @@ export function AppLockScreen() {
 
         if (lockTime && (now - parseInt(lockTime)) > 3000) {
           setIsLocked(true);
+          localStorage.setItem('app-is-locked', 'true');
         }
       }
     };
@@ -74,6 +83,7 @@ export function AppLockScreen() {
       setIsLocked(false);
       setPassword('');
       localStorage.removeItem('app-lock-time');
+      localStorage.removeItem('app-is-locked'); // Supprimer le flag de verrouillage
     } catch (err: any) {
       if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
         setError('Mot de passe incorrect');
