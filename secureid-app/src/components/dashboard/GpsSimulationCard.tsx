@@ -154,19 +154,13 @@ export function GpsSimulationCard({
   const onLoad = useCallback((map: google.maps.Map) => {
     setMapRef(map);
 
-    // Ajuster les bounds pour voir les deux marqueurs
-    const bounds = new google.maps.LatLngBounds();
-    bounds.extend(new google.maps.LatLng(parentLocation.lat, parentLocation.lng));
-    bounds.extend(new google.maps.LatLng(childLocation.lat, childLocation.lng));
-    map.fitBounds(bounds, { top: 60, right: 30, bottom: 30, left: 30 }); // Padding réduit
+    // Calculer le point central entre parent et enfant
+    const centerLat = (parentLocation.lat + childLocation.lat) / 2;
+    const centerLng = (parentLocation.lng + childLocation.lng) / 2;
 
-    // Dézoomer légèrement après fitBounds
-    setTimeout(() => {
-      const currentZoom = map.getZoom();
-      if (currentZoom) {
-        map.setZoom(currentZoom - 0.5); // Dézoomer de 0.5 niveau
-      }
-    }, 100);
+    // Centrer sur le point milieu avec zoom fixe optimal
+    map.setCenter({ lat: centerLat, lng: centerLng });
+    map.setZoom(13); // Zoom fixe qui affiche bien les rues et l'environnement
 
     // Écouter les changements de vue (pan/zoom) pour repositionner le marqueur
     map.addListener('idle', () => {
@@ -242,7 +236,7 @@ export function GpsSimulationCard({
       <GoogleMap
         mapContainerStyle={{ width: '100%', height: '100%' }}
         center={parentLocation}
-        zoom={12}
+        zoom={13}
         onLoad={onLoad}
         options={{
           styles: darkModeMapStyles,
