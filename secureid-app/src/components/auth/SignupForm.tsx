@@ -95,10 +95,10 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
           )}
         </div>
 
-        {/* Champ: Numéro de téléphone */}
+        {/* Champ: WhatsApp (Numéro de téléphone) */}
         <div>
           <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-300 mb-2">
-            Numéro de téléphone
+            WhatsApp (Numéro de téléphone)
           </label>
           <div className="relative">
             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -115,7 +115,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
             <p className="mt-1 text-sm text-red-400">{errors.phoneNumber.message}</p>
           )}
           <p className="mt-1 text-xs text-gray-500">
-            Format: 8 chiffres (Ex: 72259827)
+            Ce numéro sera utilisé pour WhatsApp • Format: 8 chiffres (Ex: 72259827)
           </p>
         </div>
 

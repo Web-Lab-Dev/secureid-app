@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer } from '@react-google-maps/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Target, Navigation, Zap, Shield, Route, Home, School, Heart, Settings, X } from 'lucide-react';
+import { MapPin, Target, Navigation, Zap, Shield, Route, Home, School, Heart, Settings, X, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { generateRandomLocation, calculateDistance, calculateETA, formatDistance, type LatLng } from '@/lib/geo-utils';
 import { darkModeMapStyles } from '@/lib/map-styles';
@@ -52,6 +52,10 @@ export function GpsSimulationCard({
   const [poiMarkers, setPoiMarkers] = useState<Map<string, google.maps.Marker>>(new Map());
   const [pointsOfInterest, setPointsOfInterest] = useState<PointOfInterest[]>([]);
   const [showPoiConfig, setShowPoiConfig] = useState<boolean>(false);
+
+  // Alerte zone de sécurité
+  const [outOfZoneTimer, setOutOfZoneTimer] = useState<NodeJS.Timeout | null>(null);
+  const [showSecurityAlert, setShowSecurityAlert] = useState<boolean>(false);
 
   // Charger Google Maps
   const { isLoaded, loadError } = useJsApiLoader({
@@ -180,12 +184,12 @@ export function GpsSimulationCard({
     });
   }, [childLocation, parentLocation, updateChildMarkerPosition]);
 
-  // Simuler mouvement léger de l'enfant
+  // Simuler mouvement de l'enfant (visible sur carte)
   useEffect(() => {
     const interval = setInterval(() => {
       setChildLocation((prev) => {
-        // Petit mouvement aléatoire (±5m)
-        const newLocation = generateRandomLocation(prev, 0, 10);
+        // Mouvement aléatoire visible (20-50m) - simule marche/trottinette
+        const newLocation = generateRandomLocation(prev, 20, 50);
         setDistance(calculateDistance(parentLocation, newLocation));
 
         // Ajouter à l'historique de trajet
@@ -256,36 +260,70 @@ export function GpsSimulationCard({
     };
   }, [mapRef, parentLocation]);
 
-  // 2️⃣ VÉRIFIER SI ENFANT DANS ZONE (Geofencing alert)
+  // 2️⃣ VÉRIFIER SI ENFANT DANS ZONE (Geofencing alert avec timer 1mn)
   useEffect(() => {
     const dist = calculateDistance(parentLocation, childLocation);
     const inZone = dist <= DEFAULT_SAFE_ZONE.radius;
+    const wasInZone = isChildInSafeZone;
+
     setIsChildInSafeZone(inZone);
-  }, [parentLocation, childLocation]);
+
+    // Si l'enfant SORT de la zone (transition sûre → hors zone)
+    if (wasInZone && !inZone) {
+      // Démarrer le timer de 1 minute (60 secondes)
+      const timer = setTimeout(() => {
+        setShowSecurityAlert(true);
+      }, 60000); // 60 secondes = 1 minute
+
+      setOutOfZoneTimer(timer);
+    }
+
+    // Si l'enfant RENTRE dans la zone
+    if (!wasInZone && inZone) {
+      // Annuler le timer et réinitialiser
+      if (outOfZoneTimer) {
+        clearTimeout(outOfZoneTimer);
+        setOutOfZoneTimer(null);
+      }
+      setShowSecurityAlert(false);
+    }
+  }, [parentLocation, childLocation, isChildInSafeZone, outOfZoneTimer]);
+
+  // Cleanup du timer au démontage
+  useEffect(() => {
+    return () => {
+      if (outOfZoneTimer) {
+        clearTimeout(outOfZoneTimer);
+      }
+    };
+  }, [outOfZoneTimer]);
 
   // 3️⃣ CRÉER POI (Points d'Intérêt) - Maison, École, Docteur
   useEffect(() => {
     if (!mapRef || pointsOfInterest.length > 0) return; // Ne générer que si vide
 
-    // Générer 3 POI simulés autour de la position parent (par défaut)
+    // Générer 3 POI simulés autour de la position parent (distances visibles sur carte)
     const pois: PointOfInterest[] = [
       {
         id: 'home',
         name: 'Maison',
-        position: generateRandomLocation(parentLocation, 20, 40),
-        type: 'HOME'
+        position: generateRandomLocation(parentLocation, 100, 150),
+        type: 'HOME',
+        icon: '🏠'
       },
       {
         id: 'school',
         name: 'École Primaire',
-        position: generateRandomLocation(parentLocation, 60, 80),
-        type: 'SCHOOL'
+        position: generateRandomLocation(parentLocation, 200, 300),
+        type: 'SCHOOL',
+        icon: '🏫'
       },
       {
         id: 'doctor',
         name: 'Cabinet Médical',
-        position: generateRandomLocation(parentLocation, 30, 60),
-        type: 'DOCTOR'
+        position: generateRandomLocation(parentLocation, 150, 250),
+        type: 'DOCTOR',
+        icon: '🏥'
       }
     ];
 
@@ -312,9 +350,10 @@ export function GpsSimulationCard({
         title: poi.name,
         icon: {
           url: svgUrl,
-          scaledSize: new google.maps.Size(30, 39),
-          anchor: new google.maps.Point(15, 39),
+          scaledSize: new google.maps.Size(40, 52),
+          anchor: new google.maps.Point(20, 52),
         },
+        zIndex: 1000, // Forcer au-dessus des autres éléments
       });
 
       // Ajouter InfoWindow au click
@@ -785,6 +824,37 @@ export function GpsSimulationCard({
               >
                 ✓ Enregistrer et Fermer
               </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Alerte Zone de Sécurité - Déclenchée après 1 minute hors zone */}
+      <AnimatePresence>
+        {showSecurityAlert && (
+          <motion.div
+            className="absolute left-1/2 top-4 z-30 -translate-x-1/2"
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            transition={{ type: "spring" }}
+          >
+            <div className="rounded-xl bg-red-600 px-6 py-4 shadow-2xl">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="h-6 w-6 text-white animate-pulse" />
+                <div>
+                  <p className="font-bold text-white">🚨 ALERTE SÉCURITÉ</p>
+                  <p className="text-sm text-white/90">
+                    {childName || 'Votre enfant'} est hors de la zone sécurisée depuis plus de 1 minute
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowSecurityAlert(false)}
+                  className="ml-2 rounded-full p-1 hover:bg-red-700 transition-colors"
+                >
+                  <X className="h-5 w-5 text-white" />
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
