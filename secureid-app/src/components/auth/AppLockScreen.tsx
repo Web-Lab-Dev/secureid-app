@@ -27,8 +27,8 @@ export function AppLockScreen() {
     const lockTime = localStorage.getItem('app-lock-time');
     const now = Date.now();
 
-    // Verrouiller si l'utilisateur a quitté l'app il y a plus de 30 secondes
-    if (lockTime && (now - parseInt(lockTime)) > 30000) {
+    // Verrouiller si l'utilisateur a quitté l'app il y a plus de 3 secondes
+    if (lockTime && (now - parseInt(lockTime)) > 3000) {
       setIsLocked(true);
     }
 
@@ -42,7 +42,7 @@ export function AppLockScreen() {
         const lockTime = localStorage.getItem('app-lock-time');
         const now = Date.now();
 
-        if (lockTime && (now - parseInt(lockTime)) > 30000) {
+        if (lockTime && (now - parseInt(lockTime)) > 3000) {
           setIsLocked(true);
         }
       }
@@ -158,13 +158,6 @@ export function AppLockScreen() {
                 {isUnlocking ? 'Déverrouillage...' : 'Déverrouiller'}
               </button>
             </form>
-
-            {/* User info */}
-            {user?.email && (
-              <p className="mt-6 text-center text-xs text-slate-500">
-                Connecté en tant que {user.email}
-              </p>
-            )}
           </motion.div>
         </div>
       </motion.div>
