@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { GpsSimulationCard } from '@/components/dashboard/GpsSimulationCard';
 import { HealthIndicators } from '@/components/dashboard/HealthIndicators';
-import { MapOff, MapPin } from 'lucide-react';
+import { MapPinOff, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface TrackingClientProps {
@@ -34,7 +34,7 @@ export function TrackingClient({ childName, childPhotoUrl }: TrackingClientProps
             </>
           ) : (
             <>
-              <MapOff className="h-5 w-5" />
+              <MapPinOff className="h-5 w-5" />
               <span>Géolocalisation désactivée</span>
             </>
           )}
@@ -62,7 +62,7 @@ export function TrackingClient({ childName, childPhotoUrl }: TrackingClientProps
           className="rounded-2xl border border-slate-700 bg-slate-900 p-12 text-center"
         >
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-slate-800">
-            <MapOff className="h-10 w-10 text-slate-400" />
+            <MapPinOff className="h-10 w-10 text-slate-400" />
           </div>
           <h3 className="mb-2 text-xl font-bold text-white">
             Géolocalisation désactivée
