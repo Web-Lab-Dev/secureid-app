@@ -34,8 +34,8 @@ export function AppLockScreen() {
       return;
     }
 
-    // Verrouiller si l'utilisateur a quitté l'app il y a plus de 3 secondes
-    if (lockTime && (now - parseInt(lockTime)) > 3000) {
+    // Verrouiller si l'utilisateur a quitté l'app il y a plus de 1 minute (60 secondes)
+    if (lockTime && (now - parseInt(lockTime)) > 60000) {
       setIsLocked(true);
       localStorage.setItem('app-is-locked', 'true');
     }
@@ -50,7 +50,7 @@ export function AppLockScreen() {
         const lockTime = localStorage.getItem('app-lock-time');
         const now = Date.now();
 
-        if (lockTime && (now - parseInt(lockTime)) > 3000) {
+        if (lockTime && (now - parseInt(lockTime)) > 60000) {
           setIsLocked(true);
           localStorage.setItem('app-is-locked', 'true');
         }

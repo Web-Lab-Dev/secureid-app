@@ -6,6 +6,7 @@ import { ref, uploadBytes, listAll, getDownloadURL, deleteObject } from 'firebas
 import { storage } from '@/lib/firebase';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
+import { MedicalUnavailableModal } from './MedicalUnavailableModal';
 
 /**
  * PHASE 4C - UPLOAD DOCUMENTS MÉDICAUX
@@ -32,6 +33,7 @@ export function DocumentUpload({ profileId }: DocumentUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showUnavailableModal, setShowUnavailableModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Charger les documents existants
@@ -94,39 +96,9 @@ export function DocumentUpload({ profileId }: DocumentUploadProps) {
   };
 
   const handleUpload = async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-
-    setError(null);
-    setUploading(true);
-
-    try {
-      const file = files[0];
-
-      // Validation
-      const validationError = validateFile(file);
-      if (validationError) {
-        setError(validationError);
-        setUploading(false);
-        return;
-      }
-
-      // Générer nom unique avec timestamp
-      const timestamp = Date.now();
-      const extension = file.name.split('.').pop();
-      const fileName = `doc_${timestamp}.${extension}`;
-
-      // Upload vers Storage
-      const docRef = ref(storage, `medical_docs/${profileId}/${fileName}`);
-      await uploadBytes(docRef, file);
-
-      // Recharger la liste
-      await loadDocuments();
-    } catch (err) {
-      logger.error('Error uploading document:', err);
-      setError('Erreur lors de l\'upload du document');
-    } finally {
-      setUploading(false);
-    }
+    // Bloquer l'upload et afficher le modal
+    setShowUnavailableModal(true);
+    return;
   };
 
   const handleDelete = async (doc: StoredDocument) => {
@@ -289,6 +261,12 @@ export function DocumentUpload({ profileId }: DocumentUploadProps) {
           Aucun document téléchargé
         </p>
       )}
+
+      {/* Modal indisponibilité */}
+      <MedicalUnavailableModal
+        isOpen={showUnavailableModal}
+        onClose={() => setShowUnavailableModal(false)}
+      />
     </div>
   );
 }
