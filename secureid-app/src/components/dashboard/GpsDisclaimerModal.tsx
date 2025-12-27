@@ -98,8 +98,8 @@ export function GpsDisclaimerModal() {
                     </div>
                     <p className="text-sm leading-relaxed text-slate-300">
                       Cette interface présente les <span className="font-medium text-white">capacités de notre système</span>.
-                      Les <span className="font-medium text-orange-400">données de géolocalisation</span> affichées sont générées pour démonstration technique.
-                      Les <span className="font-medium text-green-400">indicateurs de santé</span> (rythme cardiaque, température, activité) sont des données réelles transmises par le bracelet.
+                      Toutes les données affichées (géolocalisation, rythme cardiaque, température, activité) sont générées pour démonstration technique.
+                      Les fonctionnalités réelles seront bientôt disponibles.
                     </p>
                   </div>
                 </div>
