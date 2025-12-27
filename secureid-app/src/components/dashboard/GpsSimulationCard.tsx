@@ -681,10 +681,10 @@ export function GpsSimulationCard({
       <AnimatePresence>
         {showPoiConfig && (
           <motion.div
-            className="absolute bottom-4 left-4 z-20 w-80 rounded-xl bg-white p-4 shadow-2xl"
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="absolute left-4 top-4 z-20 max-h-[calc(100%-2rem)] w-80 overflow-y-auto rounded-xl bg-white p-4 shadow-2xl"
+            initial={{ opacity: 0, x: -20, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -20, scale: 0.95 }}
             transition={{ type: "spring" }}
           >
             {/* Header */}
@@ -744,22 +744,47 @@ export function GpsSimulationCard({
                         />
                       </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        const newPois = pointsOfInterest.map((p) =>
-                          p.id === poi.id
-                            ? { ...p, position: generateRandomLocation(parentLocation, 30, 80) }
-                            : p
-                        );
-                        setPointsOfInterest(newPois);
-                      }}
-                      className="mt-2 w-full rounded bg-slate-200 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-300"
-                    >
-                      Repositionner aléatoirement
-                    </button>
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => {
+                          const newPois = pointsOfInterest.map((p) =>
+                            p.id === poi.id
+                              ? { ...p, position: childLocation }
+                              : p
+                          );
+                          setPointsOfInterest(newPois);
+                        }}
+                        className="rounded bg-blue-500 px-2 py-1 text-xs font-medium text-white hover:bg-blue-600"
+                      >
+                        Position enfant
+                      </button>
+                      <button
+                        onClick={() => {
+                          const newPois = pointsOfInterest.map((p) =>
+                            p.id === poi.id
+                              ? { ...p, position: generateRandomLocation(childLocation, 20, 50) }
+                              : p
+                          );
+                          setPointsOfInterest(newPois);
+                        }}
+                        className="rounded bg-slate-200 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-300"
+                      >
+                        Aléatoire proche
+                      </button>
+                    </div>
                   </div>
                 );
               })}
+            </div>
+
+            {/* Footer avec bouton de confirmation */}
+            <div className="mt-4 border-t border-slate-200 pt-3">
+              <button
+                onClick={() => setShowPoiConfig(false)}
+                className="w-full rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700 transition-colors"
+              >
+                ✓ Enregistrer et Fermer
+              </button>
             </div>
           </motion.div>
         )}
