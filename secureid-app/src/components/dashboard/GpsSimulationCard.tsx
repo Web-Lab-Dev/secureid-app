@@ -154,11 +154,17 @@ export function GpsSimulationCard({
   const onLoad = useCallback((map: google.maps.Map) => {
     setMapRef(map);
 
+    // Ajuster les bounds pour voir les deux marqueurs
+    const bounds = new google.maps.LatLngBounds();
+    bounds.extend(new google.maps.LatLng(parentLocation.lat, parentLocation.lng));
+    bounds.extend(new google.maps.LatLng(childLocation.lat, childLocation.lng));
+    map.fitBounds(bounds, { top: 80, right: 40, bottom: 180, left: 40 }); // Padding pour les HUD et indicateurs
+
     // Écouter les changements de vue (pan/zoom) pour repositionner le marqueur
     map.addListener('idle', () => {
       updateChildMarkerPosition(map, childLocation);
     });
-  }, [childLocation, updateChildMarkerPosition]);
+  }, [childLocation, parentLocation, updateChildMarkerPosition]);
 
   // Simuler mouvement léger de l'enfant
   useEffect(() => {
@@ -228,7 +234,7 @@ export function GpsSimulationCard({
       <GoogleMap
         mapContainerStyle={{ width: '100%', height: '100%' }}
         center={parentLocation}
-        zoom={14}
+        zoom={12}
         onLoad={onLoad}
         options={{
           styles: darkModeMapStyles,

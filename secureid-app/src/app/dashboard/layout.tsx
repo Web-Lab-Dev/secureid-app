@@ -1,5 +1,6 @@
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { DashboardNav } from '@/components/dashboard/DashboardNav';
+import { AppLockScreen } from '@/components/auth/AppLockScreen';
 
 /**
  * PHASE 4 - LAYOUT DASHBOARD
@@ -15,6 +16,7 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthGuard>
+      <AppLockScreen />
       <div className="min-h-screen bg-brand-black">
         <DashboardNav />
         <main className="container mx-auto px-4 py-6">{children}</main>
