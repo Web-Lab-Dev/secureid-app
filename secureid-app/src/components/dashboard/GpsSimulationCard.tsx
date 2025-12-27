@@ -158,7 +158,15 @@ export function GpsSimulationCard({
     const bounds = new google.maps.LatLngBounds();
     bounds.extend(new google.maps.LatLng(parentLocation.lat, parentLocation.lng));
     bounds.extend(new google.maps.LatLng(childLocation.lat, childLocation.lng));
-    map.fitBounds(bounds, { top: 80, right: 40, bottom: 180, left: 40 }); // Padding pour les HUD et indicateurs
+    map.fitBounds(bounds, { top: 60, right: 30, bottom: 30, left: 30 }); // Padding réduit
+
+    // Dézoomer légèrement après fitBounds
+    setTimeout(() => {
+      const currentZoom = map.getZoom();
+      if (currentZoom) {
+        map.setZoom(currentZoom - 0.5); // Dézoomer de 0.5 niveau
+      }
+    }, 100);
 
     // Écouter les changements de vue (pan/zoom) pour repositionner le marqueur
     map.addListener('idle', () => {
