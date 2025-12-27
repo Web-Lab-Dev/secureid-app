@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Lock, Key, FileText } from 'lucide-react';
 import { DocumentUpload } from './DocumentUpload';
 import { PinManagement } from './PinManagement';
+import { MedicalUnavailableModal } from './MedicalUnavailableModal';
 import type { ProfileDocument } from '@/types/profile';
 
 /**
@@ -19,6 +20,17 @@ interface ConfidentialZoneProps {
 }
 
 export function ConfidentialZone({ profile }: ConfidentialZoneProps) {
+  const [showInfoModal, setShowInfoModal] = useState(false);
+
+  // Afficher le modal au chargement
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowInfoModal(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="space-y-8">
       {/* Section PIN Médecin */}
@@ -66,6 +78,12 @@ export function ConfidentialZone({ profile }: ConfidentialZoneProps) {
           </p>
         </div>
       </div>
+
+      {/* Modal informatif */}
+      <MedicalUnavailableModal
+        isOpen={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+      />
     </div>
   );
 }
