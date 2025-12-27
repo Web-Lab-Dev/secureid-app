@@ -52,7 +52,7 @@ export function AIChatSheet({ isOpen, onClose }: AIChatSheetProps) {
                   <Bot className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white">Assistant Médical IA</h2>
+                  <h2 className="text-lg font-bold text-white">Assistant IA</h2>
                   <p className="text-xs text-slate-400">Prêt à vous aider</p>
                 </div>
               </div>
@@ -115,13 +115,6 @@ export function AIChatSheet({ isOpen, onClose }: AIChatSheetProps) {
                     </div>
                   </button>
                 </div>
-              </div>
-
-              {/* Note mockup */}
-              <div className="mt-6 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3">
-                <p className="text-xs italic text-yellow-300/80">
-                  ℹ️ Fonctionnalité en développement - Interface de démonstration
-                </p>
               </div>
             </div>
           </motion.div>
