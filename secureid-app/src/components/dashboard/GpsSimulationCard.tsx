@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer } from '@react-google-maps/api';
-import { motion } from 'framer-motion';
-import { MapPin, Target, Navigation, Zap, Shield, Route, Home, School, Heart } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, Target, Navigation, Zap, Shield, Route, Home, School, Heart, Settings, X } from 'lucide-react';
 import Image from 'next/image';
 import { generateRandomLocation, calculateDistance, calculateETA, formatDistance, type LatLng } from '@/lib/geo-utils';
 import { darkModeMapStyles } from '@/lib/map-styles';
 import { logger } from '@/lib/logger';
 import type { PointOfInterest, TrajectoryPoint } from '@/lib/types/gps';
-import { DEFAULT_SAFE_ZONE, DEFAULT_TRAJECTORY, POI_COLORS, POI_ICONS, generatePoiSvg } from '@/lib/constants/gps';
+import { DEFAULT_SAFE_ZONE, DEFAULT_TRAJECTORY, POI_COLORS, POI_ICONS, generatePoiSvg, encodeSvgToDataUrl } from '@/lib/constants/gps';
 
 /**
  * PHASE 15 - GPS SIMULATION CARD (GOOGLE MAPS INTEGRATION)
@@ -51,6 +51,7 @@ export function GpsSimulationCard({
   const [showTrajectory, setShowTrajectory] = useState<boolean>(false);
   const [poiMarkers, setPoiMarkers] = useState<Map<string, google.maps.Marker>>(new Map());
   const [pointsOfInterest, setPointsOfInterest] = useState<PointOfInterest[]>([]);
+  const [showPoiConfig, setShowPoiConfig] = useState<boolean>(false);
 
   // Charger Google Maps
   const { isLoaded, loadError } = useJsApiLoader({
@@ -99,8 +100,8 @@ export function GpsSimulationCard({
           };
           setParentLocation(newParentLocation);
 
-          // Générer position enfant à ~500-1000m
-          const newChildLocation = generateRandomLocation(newParentLocation, 500, 1000);
+          // Générer position enfant à ~50-100m (pour démo)
+          const newChildLocation = generateRandomLocation(newParentLocation, 50, 100);
           setChildLocation(newChildLocation);
 
           // Calculer distance
@@ -109,15 +110,15 @@ export function GpsSimulationCard({
         },
         (error) => {
           logger.info('Geolocation denied, using default location', { error: error.message });
-          // Générer position enfant depuis position par défaut à ~500-1000m
-          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 500, 1000);
+          // Générer position enfant depuis position par défaut à ~50-100m (pour démo)
+          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 50, 100);
           setChildLocation(newChildLocation);
           setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
         }
       );
     } else {
-      // Générer position enfant depuis position par défaut à ~500-1000m
-      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 500, 1000);
+      // Générer position enfant depuis position par défaut à ~50-100m (pour démo)
+      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 50, 100);
       setChildLocation(newChildLocation);
       setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
     }
@@ -264,32 +265,32 @@ export function GpsSimulationCard({
 
   // 3️⃣ CRÉER POI (Points d'Intérêt) - Maison, École, Docteur
   useEffect(() => {
-    if (!mapRef) return;
+    if (!mapRef || pointsOfInterest.length > 0) return; // Ne générer que si vide
 
-    // Générer 3 POI simulés autour de la position parent
+    // Générer 3 POI simulés autour de la position parent (par défaut)
     const pois: PointOfInterest[] = [
       {
         id: 'home',
         name: 'Maison',
-        position: generateRandomLocation(parentLocation, 200, 400),
+        position: generateRandomLocation(parentLocation, 20, 40),
         type: 'HOME'
       },
       {
         id: 'school',
         name: 'École Primaire',
-        position: generateRandomLocation(parentLocation, 600, 800),
+        position: generateRandomLocation(parentLocation, 60, 80),
         type: 'SCHOOL'
       },
       {
         id: 'doctor',
         name: 'Cabinet Médical',
-        position: generateRandomLocation(parentLocation, 300, 600),
+        position: generateRandomLocation(parentLocation, 30, 60),
         type: 'DOCTOR'
       }
     ];
 
     setPointsOfInterest(pois);
-  }, [parentLocation]); // Régénérer les POI uniquement si le parent bouge
+  }, [mapRef, parentLocation]); // Générer uniquement au chargement
 
   // 4️⃣ AFFICHER MARKERS POI SUR LA CARTE
   useEffect(() => {
@@ -300,9 +301,9 @@ export function GpsSimulationCard({
     const newMarkers = new Map<string, google.maps.Marker>();
 
     pointsOfInterest.forEach((poi) => {
-      // Créer le SVG icon
-      const svgIcon = generatePoiSvg(poi.type, POI_ICONS[poi.type]);
-      const svgUrl = `data:image/svg+xml;base64,${btoa(svgIcon)}`;
+      // Créer le SVG icon (sans emoji pour éviter erreur btoa)
+      const svgIcon = generatePoiSvg(poi.type);
+      const svgUrl = encodeSvgToDataUrl(svgIcon);
 
       // Créer le marker
       const marker = new google.maps.Marker({
@@ -659,7 +660,110 @@ export function GpsSimulationCard({
         >
           <Route className="h-5 w-5" />
         </motion.button>
+
+        {/* Bouton Configuration POI (Démo) */}
+        <motion.button
+          onClick={() => setShowPoiConfig(!showPoiConfig)}
+          className={`flex h-12 w-12 items-center justify-center rounded-full shadow-xl transition-all hover:scale-110 hover:shadow-2xl ${
+            showPoiConfig ? 'bg-orange-500 text-white' : 'bg-white text-slate-600'
+          }`}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.9, type: "spring" }}
+          whileTap={{ scale: 0.95 }}
+          title="Configurer les lieux (Démo)"
+        >
+          <Settings className="h-5 w-5" />
+        </motion.button>
       </div>
+
+      {/* Panel Configuration POI - Pour Présentations */}
+      <AnimatePresence>
+        {showPoiConfig && (
+          <motion.div
+            className="absolute bottom-4 left-4 z-20 w-80 rounded-xl bg-white p-4 shadow-2xl"
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            transition={{ type: "spring" }}
+          >
+            {/* Header */}
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-800">Configuration Lieux (Démo)</h3>
+              <button
+                onClick={() => setShowPoiConfig(false)}
+                className="rounded-full p-1 hover:bg-slate-100"
+              >
+                <X className="h-4 w-4 text-slate-600" />
+              </button>
+            </div>
+
+            {/* Liste des POI avec formulaire */}
+            <div className="space-y-3">
+              {pointsOfInterest.map((poi) => {
+                const Icon = poi.type === 'HOME' ? Home : poi.type === 'SCHOOL' ? School : Heart;
+                return (
+                  <div key={poi.id} className="rounded-lg bg-slate-50 p-3">
+                    <div className="mb-2 flex items-center gap-2">
+                      <Icon className="h-4 w-4" style={{ color: POI_COLORS[poi.type] }} />
+                      <span className="text-sm font-semibold text-slate-700">{poi.name}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-slate-500">Latitude</label>
+                        <input
+                          type="number"
+                          step="0.000001"
+                          value={poi.position.lat}
+                          onChange={(e) => {
+                            const newPois = pointsOfInterest.map((p) =>
+                              p.id === poi.id
+                                ? { ...p, position: { ...p.position, lat: parseFloat(e.target.value) || p.position.lat } }
+                                : p
+                            );
+                            setPointsOfInterest(newPois);
+                          }}
+                          className="w-full rounded border border-slate-300 px-2 py-1 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-500">Longitude</label>
+                        <input
+                          type="number"
+                          step="0.000001"
+                          value={poi.position.lng}
+                          onChange={(e) => {
+                            const newPois = pointsOfInterest.map((p) =>
+                              p.id === poi.id
+                                ? { ...p, position: { ...p.position, lng: parseFloat(e.target.value) || p.position.lng } }
+                                : p
+                            );
+                            setPointsOfInterest(newPois);
+                          }}
+                          className="w-full rounded border border-slate-300 px-2 py-1 text-xs"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const newPois = pointsOfInterest.map((p) =>
+                          p.id === poi.id
+                            ? { ...p, position: generateRandomLocation(parentLocation, 30, 80) }
+                            : p
+                        );
+                        setPointsOfInterest(newPois);
+                      }}
+                      className="mt-2 w-full rounded bg-slate-200 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-300"
+                    >
+                      Repositionner aléatoirement
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

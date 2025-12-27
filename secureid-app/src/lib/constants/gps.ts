@@ -47,10 +47,20 @@ export const POI_ICONS = {
 } as const;
 
 /**
- * Génère un SVG marker pour un POI
+ * Génère un SVG marker pour un POI (sans emoji pour éviter erreur btoa)
  */
-export function generatePoiSvg(type: keyof typeof POI_COLORS, emoji: string): string {
+export function generatePoiSvg(type: keyof typeof POI_COLORS): string {
   const color = POI_COLORS[type];
+
+  // Symbols simples sans emoji
+  const symbols: Record<keyof typeof POI_COLORS, string> = {
+    HOME: 'H',
+    SCHOOL: 'S',
+    DOCTOR: '+',
+    CUSTOM: '?',
+  };
+
+  const symbol = symbols[type];
 
   return `
     <svg width="40" height="52" viewBox="0 0 40 52" xmlns="http://www.w3.org/2000/svg">
@@ -63,14 +73,23 @@ export function generatePoiSvg(type: keyof typeof POI_COLORS, emoji: string): st
       />
       <!-- Cercle intérieur -->
       <circle cx="20" cy="20" r="10" fill="white" opacity="0.9"/>
-      <!-- Emoji (simulé par texte) -->
+      <!-- Lettre -->
       <text
         x="20"
         y="26"
-        font-size="16"
+        font-size="14"
+        font-weight="bold"
         text-anchor="middle"
-        fill="#1f2937"
-      >${emoji}</text>
+        fill="${color}"
+      >${symbol}</text>
     </svg>
   `.trim();
+}
+
+/**
+ * Encode SVG en base64 de manière sûre (UTF-8 compatible)
+ */
+export function encodeSvgToDataUrl(svg: string): string {
+  // Utiliser encodeURIComponent au lieu de btoa pour supporter UTF-8
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
