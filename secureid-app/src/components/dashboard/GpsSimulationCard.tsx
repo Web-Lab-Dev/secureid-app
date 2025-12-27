@@ -3,11 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer } from '@react-google-maps/api';
 import { motion } from 'framer-motion';
-import { MapPin, Target, Navigation, Zap } from 'lucide-react';
+import { MapPin, Target, Navigation, Zap, Shield, Route, Home, School, Heart } from 'lucide-react';
 import Image from 'next/image';
 import { generateRandomLocation, calculateDistance, calculateETA, formatDistance, type LatLng } from '@/lib/geo-utils';
 import { darkModeMapStyles } from '@/lib/map-styles';
 import { logger } from '@/lib/logger';
+import type { PointOfInterest, TrajectoryPoint } from '@/lib/types/gps';
+import { DEFAULT_SAFE_ZONE, DEFAULT_TRAJECTORY, POI_COLORS, POI_ICONS, generatePoiSvg } from '@/lib/constants/gps';
 
 /**
  * PHASE 15 - GPS SIMULATION CARD (GOOGLE MAPS INTEGRATION)
@@ -40,6 +42,15 @@ export function GpsSimulationCard({
   const [showTraffic, setShowTraffic] = useState<boolean>(true);
   const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('roadmap');
   const [childMarkerPosition, setChildMarkerPosition] = useState<{ x: number; y: number } | null>(null);
+
+  // NOUVELLES FEATURES - Geofencing, POI, Trajectory
+  const [safeZoneCircle, setSafeZoneCircle] = useState<google.maps.Circle | null>(null);
+  const [isChildInSafeZone, setIsChildInSafeZone] = useState<boolean>(true);
+  const [trajectoryHistory, setTrajectoryHistory] = useState<TrajectoryPoint[]>([]);
+  const [trajectoryPolyline, setTrajectoryPolyline] = useState<google.maps.Polyline | null>(null);
+  const [showTrajectory, setShowTrajectory] = useState<boolean>(false);
+  const [poiMarkers, setPoiMarkers] = useState<Map<string, google.maps.Marker>>(new Map());
+  const [pointsOfInterest, setPointsOfInterest] = useState<PointOfInterest[]>([]);
 
   // Charger Google Maps
   const { isLoaded, loadError } = useJsApiLoader({
@@ -175,6 +186,17 @@ export function GpsSimulationCard({
         // Petit mouvement aléatoire (±5m)
         const newLocation = generateRandomLocation(prev, 0, 10);
         setDistance(calculateDistance(parentLocation, newLocation));
+
+        // Ajouter à l'historique de trajet
+        setTrajectoryHistory((history) => {
+          const newHistory: TrajectoryPoint[] = [
+            ...history,
+            { ...newLocation, timestamp: Date.now() }
+          ];
+          // Garder uniquement les 50 derniers points (~4 minutes)
+          return newHistory.slice(-DEFAULT_TRAJECTORY.maxPoints);
+        });
+
         return newLocation;
       });
     }, 5000); // Toutes les 5 secondes
@@ -202,6 +224,168 @@ export function GpsSimulationCard({
 
     return () => clearInterval(interval);
   }, []);
+
+  // ========== NOUVELLES FEATURES GPS ==========
+
+  // 1️⃣ CRÉER ZONE DE SÉCURITÉ (Cercle vert)
+  useEffect(() => {
+    if (!mapRef) return;
+
+    // Supprimer l'ancien cercle s'il existe
+    if (safeZoneCircle) {
+      safeZoneCircle.setMap(null);
+    }
+
+    // Créer nouveau cercle autour de la position parent
+    const circle = new google.maps.Circle({
+      map: mapRef,
+      center: parentLocation,
+      radius: DEFAULT_SAFE_ZONE.radius,
+      strokeColor: DEFAULT_SAFE_ZONE.strokeColor,
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: DEFAULT_SAFE_ZONE.color,
+      fillOpacity: 0.15,
+    });
+
+    setSafeZoneCircle(circle);
+
+    return () => {
+      circle.setMap(null);
+    };
+  }, [mapRef, parentLocation]);
+
+  // 2️⃣ VÉRIFIER SI ENFANT DANS ZONE (Geofencing alert)
+  useEffect(() => {
+    const dist = calculateDistance(parentLocation, childLocation);
+    const inZone = dist <= DEFAULT_SAFE_ZONE.radius;
+    setIsChildInSafeZone(inZone);
+  }, [parentLocation, childLocation]);
+
+  // 3️⃣ CRÉER POI (Points d'Intérêt) - Maison, École, Docteur
+  useEffect(() => {
+    if (!mapRef) return;
+
+    // Générer 3 POI simulés autour de la position parent
+    const pois: PointOfInterest[] = [
+      {
+        id: 'home',
+        name: 'Maison',
+        position: generateRandomLocation(parentLocation, 200, 400),
+        type: 'HOME'
+      },
+      {
+        id: 'school',
+        name: 'École Primaire',
+        position: generateRandomLocation(parentLocation, 600, 800),
+        type: 'SCHOOL'
+      },
+      {
+        id: 'doctor',
+        name: 'Cabinet Médical',
+        position: generateRandomLocation(parentLocation, 300, 600),
+        type: 'DOCTOR'
+      }
+    ];
+
+    setPointsOfInterest(pois);
+  }, [parentLocation]); // Régénérer les POI uniquement si le parent bouge
+
+  // 4️⃣ AFFICHER MARKERS POI SUR LA CARTE
+  useEffect(() => {
+    if (!mapRef || pointsOfInterest.length === 0) return;
+
+    // Nettoyer les anciens markers
+    poiMarkers.forEach((marker) => marker.setMap(null));
+    const newMarkers = new Map<string, google.maps.Marker>();
+
+    pointsOfInterest.forEach((poi) => {
+      // Créer le SVG icon
+      const svgIcon = generatePoiSvg(poi.type, POI_ICONS[poi.type]);
+      const svgUrl = `data:image/svg+xml;base64,${btoa(svgIcon)}`;
+
+      // Créer le marker
+      const marker = new google.maps.Marker({
+        map: mapRef,
+        position: poi.position,
+        title: poi.name,
+        icon: {
+          url: svgUrl,
+          scaledSize: new google.maps.Size(30, 39),
+          anchor: new google.maps.Point(15, 39),
+        },
+      });
+
+      // Ajouter InfoWindow au click
+      const dist = calculateDistance(childLocation, poi.position);
+      const infoWindow = new google.maps.InfoWindow({
+        content: `
+          <div style="padding: 8px; color: #1f2937; font-family: sans-serif;">
+            <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600;">${poi.icon || ''} ${poi.name}</h3>
+            <p style="margin: 0; font-size: 12px; color: #6b7280;">Distance: ${formatDistance(dist)}</p>
+          </div>
+        `,
+      });
+
+      marker.addListener('click', () => {
+        infoWindow.open(mapRef, marker);
+      });
+
+      newMarkers.set(poi.id, marker);
+    });
+
+    setPoiMarkers(newMarkers);
+
+    return () => {
+      newMarkers.forEach((marker) => marker.setMap(null));
+    };
+  }, [mapRef, pointsOfInterest, childLocation]);
+
+  // 5️⃣ AFFICHER HISTORIQUE DE TRAJET (Polyline pointillée)
+  useEffect(() => {
+    if (!mapRef || !showTrajectory || trajectoryHistory.length < 2) {
+      // Masquer la polyline si désactivée
+      if (trajectoryPolyline) {
+        trajectoryPolyline.setMap(null);
+        setTrajectoryPolyline(null);
+      }
+      return;
+    }
+
+    // Supprimer l'ancienne polyline
+    if (trajectoryPolyline) {
+      trajectoryPolyline.setMap(null);
+    }
+
+    // Créer nouvelle polyline depuis l'historique
+    const newPolyline = new google.maps.Polyline({
+      map: mapRef,
+      path: trajectoryHistory,
+      strokeColor: DEFAULT_TRAJECTORY.color,
+      strokeOpacity: DEFAULT_TRAJECTORY.opacity,
+      strokeWeight: 2,
+      geodesic: true,
+      icons: [{
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 2,
+          fillColor: DEFAULT_TRAJECTORY.color,
+          fillOpacity: 1,
+          strokeWeight: 0,
+        },
+        offset: '0',
+        repeat: '15px',
+      }],
+    });
+
+    setTrajectoryPolyline(newPolyline);
+
+    return () => {
+      newPolyline.setMap(null);
+    };
+  }, [mapRef, showTrajectory, trajectoryHistory]);
+
+  // ========== FIN NOUVELLES FEATURES ==========
 
   const handleRecenter = () => {
     if (mapRef) {
@@ -309,15 +493,32 @@ export function GpsSimulationCard({
 
       {/* HUD: Badge LIVE (top left) */}
       <motion.div
-        className="absolute left-4 top-4 z-10"
+        className="absolute left-4 top-4 z-10 flex flex-col gap-2"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.3 }}
       >
+        {/* Badge LIVE */}
         <div className="flex items-center gap-2 rounded-full bg-black/70 px-3 py-2 backdrop-blur-md">
           <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-green-400" />
           <span className="text-xs font-bold uppercase tracking-wide text-white">Live</span>
         </div>
+
+        {/* Badge Geofencing (Zone de Sécurité) */}
+        <motion.div
+          className={`flex items-center gap-2 rounded-full px-3 py-2 backdrop-blur-md ${
+            isChildInSafeZone
+              ? 'bg-green-500/80'
+              : 'bg-orange-500/80 animate-pulse'
+          }`}
+          animate={!isChildInSafeZone ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 1, repeat: Infinity }}
+        >
+          <Shield className="h-3.5 w-3.5 text-white" />
+          <span className="text-xs font-semibold text-white">
+            {isChildInSafeZone ? 'En zone sûre' : 'Hors zone'}
+          </span>
+        </motion.div>
       </motion.div>
 
       {/* Marqueur enfant personnalisé avec photo (overlay DOM) */}
@@ -442,6 +643,21 @@ export function GpsSimulationCard({
           title={mapType === 'roadmap' ? 'Vue satellite' : 'Vue carte'}
         >
           <Navigation className="h-5 w-5 text-blue-600" />
+        </motion.button>
+
+        {/* Bouton Voir Parcours (Historique) */}
+        <motion.button
+          onClick={() => setShowTrajectory(!showTrajectory)}
+          className={`flex h-12 w-12 items-center justify-center rounded-full shadow-xl transition-all hover:scale-110 hover:shadow-2xl ${
+            showTrajectory ? 'bg-blue-500 text-white' : 'bg-white text-slate-600'
+          }`}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8, type: "spring" }}
+          whileTap={{ scale: 0.95 }}
+          title={showTrajectory ? 'Masquer le parcours' : 'Voir le parcours'}
+        >
+          <Route className="h-5 w-5" />
         </motion.button>
       </div>
 
