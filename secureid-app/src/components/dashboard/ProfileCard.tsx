@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { User, FileHeart, GraduationCap, Edit3, AlertCircle, History, MapPin } from 'lucide-react';
+import { User, FileHeart, GraduationCap, Edit3, AlertCircle, History, MapPin, Heart, Shield } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { getBraceletBadgeVariant, getBraceletStatusLabel } from '@/lib/bracelet-helpers';
 import { Card } from '@/components/ui/Card';
@@ -85,7 +85,10 @@ export function ProfileCard({
   };
 
   return (
-    <Card variant="default" className="overflow-hidden transition-all hover:border-brand-orange">
+    <Card
+      variant="default"
+      className="overflow-hidden transition-all hover:border-brand-orange hover:shadow-lg hover:shadow-brand-orange/10 bg-linear-to-br from-warm-gray to-brand-black"
+    >
       <div className="p-6">
         {/* Header avec Photo - Clickable pour éditer profil */}
         <div className="mb-4 flex items-start justify-between">
@@ -94,7 +97,7 @@ export function ProfileCard({
             className="flex items-center gap-3 text-left transition-opacity hover:opacity-80"
           >
             {/* Photo de profil */}
-            <div className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-slate-700">
+            <div className={`relative h-16 w-16 overflow-hidden rounded-full border-2 ${localStatus === 'ACTIVE' ? 'border-brand-orange animate-trust-pulse' : 'border-slate-700'}`}>
               {profile.photoUrl ? (
                 <Image
                   src={profile.photoUrl}
@@ -155,27 +158,25 @@ export function ProfileCard({
 
         {/* Boutons d'action - 5 sections séparées */}
         <div className="space-y-2">
-          {/* Bouton 1: Suivi GPS - PHASE 15 */}
+          {/* Bouton 1: Suivi GPS - PHASE 15 - Design Émotionnel */}
           <Link
             href={`/dashboard/profile/${profile.id}/tracking`}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-brand-orange to-orange-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:from-brand-orange/90 hover:to-orange-600/90 hover:shadow-lg hover:shadow-brand-orange/30"
+            className="group flex w-full items-center justify-center gap-2 rounded-lg bg-linear-to-r from-brand-orange to-brand-orange-dark px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-brand-orange/30 hover:scale-[1.02] active:scale-[0.98]"
           >
-            <MapPin className="h-4 w-4" />
-            Suivi GPS & Signaux
-            <span className="ml-auto rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold">
-              PRO
-            </span>
+            <MapPin className="h-4 w-4 group-hover:animate-breathe" />
+            <span>Suivre en Temps Réel</span>
+            <Heart className="ml-auto h-3 w-3 animate-heartbeat" />
           </Link>
 
           {/* Bouton 2: Modifier le Profil */}
-          <Button onClick={onEditProfile} variant="secondary" size="sm" fullWidth>
+          <Button onClick={onEditProfile} variant="secondary" size="sm" fullWidth className="hover:border-trust-blue transition-all">
             <Edit3 className="h-4 w-4" />
             Modifier le Profil
           </Button>
 
-          {/* Bouton 3: Son Carnet de Santé */}
-          <Button onClick={onManageMedical} variant="primary" size="sm" fullWidth>
-            <FileHeart className="h-4 w-4" />
+          {/* Bouton 3: Son Carnet de Santé - Design Protecteur */}
+          <Button onClick={onManageMedical} variant="primary" size="sm" fullWidth className="bg-linear-to-r from-trust-blue to-trust-blue-dark hover:shadow-trust-blue/20">
+            <Shield className="h-4 w-4" />
             Son Carnet de Santé
           </Button>
 

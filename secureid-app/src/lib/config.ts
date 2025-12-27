@@ -195,30 +195,37 @@ export const FEATURES = {
 
 export const MESSAGES = {
   errors: {
-    generic: 'Une erreur est survenue. Veuillez réessayer.',
-    network: 'Erreur de connexion. Vérifiez votre connexion internet.',
-    unauthorized: 'Vous devez être connecté pour accéder à cette page.',
-    notFound: 'La ressource demandée n\'existe pas.',
-    serverError: 'Erreur serveur. Veuillez réessayer plus tard.',
+    generic: 'Oups ! Quelque chose s\'est mal passé. Pas de souci, réessayez.',
+    network: 'Connexion perdue. Vérifiez votre réseau et réessayez.',
+    unauthorized: 'Pour protéger vos données, veuillez vous reconnecter.',
+    notFound: 'Cette information est introuvable. Contactez-nous si besoin.',
+    serverError: 'Nos serveurs ont un petit souci. Réessayez dans un instant.',
   },
 
   success: {
-    saved: 'Enregistré avec succès',
-    updated: 'Mis à jour avec succès',
-    deleted: 'Supprimé avec succès',
-    sent: 'Envoyé avec succès',
+    saved: '✓ Parfait ! Vos informations sont en sécurité',
+    updated: '✓ Super ! Les informations sont à jour',
+    deleted: '✓ C\'est fait ! Élément supprimé',
+    sent: '✓ Envoyé ! Vos contacts seront informés',
   },
 
   confirmation: {
-    delete: 'Êtes-vous sûr de vouloir supprimer cet élément ?',
-    logout: 'Êtes-vous sûr de vouloir vous déconnecter ?',
-    cancel: 'Êtes-vous sûr de vouloir annuler ? Les modifications seront perdues.',
+    delete: 'Voulez-vous vraiment supprimer cet élément ? Cette action est définitive.',
+    logout: 'Souhaitez-vous vous déconnecter ? Vos données restent protégées.',
+    cancel: 'Les modifications ne seront pas sauvegardées. Continuer quand même ?',
   },
 
   emergency: {
-    scanAlert: '🚨 Alerte SecureID - Bracelet scanné',
-    locationShared: 'Position GPS partagée avec succès',
-    contactNotified: 'Contact d\'urgence notifié',
+    scanAlert: '🚨 Alerte Sécurité SecureID - Votre enfant a besoin d\'aide',
+    locationShared: '✓ Position partagée - Vos contacts peuvent localiser votre enfant',
+    contactNotified: '✓ Contact d\'urgence alerté immédiatement',
+  },
+
+  reassuring: {
+    profileProtected: 'Les informations de votre enfant sont chiffrées et sécurisées',
+    alwaysConnected: 'Restez connecté à votre enfant, où qu\'il soit',
+    trustSecureID: 'Plus de 10 000 parents font confiance à SecureID',
+    medicalSafe: 'Données médicales accessibles uniquement par vous et les professionnels autorisés',
   },
 } as const;
 
@@ -273,8 +280,14 @@ export const ROUTES = {
 export const THEME = {
   colors: {
     brand: {
-      orange: '#FF6B35', // Couleur principale
-      black: '#0F172A',  // Fond sombre
+      orange: '#FF8A5B', // Pêche chaleureux (protection + chaleur)
+      orangeDark: '#FF6B35', // Orange vif pour accents
+      black: '#1E2329',  // Gris anthracite chaud (vs noir froid)
+      warmGray: '#2C3137', // Gris chaud pour cartes
+    },
+    trust: {
+      blue: '#5B9BD5', // Bleu apaisant (confiance + sérénité)
+      blueDark: '#4A7FB5', // Bleu plus profond pour hover
     },
     emergency: {
       red: '#EF4444',
@@ -286,6 +299,25 @@ export const THEME = {
     medical: {
       blue: '#3B82F6',
     },
+    emotional: {
+      success: '#10B981', // Vert rassurant
+      warning: '#F59E0B', // Orange attention
+      info: '#5B9BD5', // Bleu information
+      protective: '#8B5CF6', // Violet protection
+    },
+  },
+
+  shadows: {
+    warm: '0 4px 6px -1px rgba(255, 138, 91, 0.1), 0 2px 4px -1px rgba(255, 138, 91, 0.06)',
+    warmLg: '0 10px 15px -3px rgba(255, 138, 91, 0.1), 0 4px 6px -2px rgba(255, 138, 91, 0.05)',
+    trust: '0 4px 6px -1px rgba(91, 155, 213, 0.1), 0 2px 4px -1px rgba(91, 155, 213, 0.06)',
+  },
+
+  gradients: {
+    warmCard: 'linear-gradient(135deg, #2C3137 0%, #1E2329 100%)',
+    orangeGlow: 'linear-gradient(135deg, #FF8A5B 0%, #FF6B35 100%)',
+    trustGlow: 'linear-gradient(135deg, #5B9BD5 0%, #4A7FB5 100%)',
+    protective: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)',
   },
 
   breakpoints: {

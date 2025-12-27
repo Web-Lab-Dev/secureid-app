@@ -38,10 +38,15 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --color-brand-black: #1a1a1a;
-  --color-brand-orange: #f97316;
+  --color-brand-black: #1E2329;
+  --color-brand-orange: #FF8A5B;
+  --color-brand-orange-dark: #FF6B35;
+  --color-warm-gray: #2C3137;
+  --color-trust-blue: #5B9BD5;
+  --color-trust-blue-dark: #4A7FB5;
   --color-tactical-green: #10b981;
   --color-alert-red: #ef4444;
+  --color-protective: #8B5CF6;
 }
 
 :root {
@@ -165,4 +170,92 @@
 
 .animate-slide-up {
   animation: slide-up 0.3s ease-out forwards;
+}
+
+/* EMOTIONAL ANIMATIONS - Améliore l'expérience parentale */
+
+/* Heartbeat - Pour profils actifs */
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  10% {
+    transform: scale(1.05);
+  }
+  20% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.05);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 2s ease-in-out infinite;
+}
+
+/* Breathe - Pour statuts et indicateurs */
+@keyframes breathe {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+}
+
+.animate-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* Celebration - Pour confirmations de succès */
+@keyframes celebration {
+  0% {
+    transform: scale(0.8) rotate(-5deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-celebration {
+  animation: celebration 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Warm Glow - Lueur chaleureuse pour cartes importantes */
+@keyframes warm-glow {
+  0%, 100% {
+    box-shadow: 0 4px 6px -1px rgba(255, 138, 91, 0.1), 0 2px 4px -1px rgba(255, 138, 91, 0.06);
+  }
+  50% {
+    box-shadow: 0 10px 15px -3px rgba(255, 138, 91, 0.2), 0 4px 6px -2px rgba(255, 138, 91, 0.1);
+  }
+}
+
+.animate-warm-glow {
+  animation: warm-glow 3s ease-in-out infinite;
+}
+
+/* Trust Pulse - Pulsation rassurante bleue */
+@keyframes trust-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(91, 155, 213, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(91, 155, 213, 0);
+  }
+}
+
+.animate-trust-pulse {
+  animation: trust-pulse 2s ease-in-out infinite;
 }

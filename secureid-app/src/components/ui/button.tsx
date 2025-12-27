@@ -30,6 +30,14 @@ const buttonVariants = cva(
         warning: 'bg-yellow-600 text-white hover:bg-yellow-700 focus-visible:ring-yellow-500/50',
         danger: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500/50',
         indigo: 'bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-500/50',
+
+        // Emotional variants - Pour design parental rassurant
+        protective:
+          'bg-linear-to-r from-protective to-purple-700 text-white hover:shadow-lg hover:shadow-protective/30 hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-protective/50',
+        reassuring:
+          'bg-linear-to-r from-trust-blue to-trust-blue-dark text-white hover:shadow-lg hover:shadow-trust-blue/30 hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-trust-blue/50',
+        warm:
+          'bg-linear-to-r from-brand-orange to-brand-orange-dark text-white hover:shadow-lg hover:shadow-brand-orange/30 hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-brand-orange/50',
       },
       size: {
         default: 'h-10 px-6 py-2',
