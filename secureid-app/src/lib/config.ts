@@ -55,6 +55,7 @@ export const PRICING = {
     currencySymbol: '€',
     originalPrice: 49.99, // Prix barré
     discount: 40, // Pourcentage de réduction
+    priceInCFA: 5000, // Prix en FCFA pour les paiements locaux
   },
   shipping: {
     standard: 4.99,
@@ -135,6 +136,7 @@ export const LIMITS = {
   photos: {
     maxFileSize: 5 * 1024 * 1024, // 5MB
     maxFileSizeMB: 5,
+    maxDimension: 800, // Max dimension pour resize
     allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
     dimensions: {
       min: 200, // pixels

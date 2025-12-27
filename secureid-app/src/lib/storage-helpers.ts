@@ -2,6 +2,7 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 import { storage } from './firebase';
 import { logger } from './logger';
 import { getErrorMessage, isFirebaseError } from './error-helpers';
+import { LIMITS } from './config';
 
 /**
  * HELPERS FIREBASE STORAGE
@@ -21,7 +22,7 @@ export async function compressImage(file: File): Promise<Blob> {
 
       img.onload = () => {
         // Calculer les dimensions pour garder le ratio
-        const MAX_SIZE = 800;
+        const MAX_SIZE = LIMITS.photos.maxDimension;
         let width = img.width;
         let height = img.height;
 
@@ -91,10 +92,9 @@ export async function uploadProfilePhoto(
       throw new Error('Le fichier doit être une image');
     }
 
-    // Taille max : 5MB avant compression
-    const MAX_FILE_SIZE = 5 * 1024 * 1024;
-    if (file.size > MAX_FILE_SIZE) {
-      throw new Error('La photo est trop volumineuse (max 5MB)');
+    // Taille max avant compression
+    if (file.size > LIMITS.photos.maxFileSize) {
+      throw new Error(`La photo est trop volumineuse (max ${LIMITS.photos.maxFileSizeMB}MB)`);
     }
 
     logger.debug('Début compression image', { size: file.size, type: file.type });
@@ -174,20 +174,18 @@ export async function deleteProfilePhoto(photoUrl: string): Promise<void> {
  */
 export function validateImageFile(file: File): { valid: boolean; error?: string } {
   // Types acceptés
-  const acceptedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-  if (!acceptedTypes.includes(file.type)) {
+  if (!LIMITS.photos.allowedTypes.includes(file.type)) {
     return {
       valid: false,
       error: 'Format non supporté. Utilisez JPG, PNG ou WebP.',
     };
   }
 
-  // Taille max : 5MB
-  const MAX_SIZE = 5 * 1024 * 1024;
-  if (file.size > MAX_SIZE) {
+  // Taille max
+  if (file.size > LIMITS.photos.maxFileSize) {
     return {
       valid: false,
-      error: 'La photo est trop volumineuse (max 5MB).',
+      error: `La photo est trop volumineuse (max ${LIMITS.photos.maxFileSizeMB}MB).`,
     };
   }
 

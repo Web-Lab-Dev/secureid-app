@@ -51,13 +51,13 @@ export function HealthIndicators({ childName = "Votre enfant" }: HealthIndicator
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, type: "spring" }}
     >
-      <div className="grid grid-cols-4 gap-4 px-6 py-4">
+      <div className="grid grid-cols-2 gap-4 px-6 py-4 sm:grid-cols-4">
         {/* Rythme cardiaque */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/20">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-500/20">
             <Heart className="h-5 w-5 text-red-400" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-xs text-slate-400">Rythme</p>
             <p className="text-lg font-bold text-white">
               {heartRate} <span className="text-xs font-normal text-slate-400">bpm</span>
@@ -67,10 +67,10 @@ export function HealthIndicators({ childName = "Votre enfant" }: HealthIndicator
 
         {/* Température */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/20">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-orange-500/20">
             <Thermometer className="h-5 w-5 text-orange-400" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-xs text-slate-400">Température</p>
             <p className="text-lg font-bold text-white">
               {temperature.toFixed(1)} <span className="text-xs font-normal text-slate-400">°C</span>
@@ -80,10 +80,10 @@ export function HealthIndicators({ childName = "Votre enfant" }: HealthIndicator
 
         {/* Activité (pas) */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/20">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-500/20">
             <Activity className="h-5 w-5 text-green-400" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-xs text-slate-400">Activité</p>
             <p className="text-lg font-bold text-white">
               {steps.toLocaleString()} <span className="text-xs font-normal text-slate-400">pas</span>
@@ -93,10 +93,10 @@ export function HealthIndicators({ childName = "Votre enfant" }: HealthIndicator
 
         {/* Batterie */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/20">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/20">
             <Battery className="h-5 w-5 text-blue-400" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-xs text-slate-400">Batterie</p>
             <p className="text-lg font-bold text-white">
               {battery} <span className="text-xs font-normal text-slate-400">%</span>

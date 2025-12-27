@@ -4,13 +4,12 @@ import { useState, useEffect } from 'react';
 import { X, MapPin, Loader2, ShoppingCart, CheckCircle } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
+import { PRICING } from '@/lib/config';
 
 interface OrderModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const PRICE_PER_BRACELET = 5000;
 
 // Fonction pour générer un ID de commande
 function generateOrderId(): string {
@@ -95,7 +94,7 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
     try {
       // Générer l'ID de commande
       const orderId = generateOrderId();
-      const totalAmount = formData.quantity * PRICE_PER_BRACELET;
+      const totalAmount = formData.quantity * PRICING.bracelet.priceInCFA;
 
       // Appeler l'API directement (comme le partenariat)
       const response = await fetch('/api/order', {
@@ -106,7 +105,7 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
           customerName: formData.customerName,
           customerPhone: formData.customerPhone,
           quantity: formData.quantity,
-          pricePerBracelet: PRICE_PER_BRACELET,
+          pricePerBracelet: PRICING.bracelet.priceInCFA,
           totalAmount,
           deliveryAddress: formData.deliveryAddress,
           gpsLocation: formData.gpsLocation,
@@ -142,7 +141,7 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
     }
   };
 
-  const totalAmount = formData.quantity * PRICE_PER_BRACELET;
+  const totalAmount = formData.quantity * PRICING.bracelet.priceInCFA;
 
   if (!isOpen) return null;
 
@@ -254,7 +253,7 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                   <option key={num} value={num}>
-                    {num} bracelet{num > 1 ? 's' : ''} - {(num * PRICE_PER_BRACELET).toLocaleString('fr-FR')} FCFA
+                    {num} bracelet{num > 1 ? 's' : ''} - {(num * PRICING.bracelet.priceInCFA).toLocaleString('fr-FR')} FCFA
                   </option>
                 ))}
               </select>

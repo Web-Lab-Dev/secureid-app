@@ -7,6 +7,7 @@ import { Plus, Trash2, Loader2 } from 'lucide-react';
 import { medicalFormSchema, type MedicalFormData } from '@/schemas/activation';
 import { PhotoUpload } from './PhotoUpload';
 import { Button } from '@/components/ui/button';
+import { BLOOD_TYPES, RELATIONSHIPS } from '@/lib/constants/medical';
 
 interface MedicalFormProps {
   /** ID temporaire du profil (généré côté client avant submission) */
@@ -18,31 +19,6 @@ interface MedicalFormProps {
   /** Texte du bouton de soumission */
   submitButtonText?: string;
 }
-
-// Options pour le groupe sanguin
-const BLOOD_TYPES = [
-  { value: 'UNKNOWN', label: 'Non renseigné' },
-  { value: 'A+', label: 'A+' },
-  { value: 'A-', label: 'A-' },
-  { value: 'B+', label: 'B+' },
-  { value: 'B-', label: 'B-' },
-  { value: 'AB+', label: 'AB+' },
-  { value: 'AB-', label: 'AB-' },
-  { value: 'O+', label: 'O+' },
-  { value: 'O-', label: 'O-' },
-] as const;
-
-// Options pour relation contact d'urgence
-const RELATIONSHIPS = [
-  { value: 'MOTHER', label: 'Mère' },
-  { value: 'FATHER', label: 'Père' },
-  { value: 'PARENT', label: 'Parent' },
-  { value: 'GUARDIAN', label: 'Tuteur/Tutrice' },
-  { value: 'GRANDPARENT', label: 'Grand-parent' },
-  { value: 'SIBLING', label: 'Frère/Sœur' },
-  { value: 'DOCTOR', label: 'Médecin' },
-  { value: 'OTHER', label: 'Autre' },
-] as const;
 
 /**
  * PHASE 3D - FORMULAIRE MÉDICAL COMPLET

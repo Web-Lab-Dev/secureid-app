@@ -7,6 +7,7 @@ import { MapPin, Target, Navigation, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { generateRandomLocation, calculateDistance, calculateETA, formatDistance, type LatLng } from '@/lib/geo-utils';
 import { darkModeMapStyles } from '@/lib/map-styles';
+import { logger } from '@/lib/logger';
 
 /**
  * PHASE 15 - GPS SIMULATION CARD (GOOGLE MAPS INTEGRATION)
@@ -96,7 +97,7 @@ export function GpsSimulationCard({
           setDistance(dist);
         },
         (error) => {
-          console.log('Geolocation denied, using default location:', error);
+          logger.info('Geolocation denied, using default location', { error: error.message });
           // Générer position enfant depuis position par défaut à ~2-3km
           const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 2000, 3000);
           setChildLocation(newChildLocation);

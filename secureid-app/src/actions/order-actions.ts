@@ -1,12 +1,8 @@
 'use server';
 
 import { logger } from '@/lib/logger';
+import { PRICING } from '@/lib/config';
 import type { OrderFormData } from '@/types/order';
-
-/**
- * PRIX FIXE: 5000 FCFA par bracelet
- */
-const PRICE_PER_BRACELET = 5000;
 
 /**
  * Génère un ID de commande unique au format ORD-YYYYMMDD-XXX
@@ -59,7 +55,7 @@ export async function createOrder(formData: OrderFormData): Promise<{
     }
 
     // Calcul du montant total
-    const totalAmount = formData.quantity * PRICE_PER_BRACELET;
+    const totalAmount = formData.quantity * PRICING.bracelet.priceInCFA;
 
     // Génération de l'ID de commande
     const orderId = generateOrderId();
@@ -78,7 +74,7 @@ export async function createOrder(formData: OrderFormData): Promise<{
           customerName: formData.customerName,
           customerPhone: formData.customerPhone,
           quantity: formData.quantity,
-          pricePerBracelet: PRICE_PER_BRACELET,
+          pricePerBracelet: PRICING.bracelet.priceInCFA,
           totalAmount,
           deliveryAddress: formData.deliveryAddress,
           gpsLocation: formData.gpsLocation,

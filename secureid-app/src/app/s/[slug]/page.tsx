@@ -6,6 +6,7 @@ import { UnknownStatusPage } from '@/components/UnknownStatusPage';
 import { LostModeView } from '@/components/LostModeView';
 import { EmergencyViewClient } from './page-client';
 import { getOwnerContact } from '@/actions/bracelet-actions';
+import { serializeFirestoreData } from '@/lib/firebase-helpers';
 import type { BraceletDocument, BraceletStatus } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
 
@@ -28,24 +29,6 @@ import type { ProfileDocument } from '@/types/profile';
  *
  * @see https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes
  */
-
-/**
- * Sérialise les Timestamps Firestore en ISO strings pour compatibilité client
- *
- * Problème: Les Timestamps Firestore ({seconds, nanoseconds}) ne sont pas sérialisables en JSON
- * Solution: Convertir récursivement tous les Timestamps en chaînes ISO-8601
- *
- * @param data - Objet contenant potentiellement des Timestamps Firestore
- * @returns Objet avec Timestamps convertis en strings ISO
- */
-function serializeFirestoreData<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data, (key, value) => {
-    if (value && typeof value === 'object' && 'seconds' in value && 'nanoseconds' in value) {
-      return new Date(value.seconds * 1000).toISOString();
-    }
-    return value;
-  }));
-}
 
 interface PageProps {
   params: Promise<{
