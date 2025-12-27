@@ -88,8 +88,8 @@ export function GpsSimulationCard({
           };
           setParentLocation(newParentLocation);
 
-          // Générer position enfant à ~2-3km
-          const newChildLocation = generateRandomLocation(newParentLocation, 2000, 3000);
+          // Générer position enfant à ~500-1000m
+          const newChildLocation = generateRandomLocation(newParentLocation, 500, 1000);
           setChildLocation(newChildLocation);
 
           // Calculer distance
@@ -98,15 +98,15 @@ export function GpsSimulationCard({
         },
         (error) => {
           logger.info('Geolocation denied, using default location', { error: error.message });
-          // Générer position enfant depuis position par défaut à ~2-3km
-          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 2000, 3000);
+          // Générer position enfant depuis position par défaut à ~500-1000m
+          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 500, 1000);
           setChildLocation(newChildLocation);
           setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
         }
       );
     } else {
-      // Générer position enfant depuis position par défaut à ~2-3km
-      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 2000, 3000);
+      // Générer position enfant depuis position par défaut à ~500-1000m
+      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 500, 1000);
       setChildLocation(newChildLocation);
       setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
     }
