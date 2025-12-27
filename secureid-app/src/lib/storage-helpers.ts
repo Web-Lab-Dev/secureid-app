@@ -174,7 +174,8 @@ export async function deleteProfilePhoto(photoUrl: string): Promise<void> {
  */
 export function validateImageFile(file: File): { valid: boolean; error?: string } {
   // Types acceptés
-  if (!LIMITS.photos.allowedTypes.includes(file.type)) {
+  const allowedTypes: string[] = LIMITS.photos.allowedTypes;
+  if (!allowedTypes.includes(file.type)) {
     return {
       valid: false,
       error: 'Format non supporté. Utilisez JPG, PNG ou WebP.',
