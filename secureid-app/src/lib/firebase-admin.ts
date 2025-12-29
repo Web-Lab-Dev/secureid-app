@@ -51,12 +51,34 @@ if (!admin.apps.length && !isBuildTime) {
   });
 }
 
+// Créer des types mock pour le build
+type MockFirestore = Partial<FirebaseFirestore.Firestore>;
+type MockAuth = Partial<admin.auth.Auth>;
+
+// Fonction helper pour créer les mocks
+function createMockFirestore(): MockFirestore {
+  return {
+    collection: () => {
+      throw new Error('Firestore not available during build');
+    },
+  };
+}
+
+function createMockAuth(): MockAuth {
+  return {
+    getUser: () => {
+      throw new Error('Auth not available during build');
+    },
+  };
+}
+
 // Exporter les services Admin (ou mocks pendant le build)
 export const adminDb: FirebaseFirestore.Firestore = isBuildTime
-  ? ({} as any)
+  ? (createMockFirestore() as FirebaseFirestore.Firestore)
   : admin.firestore();
+
 export const adminAuth: admin.auth.Auth = isBuildTime
-  ? ({} as any)
+  ? (createMockAuth() as admin.auth.Auth)
   : admin.auth();
 
 // Exporter admin pour les types et utilitaires

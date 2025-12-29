@@ -1,13 +1,17 @@
 /**
  * RATE LIMITING HELPER
  *
- * Système simple de rate limiting basé sur Firestore
+ * Système de rate limiting avec persistance Firestore
  * Pour prévenir les attaques brute-force sur les PINs médecin
  *
  * STRATÉGIE:
- * - Max 5 tentatives par profileId
+ * - Max 5 tentatives par clé unique
  * - Fenêtre de 15 minutes
- * - Stockage en mémoire (simple) ou Firestore (production)
+ * - Persistance Firestore (production-ready)
+ * - Cache en mémoire pour optimisation (1 minute)
+ *
+ * AMÉLIORATION: Utilise Firestore au lieu de mémoire pour persistance
+ * entre les requêtes serverless (fix problème audit)
  */
 
 import { adminDb } from './firebase-admin';
@@ -18,11 +22,47 @@ interface RateLimitAttempt {
   lastAttempt: number;
 }
 
-// Cache en mémoire pour dev (évite trop de lectures Firestore)
-const attemptCache = new Map<string, RateLimitAttempt>();
+// Cache court en mémoire pour optimiser les lectures Firestore (1 minute max)
+const CACHE_TTL_MS = 60 * 1000; // 1 minute
+const attemptCache = new Map<string, { data: RateLimitAttempt; cachedAt: number }>();
 
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+/**
+ * Récupère les données de rate limiting depuis Firestore (avec cache)
+ *
+ * @param key - Clé unique
+ * @returns Données de tentatives ou null
+ */
+async function getRateLimitData(key: string): Promise<RateLimitAttempt | null> {
+  const now = Date.now();
+
+  // Vérifier le cache en mémoire d'abord (optimisation)
+  const cached = attemptCache.get(key);
+  if (cached && (now - cached.cachedAt) < CACHE_TTL_MS) {
+    return cached.data;
+  }
+
+  // Lire depuis Firestore
+  try {
+    const doc = await adminDb.collection('rate_limits').doc(key).get();
+
+    if (!doc.exists) {
+      return null;
+    }
+
+    const data = doc.data() as RateLimitAttempt;
+
+    // Mettre en cache
+    attemptCache.set(key, { data, cachedAt: now });
+
+    return data;
+  } catch (error) {
+    console.error('Error reading rate limit data:', error);
+    return null;
+  }
+}
 
 /**
  * Vérifie si une ressource est rate-limited
@@ -33,23 +73,21 @@ const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 export async function isRateLimited(key: string): Promise<boolean> {
   const now = Date.now();
 
-  // Vérifier le cache en mémoire d'abord
-  const cached = attemptCache.get(key);
+  // Récupérer depuis Firestore
+  const data = await getRateLimitData(key);
 
-  if (cached) {
-    // Si la fenêtre a expiré, réinitialiser
-    if (now - cached.firstAttempt > WINDOW_MS) {
-      attemptCache.delete(key);
-      return false;
-    }
-
-    // Si trop de tentatives
-    if (cached.count >= MAX_ATTEMPTS) {
-      return true;
-    }
+  if (!data) {
+    return false;
   }
 
-  return false;
+  // Si la fenêtre a expiré, réinitialiser
+  if (now - data.firstAttempt > WINDOW_MS) {
+    await resetAttempts(key);
+    return false;
+  }
+
+  // Si trop de tentatives
+  return data.count >= MAX_ATTEMPTS;
 }
 
 /**
@@ -59,29 +97,45 @@ export async function isRateLimited(key: string): Promise<boolean> {
  */
 export async function recordAttempt(key: string): Promise<void> {
   const now = Date.now();
-  const cached = attemptCache.get(key);
 
-  if (cached) {
+  // Récupérer les données existantes
+  const existing = await getRateLimitData(key);
+
+  let newData: RateLimitAttempt;
+
+  if (existing) {
     // Si fenêtre expirée, réinitialiser
-    if (now - cached.firstAttempt > WINDOW_MS) {
-      attemptCache.set(key, {
+    if (now - existing.firstAttempt > WINDOW_MS) {
+      newData = {
         count: 1,
         firstAttempt: now,
         lastAttempt: now,
-      });
+      };
     } else {
       // Incrémenter
-      cached.count++;
-      cached.lastAttempt = now;
-      attemptCache.set(key, cached);
+      newData = {
+        count: existing.count + 1,
+        firstAttempt: existing.firstAttempt,
+        lastAttempt: now,
+      };
     }
   } else {
     // Première tentative
-    attemptCache.set(key, {
+    newData = {
       count: 1,
       firstAttempt: now,
       lastAttempt: now,
-    });
+    };
+  }
+
+  // Sauvegarder dans Firestore
+  try {
+    await adminDb.collection('rate_limits').doc(key).set(newData);
+
+    // Mettre à jour le cache
+    attemptCache.set(key, { data: newData, cachedAt: now });
+  } catch (error) {
+    console.error('Error recording attempt:', error);
   }
 }
 
@@ -91,6 +145,14 @@ export async function recordAttempt(key: string): Promise<void> {
  * @param key - Clé unique
  */
 export async function resetAttempts(key: string): Promise<void> {
+  // Supprimer de Firestore
+  try {
+    await adminDb.collection('rate_limits').doc(key).delete();
+  } catch (error) {
+    console.error('Error resetting attempts:', error);
+  }
+
+  // Supprimer du cache
   attemptCache.delete(key);
 }
 
@@ -101,13 +163,14 @@ export async function resetAttempts(key: string): Promise<void> {
  * @returns Secondes restantes, ou 0 si pas bloqué
  */
 export async function getTimeRemaining(key: string): Promise<number> {
-  const cached = attemptCache.get(key);
+  // Récupérer depuis Firestore
+  const data = await getRateLimitData(key);
 
-  if (!cached || cached.count < MAX_ATTEMPTS) {
+  if (!data || data.count < MAX_ATTEMPTS) {
     return 0;
   }
 
-  const elapsed = Date.now() - cached.firstAttempt;
+  const elapsed = Date.now() - data.firstAttempt;
   const remaining = WINDOW_MS - elapsed;
 
   return remaining > 0 ? Math.ceil(remaining / 1000) : 0;

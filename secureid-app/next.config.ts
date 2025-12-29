@@ -48,7 +48,7 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Headers de sécurité
+  // Headers de sécurité renforcés
   async headers() {
     return [
       {
@@ -69,6 +69,30 @@ const nextConfig: NextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin'
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains'
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=*, geolocation=*, microphone=()'
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://maps.googleapis.com https://www.gstatic.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com data:",
+              "img-src 'self' data: https: blob:",
+              "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net wss://*.firebaseio.com",
+              "frame-src 'self'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "object-src 'none'",
+              "upgrade-insecure-requests"
+            ].join('; ')
           },
         ],
       },

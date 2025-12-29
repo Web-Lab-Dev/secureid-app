@@ -4,6 +4,9 @@ import { adminDb, admin } from '@/lib/firebase-admin';
 import { logger } from '@/lib/logger';
 import { isRateLimited, recordAttempt, resetAttempts, getTimeRemaining } from '@/lib/rate-limit';
 import type { GeolocationData } from '@/types/scan';
+import { verifyPin, isBcryptHash } from '@/lib/pin-helper';
+import { validatePin, validateGpsCoordinates } from '@/lib/validation';
+import { ErrorCode, AppError } from '@/lib/error-codes';
 
 /**
  * PHASE 5 - EMERGENCY ACTIONS
@@ -33,9 +36,10 @@ interface VerifyPinResult {
  * Vérifie le code PIN médecin d'un profil
  * CRITIQUE: Validation TOUJOURS côté serveur, jamais côté client
  *
- * SÉCURITÉ P1:
+ * SÉCURITÉ:
  * - Rate limiting: Max 5 tentatives par 15 minutes
  * - Prévention brute-force des PINs à 4 chiffres
+ * - PINs hashés avec bcrypt (sécurité renforcée)
  *
  * @param input - ID profil et PIN à vérifier
  * @returns Résultat de la validation
@@ -52,11 +56,12 @@ export async function verifyDoctorPin(input: VerifyPinInput): Promise<VerifyPinR
       };
     }
 
-    // Validation basique du PIN
-    if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+    // Validation stricte du PIN avec Zod
+    const pinValidation = validatePin(pin);
+    if (!pinValidation.valid) {
       return {
         success: false,
-        error: 'Code PIN invalide (4 chiffres requis)',
+        error: pinValidation.error,
       };
     }
 
@@ -87,10 +92,36 @@ export async function verifyDoctorPin(input: VerifyPinInput): Promise<VerifyPinR
     }
 
     const profile = profileSnap.data();
+    const storedPin = profile?.doctorPin;
 
-    // Comparer les PINs
-    // TODO P1: Hasher les PINs avec bcrypt pour meilleure sécurité
-    if (profile?.doctorPin !== pin) {
+    if (!storedPin) {
+      await recordAttempt(rateLimitKey);
+      return {
+        success: false,
+        error: 'Code PIN non configuré',
+      };
+    }
+
+    // Comparer les PINs avec bcrypt ou comparaison directe (migration progressive)
+    let isPinValid = false;
+
+    if (isBcryptHash(storedPin)) {
+      // Nouveau système: PIN hashé avec bcrypt
+      isPinValid = await verifyPin(pin, storedPin);
+    } else {
+      // Ancien système: PIN en clair (pour migration)
+      isPinValid = storedPin === pin;
+
+      // Migration automatique: hasher le PIN si la vérification réussit
+      if (isPinValid) {
+        const bcrypt = await import('bcryptjs');
+        const hashedPin = await bcrypt.hash(pin, 10);
+        await profileRef.update({ doctorPin: hashedPin });
+        logger.info('PIN migrated to bcrypt', { profileId });
+      }
+    }
+
+    if (!isPinValid) {
       // PIN incorrect - enregistrer tentative
       await recordAttempt(rateLimitKey);
       return {
@@ -178,6 +209,22 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
       };
     }
 
+    // Validation stricte des coordonnées GPS si présentes
+    if (geolocation?.lat !== undefined && geolocation?.lng !== undefined) {
+      const gpsValidation = validateGpsCoordinates(geolocation.lat, geolocation.lng);
+      if (!gpsValidation.valid) {
+        logger.warn('Invalid GPS coordinates', {
+          braceletId,
+          lat: geolocation.lat,
+          lng: geolocation.lng,
+          error: gpsValidation.error
+        });
+        // Ne pas bloquer le scan, juste invalider les coordonnées
+        geolocation.lat = null as any;
+        geolocation.lng = null as any;
+      }
+    }
+
     // Parser le User Agent pour plus d'infos
     const deviceInfo = parseUserAgent(userAgent || '');
 
@@ -187,8 +234,14 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
 
     if (geolocation?.lat && geolocation?.lng) {
       try {
+        // Validation de l'URL pour prévenir SSRF
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        if (!appUrl.startsWith('http://') && !appUrl.startsWith('https://')) {
+          throw new Error('Invalid app URL');
+        }
+
         // Appeler notre API de geocoding
-        const geocodeResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/geocode`, {
+        const geocodeResponse = await fetch(`${appUrl}/api/geocode`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

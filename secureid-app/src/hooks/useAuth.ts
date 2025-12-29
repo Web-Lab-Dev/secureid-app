@@ -16,6 +16,8 @@ import { logger } from '@/lib/logger';
 import type { UserDocument, SignupData, LoginData } from '@/types/user';
 import type { FirestoreTimestamp } from '@/types/firebase';
 import { isFirebaseError } from '@/types/error';
+import { ErrorCode, ERROR_MESSAGES, fromFirebaseError } from '@/lib/error-codes';
+import { hashPhoneForLogging } from '@/lib/validation';
 
 /**
  * PHASE 3A - HOOK AUTHENTIFICATION
@@ -139,20 +141,15 @@ export function useAuth(): UseAuthReturn {
 
       return firebaseUser;
     } catch (err: unknown) {
-      logger.error('Error during signup', { error: err, phoneNumber: data.phoneNumber });
+      // Logger sans exposer les données sensibles
+      logger.error('Error during signup', {
+        error: err,
+        phoneHashed: hashPhoneForLogging(data.phoneNumber)
+      });
 
-      // Messages d'erreur en français
-      if (isFirebaseError(err)) {
-        if (err.code === 'auth/email-already-in-use') {
-          throw new Error('Ce numéro de téléphone est déjà utilisé');
-        } else if (err.code === 'auth/weak-password') {
-          throw new Error('Le mot de passe est trop faible');
-        } else if (err.code === 'auth/invalid-email') {
-          throw new Error('Numéro de téléphone invalide');
-        }
-        throw new Error('Erreur lors de la création du compte: ' + err.message);
-      }
-      throw new Error('Erreur lors de la création du compte');
+      // Convertir l'erreur Firebase en AppError
+      const appError = fromFirebaseError(err);
+      throw new Error(appError.getUserMessage());
     } finally {
       setLoading(false);
     }
@@ -193,20 +190,15 @@ export function useAuth(): UseAuthReturn {
 
       return firebaseUser;
     } catch (err: unknown) {
-      logger.error('Error during signin', { error: err, phoneNumber: data.phoneNumber });
+      // Logger sans exposer les données sensibles
+      logger.error('Error during signin', {
+        error: err,
+        phoneHashed: hashPhoneForLogging(data.phoneNumber)
+      });
 
-      // Messages d'erreur en français
-      if (isFirebaseError(err)) {
-        if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-          throw new Error('Numéro ou mot de passe incorrect');
-        } else if (err.code === 'auth/invalid-email') {
-          throw new Error('Numéro de téléphone invalide');
-        } else if (err.code === 'auth/too-many-requests') {
-          throw new Error('Trop de tentatives. Réessayez plus tard');
-        }
-        throw new Error('Erreur lors de la connexion: ' + err.message);
-      }
-      throw new Error('Erreur lors de la connexion');
+      // Convertir l'erreur Firebase en AppError
+      const appError = fromFirebaseError(err);
+      throw new Error(appError.getUserMessage());
     } finally {
       setLoading(false);
     }

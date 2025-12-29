@@ -21,6 +21,10 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
   useEffect(() => {
     if (!isOpen) return;
 
+    // Variable pour détecter si le composant est toujours monté
+    let mounted = true;
+    let currentStream: MediaStream | null = null;
+
     const reader = new BrowserMultiFormatReader();
     readerRef.current = reader;
 
@@ -31,9 +35,17 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
           video: { facingMode: 'environment' } // Caméra arrière sur mobile
         });
 
+        // Vérifier si le composant est toujours monté
+        if (!mounted) {
+          // Si démonté pendant la requête async, stopper le stream immédiatement
+          stream.getTracks().forEach(track => track.stop());
+          return;
+        }
+
+        currentStream = stream;
         setHasPermission(true);
 
-        if (videoRef.current) {
+        if (videoRef.current && mounted) {
           videoRef.current.srcObject = stream;
 
           // Démarrer la lecture QR
@@ -41,7 +53,7 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
             null,
             videoRef.current,
             (result, error) => {
-              if (result) {
+              if (result && mounted) {
                 const text = result.getText();
                 onScan(text);
                 stopScanner();
@@ -51,15 +63,23 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
           );
         }
       } catch (err) {
-        logger.error('Camera access failed', err);
-        setHasPermission(false);
-        setError('Impossible d\'accéder à la caméra. Veuillez autoriser l\'accès.');
+        if (mounted) {
+          logger.error('Camera access failed', err);
+          setHasPermission(false);
+          setError('Impossible d\'accéder à la caméra. Veuillez autoriser l\'accès.');
+        }
       }
     };
 
     const stopScanner = () => {
       if (readerRef.current) {
         readerRef.current.reset();
+      }
+
+      // Stopper le stream actuel
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
       }
 
       if (videoRef.current && videoRef.current.srcObject) {
@@ -73,6 +93,7 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
 
     // Cleanup
     return () => {
+      mounted = false;
       stopScanner();
     };
   }, [isOpen, onScan, onClose]);

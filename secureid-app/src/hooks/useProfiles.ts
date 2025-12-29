@@ -33,7 +33,7 @@ export function useProfiles(): UseProfilesReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProfiles = useCallback(async () => {
+  const fetchProfiles = useCallback(async (): Promise<void> => {
     if (!user) {
       setProfiles([]);
       setLoading(false);
