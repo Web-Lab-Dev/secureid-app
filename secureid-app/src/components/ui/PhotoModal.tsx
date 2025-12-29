@@ -2,11 +2,15 @@
 
 import { X } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 /**
  * Modal pour afficher une photo en grand format
  * Utilisé pour faciliter l'identification visuelle de l'enfant
+ *
+ * Utilise React Portal pour rendre le modal directement dans le body
+ * et éviter les problèmes de z-index avec les stacking contexts parents
  */
 
 interface PhotoModalProps {
@@ -21,6 +25,14 @@ interface PhotoModalProps {
 }
 
 export function PhotoModal({ photoUrl, childName, isOpen, onClose }: PhotoModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  // Attendre que le composant soit monté côté client
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
   // Bloquer le scroll quand le modal est ouvert
   useEffect(() => {
     if (isOpen) {
@@ -51,9 +63,9 @@ export function PhotoModal({ photoUrl, childName, isOpen, onClose }: PhotoModalP
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  const modalContent = (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 p-4"
       onClick={onClose}
@@ -96,4 +108,7 @@ export function PhotoModal({ photoUrl, childName, isOpen, onClose }: PhotoModalP
       </div>
     </div>
   );
+
+  // Utiliser createPortal pour rendre le modal directement dans le body
+  return createPortal(modalContent, document.body);
 }

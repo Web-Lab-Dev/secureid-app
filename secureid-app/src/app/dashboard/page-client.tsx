@@ -14,6 +14,8 @@ import { SchoolDialog } from '@/components/dashboard/SchoolDialog';
 import { ScanHistoryDialog } from '@/components/dashboard/ScanHistoryDialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { InstallBanner } from '@/components/pwa/InstallBanner';
+import { AIChatFab } from '@/components/emergency/AIChatFab';
+import { AIChatSheet } from '@/components/emergency/AIChatSheet';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { BraceletDocument } from '@/types/bracelet';
@@ -56,6 +58,9 @@ export function DashboardPageClient() {
     isOpen: boolean;
     profile: ProfileDocument | null;
   }>({ isOpen: false, profile: null });
+
+  // AI Chat state
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   // Charger les bracelets liés aux profils
   useEffect(() => {
@@ -357,6 +362,10 @@ export function DashboardPageClient() {
           </p>
         </div>
       </div>
+
+      {/* AI Chat Components */}
+      <AIChatFab onClick={() => setIsAIChatOpen(true)} />
+      <AIChatSheet isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} />
     </>
   );
 }
