@@ -8,6 +8,7 @@ import { logger } from '@/lib/logger';
 import { ScanEffect } from './ScanEffect';
 import { translateRelationship } from '@/lib/relationship-helpers';
 import { getWhatsAppUrl } from '@/lib/config';
+import { PhotoModal } from '@/components/ui/PhotoModal';
 
 /**
  * PHASE 5 V2 - IDENTITY CARD (Badge Sécurité)
@@ -39,6 +40,7 @@ function calculateAge(dateOfBirth: Date | string | null): number | null {
 
 export function IdentityCard({ profile }: IdentityCardProps) {
   const [copied, setCopied] = useState(false);
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const age = calculateAge(profile.dateOfBirth as Date | string | null);
   const primaryContact = profile.emergencyContacts[0];
 
@@ -63,8 +65,12 @@ export function IdentityCard({ profile }: IdentityCardProps) {
   return (
     <div className="rounded-lg border border-white/10 border-l-4 border-l-orange-500 bg-slate-900/60 p-4 shadow-[0_8px_32px_rgba(0,0,0,0.37)] backdrop-blur-xl">
       <div className="flex gap-4">
-        {/* Photo (Gauche) */}
-        <div className="relative h-24 w-24 flex-shrink-0">
+        {/* Photo (Gauche) - Clickable */}
+        <button
+          onClick={() => profile.photoUrl && setIsPhotoModalOpen(true)}
+          className="relative h-24 w-24 flex-shrink-0 cursor-pointer transition-transform hover:scale-105 active:scale-95"
+          disabled={!profile.photoUrl}
+        >
           <div className="relative h-full w-full overflow-hidden rounded-lg border-2 border-slate-700 shadow-[0_0_20px_rgba(249,115,22,0.2)]">
             {profile.photoUrl ? (
               <Image
@@ -84,7 +90,7 @@ export function IdentityCard({ profile }: IdentityCardProps) {
 
           {/* Effet scan biométrique */}
           <ScanEffect />
-        </div>
+        </button>
 
         {/* Infos (Droite) */}
         <div className="flex flex-1 flex-col justify-between">
@@ -151,6 +157,16 @@ export function IdentityCard({ profile }: IdentityCardProps) {
             <p className="mt-2 text-xs font-medium text-green-500">✓ Numéro copié!</p>
           )}
         </div>
+      )}
+
+      {/* Photo Modal */}
+      {profile.photoUrl && (
+        <PhotoModal
+          photoUrl={profile.photoUrl}
+          childName={profile.fullName}
+          isOpen={isPhotoModalOpen}
+          onClose={() => setIsPhotoModalOpen(false)}
+        />
       )}
     </div>
   );

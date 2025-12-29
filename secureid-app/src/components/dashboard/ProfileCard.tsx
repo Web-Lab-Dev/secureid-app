@@ -13,6 +13,7 @@ import type { ProfileDocument } from '@/types/profile';
 import type { BraceletDocument } from '@/types/bracelet';
 import { reportBraceletLost, reactivateBracelet } from '@/actions/bracelet-actions';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { PhotoModal } from '@/components/ui/PhotoModal';
 
 /**
  * PHASE 9 - PROFILE CARD (Refactored)
@@ -50,6 +51,7 @@ export function ProfileCard({
   const { user } = useAuthContext();
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [localStatus, setLocalStatus] = useState(bracelet?.status || 'ACTIVE');
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
 
   const handleToggleLost = async () => {
     if (!bracelet || !user) return;
@@ -92,12 +94,13 @@ export function ProfileCard({
       <div className="p-6">
         {/* Header avec Photo - Clickable pour éditer profil */}
         <div className="mb-4 flex items-start justify-between">
-          <button
-            onClick={onEditProfile}
-            className="flex items-center gap-3 text-left transition-opacity hover:opacity-80"
-          >
-            {/* Photo de profil */}
-            <div className={`relative h-20 w-20 overflow-hidden rounded-full border-2 ${localStatus === 'ACTIVE' ? 'border-brand-orange animate-pulse shadow-lg shadow-brand-orange/50' : 'border-slate-700'}`}>
+          <div className="flex items-center gap-3">
+            {/* Photo de profil - Clickable pour voir en grand */}
+            <button
+              onClick={() => profile.photoUrl && setIsPhotoModalOpen(true)}
+              className={`relative h-20 w-20 overflow-hidden rounded-full border-2 transition-transform hover:scale-105 active:scale-95 ${localStatus === 'ACTIVE' ? 'border-brand-orange animate-pulse shadow-lg shadow-brand-orange/50' : 'border-slate-700'}`}
+              disabled={!profile.photoUrl}
+            >
               {profile.photoUrl ? (
                 <Image
                   src={profile.photoUrl}
@@ -111,10 +114,13 @@ export function ProfileCard({
                   <User className="h-8 w-8 text-slate-500" />
                 </div>
               )}
-            </div>
+            </button>
 
-            {/* Nom - Clickable */}
-            <div>
+            {/* Nom - Clickable pour éditer */}
+            <button
+              onClick={onEditProfile}
+              className="text-left transition-opacity hover:opacity-80"
+            >
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-semibold text-white">{profile.fullName}</h3>
                 <Edit3 className="h-3 w-3 text-slate-400" />
@@ -122,8 +128,8 @@ export function ProfileCard({
               <p className="text-xs text-slate-400 font-mono">
                 {bracelet?.id || 'Aucun bracelet'}
               </p>
-            </div>
-          </button>
+            </button>
+          </div>
 
           {/* Badge Statut Bracelet */}
           {bracelet && (
@@ -193,6 +199,16 @@ export function ProfileCard({
           </Button>
         </div>
       </div>
+
+      {/* Photo Modal */}
+      {profile.photoUrl && (
+        <PhotoModal
+          photoUrl={profile.photoUrl}
+          childName={profile.fullName}
+          isOpen={isPhotoModalOpen}
+          onClose={() => setIsPhotoModalOpen(false)}
+        />
+      )}
     </Card>
   );
 }
