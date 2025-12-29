@@ -97,7 +97,7 @@ export function ProfileCard({
             className="flex items-center gap-3 text-left transition-opacity hover:opacity-80"
           >
             {/* Photo de profil */}
-            <div className={`relative h-16 w-16 overflow-hidden rounded-full border-2 ${localStatus === 'ACTIVE' ? 'border-brand-orange animate-trust-pulse' : 'border-slate-700'}`}>
+            <div className={`relative h-20 w-20 overflow-hidden rounded-full border-2 ${localStatus === 'ACTIVE' ? 'border-brand-orange animate-trust-pulse' : 'border-slate-700'}`}>
               {profile.photoUrl ? (
                 <Image
                   src={profile.photoUrl}
