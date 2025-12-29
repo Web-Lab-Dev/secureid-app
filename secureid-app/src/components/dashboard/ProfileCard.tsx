@@ -98,20 +98,20 @@ export function ProfileCard({
             {/* Photo de profil - Clickable pour voir en grand */}
             <button
               onClick={() => profile.photoUrl && setIsPhotoModalOpen(true)}
-              className={`relative h-20 w-20 overflow-hidden rounded-full border-2 transition-transform hover:scale-105 active:scale-95 ${localStatus === 'ACTIVE' ? 'border-brand-orange animate-pulse shadow-lg shadow-brand-orange/50' : 'border-slate-700'}`}
+              className={`relative h-28 w-28 overflow-hidden rounded-full border-2 transition-transform hover:scale-105 active:scale-95 ${localStatus === 'ACTIVE' ? 'border-brand-orange animate-pulse shadow-lg shadow-brand-orange/50' : 'border-slate-700'}`}
               disabled={!profile.photoUrl}
             >
               {profile.photoUrl ? (
                 <Image
                   src={profile.photoUrl}
                   alt={profile.fullName}
-                  width={80}
-                  height={80}
+                  width={112}
+                  height={112}
                   className="h-full w-full object-cover"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-slate-800">
-                  <User className="h-8 w-8 text-slate-500" />
+                  <User className="h-10 w-10 text-slate-500" />
                 </div>
               )}
             </button>
