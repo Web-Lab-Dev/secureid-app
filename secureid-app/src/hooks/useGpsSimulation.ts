@@ -62,13 +62,12 @@ export function useGpsSimulation(): UseGpsSimulationReturn {
   // Simuler mouvement de l'enfant (visible sur carte)
   useEffect(() => {
     const interval = setInterval(() => {
-      setChildLocation((prev) => {
-        // Mouvement aléatoire visible (600-1000m) - simule déplacements plus importants
-        const newLocation = generateRandomLocation(prev, 600, 1000);
-        const newDistance = calculateDistance(parentLocation, newLocation);
-        setDistance(newDistance);
-        return newLocation;
-      });
+      // Générer nouvelle position à 600-1000m DU PARENT (pas de la position précédente)
+      const newLocation = generateRandomLocation(parentLocation, 600, 1000);
+      setChildLocation(newLocation);
+
+      const newDistance = calculateDistance(parentLocation, newLocation);
+      setDistance(newDistance);
     }, 5000); // Toutes les 5 secondes
 
     return () => clearInterval(interval);
