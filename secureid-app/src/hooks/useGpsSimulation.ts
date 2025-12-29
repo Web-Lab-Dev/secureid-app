@@ -35,8 +35,8 @@ export function useGpsSimulation(): UseGpsSimulationReturn {
           };
           setParentLocation(newParentLocation);
 
-          // Générer position enfant à ~50-100m (pour démo)
-          const newChildLocation = generateRandomLocation(newParentLocation, 50, 100);
+          // Générer position enfant à ~600-1000m (pour démo)
+          const newChildLocation = generateRandomLocation(newParentLocation, 600, 1000);
           setChildLocation(newChildLocation);
 
           // Calculer distance
@@ -45,15 +45,15 @@ export function useGpsSimulation(): UseGpsSimulationReturn {
         },
         (error) => {
           logger.info('Geolocation denied, using default location', { error: error.message });
-          // Générer position enfant depuis position par défaut à ~50-100m (pour démo)
-          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 50, 100);
+          // Générer position enfant depuis position par défaut à ~600-1000m (pour démo)
+          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 600, 1000);
           setChildLocation(newChildLocation);
           setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
         }
       );
     } else {
-      // Générer position enfant depuis position par défaut à ~50-100m (pour démo)
-      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 50, 100);
+      // Générer position enfant depuis position par défaut à ~600-1000m (pour démo)
+      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 600, 1000);
       setChildLocation(newChildLocation);
       setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
     }
@@ -63,8 +63,8 @@ export function useGpsSimulation(): UseGpsSimulationReturn {
   useEffect(() => {
     const interval = setInterval(() => {
       setChildLocation((prev) => {
-        // Mouvement aléatoire visible (20-50m) - simule marche/trottinette
-        const newLocation = generateRandomLocation(prev, 20, 50);
+        // Mouvement aléatoire visible (600-1000m) - simule déplacements plus importants
+        const newLocation = generateRandomLocation(prev, 600, 1000);
         const newDistance = calculateDistance(parentLocation, newLocation);
         setDistance(newDistance);
         return newLocation;
