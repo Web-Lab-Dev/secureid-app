@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
-import { Plus, Loader2, Users, MessageCircle, Globe } from 'lucide-react';
+import { Plus, Loader2, Users, MessageCircle, Globe, Bell, BellOff } from 'lucide-react';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useNotifications } from '@/hooks/useNotifications';
 import { ProfileCard } from '@/components/dashboard/ProfileCard';
 import { EditProfileDialog } from '@/components/dashboard/EditProfileDialog';
 import { MedicalDocsDialog } from '@/components/dashboard/MedicalDocsDialog';
@@ -31,6 +32,7 @@ export function DashboardPageClient() {
   const {} = useAuthContext();
   const router = useRouter();
   const { profiles, loading, refetch } = useProfiles();
+  const { hasPermission, requestPermission, loading: notifLoading } = useNotifications();
   const [bracelets, setBracelets] = useState<Record<string, BraceletDocument>>({});
   const [loadingBracelets, setLoadingBracelets] = useState(true);
 
@@ -159,6 +161,28 @@ export function DashboardPageClient() {
   return (
     <>
       <div className="py-8">
+        {/* Notification Banner */}
+        {!notifLoading && !hasPermission && (
+          <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
+            <div className="flex items-start gap-3">
+              <BellOff className="h-6 w-6 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-white">Activez les notifications</h3>
+                <p className="mt-1 text-sm text-slate-300">
+                  Recevez des alertes instantanées quand votre bracelet est scanné, même si votre téléphone est en veille.
+                </p>
+                <button
+                  onClick={requestPermission}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-amber-400"
+                >
+                  <Bell className="h-4 w-4" />
+                  Activer les notifications
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
         <div>

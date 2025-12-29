@@ -7,6 +7,7 @@ import type { GeolocationData } from '@/types/scan';
 import { verifyPin, isBcryptHash } from '@/lib/pin-helper';
 import { validatePin, validateGpsCoordinates } from '@/lib/validation';
 import { ErrorCode, AppError } from '@/lib/error-codes';
+import { sendEmergencyScanNotification } from './notification-actions';
 
 /**
  * PHASE 5 - EMERGENCY ACTIONS
@@ -278,6 +279,52 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
     // Utiliser Admin SDK pour ajouter le document
     const scansCollection = adminDb.collection('scans');
     const scanDoc = await scansCollection.add(scanData);
+
+    // Envoyer notification push au parent
+    try {
+      // Récupérer les informations du bracelet et du profil
+      const braceletDoc = await adminDb.collection('bracelets').doc(braceletId).get();
+
+      if (braceletDoc.exists) {
+        const braceletData = braceletDoc.data();
+        const profileId = braceletData?.profileId;
+
+        if (profileId) {
+          const profileDoc = await adminDb.collection('profiles').doc(profileId).get();
+
+          if (profileDoc.exists) {
+            const profileData = profileDoc.data();
+            const parentId = profileData?.parentId;
+            const childName = profileData?.fullName;
+
+            if (parentId && childName) {
+              // Construire le message de localisation
+              let locationText = '';
+              if (city && country) {
+                locationText = `${city}, ${country}`;
+              } else if (geolocation?.lat && geolocation?.lng) {
+                locationText = `${geolocation.lat.toFixed(4)}, ${geolocation.lng.toFixed(4)}`;
+              }
+
+              // Envoyer la notification (ne pas bloquer si ça échoue)
+              await sendEmergencyScanNotification(parentId, childName, locationText);
+              logger.info('Emergency scan notification sent', {
+                parentId,
+                childName,
+                scanId: scanDoc.id,
+              });
+            }
+          }
+        }
+      }
+    } catch (notifError) {
+      // Log l'erreur mais ne pas faire échouer le scan
+      logger.error('Error sending scan notification', {
+        error: notifError,
+        braceletId,
+        scanId: scanDoc.id,
+      });
+    }
 
     return {
       success: true,
