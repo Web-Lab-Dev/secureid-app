@@ -81,7 +81,6 @@ export async function sendNotificationToParent(
         notification: {
           icon: '/icon-192x192.png',
           badge: '/badge-72x72.png',
-          vibrate: [200, 100, 200],
           requireInteraction: true,
           tag: 'secureid-scan',
         },
@@ -94,21 +93,31 @@ export async function sendNotificationToParent(
     // Envoyer via FCM
     const response = await admin.messaging().send(message);
 
-    logger.info('Notification sent successfully', {
+    logger.info('✅ FCM notification sent successfully', {
       parentId,
       messageId: response,
+      title,
+      body,
+      hasToken: !!fcmToken,
     });
 
     return { success: true };
 
   } catch (error: unknown) {
-    logger.error('Error sending notification', {
-      error,
-      params,
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    logger.error('❌ Error sending FCM notification', {
+      error: errorMessage,
+      errorStack: error instanceof Error ? error.stack : undefined,
+      parentId: params.parentId,
+      title: params.title,
+      body: params.body,
     });
 
     // Gérer le cas où le token est invalide/expiré
     if (error instanceof Error && error.message.includes('registration-token-not-registered')) {
+      logger.warn('🗑️ Removing invalid FCM token', { parentId: params.parentId });
+
       // Supprimer le token invalide
       try {
         await adminDb.collection('users').doc(params.parentId).update({
@@ -121,7 +130,7 @@ export async function sendNotificationToParent(
       return { success: false, error: 'Token de notification expiré, veuillez réactiver les notifications' };
     }
 
-    return { success: false, error: 'Erreur lors de l\'envoi de la notification' };
+    return { success: false, error: `Erreur lors de l'envoi: ${errorMessage}` };
   }
 }
 

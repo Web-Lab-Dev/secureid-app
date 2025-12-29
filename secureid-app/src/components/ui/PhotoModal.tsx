@@ -55,7 +55,7 @@ export function PhotoModal({ photoUrl, childName, isOpen, onClose }: PhotoModalP
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 p-4"
       onClick={onClose}
     >
       {/* Container du modal */}
