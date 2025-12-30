@@ -40,7 +40,13 @@ service cloud.firestore {
     match /bracelets/{braceletId} {
 
       // LECTURE: Publique pour scan QR Code (Phase 5 - Mode Urgence)
-      // IMPORTANT: Ne JAMAIS exposer secretToken côté client dans les requêtes
+      // ⚠️ SÉCURITÉ CRITIQUE:
+      // - Firestore Rules ne peuvent PAS masquer des champs spécifiques
+      // - Le secretToken EST visible côté client via cette règle
+      // - SOLUTION IMPÉRATIVE: Toutes les lectures DOIVENT passer par Server Actions
+      //   qui filtrent le secretToken avant de renvoyer au client
+      // - Ne JAMAIS utiliser getDocs() ou getDoc() directement côté client
+      // - Toujours utiliser les Server Actions dans src/actions/bracelet-actions.ts
       allow read: if true;
 
       // CRÉATION: INTERDITE côté client
