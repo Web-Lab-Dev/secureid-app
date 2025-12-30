@@ -35,8 +35,8 @@ export function useGpsSimulation(): UseGpsSimulationReturn {
           };
           setParentLocation(newParentLocation);
 
-          // Générer position enfant à ~600-1000m (pour démo)
-          const newChildLocation = generateRandomLocation(newParentLocation, 600, 1000);
+          // Générer position enfant à 800-1000m du parent (pour démo)
+          const newChildLocation = generateRandomLocation(newParentLocation, 800, 1000);
           setChildLocation(newChildLocation);
 
           // Calculer distance
@@ -45,15 +45,15 @@ export function useGpsSimulation(): UseGpsSimulationReturn {
         },
         (error) => {
           logger.info('Geolocation denied, using default location', { error: error.message });
-          // Générer position enfant depuis position par défaut à ~600-1000m (pour démo)
-          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 600, 1000);
+          // Générer position enfant depuis position par défaut à 800-1000m (pour démo)
+          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 800, 1000);
           setChildLocation(newChildLocation);
           setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
         }
       );
     } else {
-      // Générer position enfant depuis position par défaut à ~600-1000m (pour démo)
-      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 600, 1000);
+      // Générer position enfant depuis position par défaut à 800-1000m (pour démo)
+      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 800, 1000);
       setChildLocation(newChildLocation);
       setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
     }
@@ -62,12 +62,16 @@ export function useGpsSimulation(): UseGpsSimulationReturn {
   // Simuler mouvement de l'enfant (visible sur carte)
   useEffect(() => {
     const interval = setInterval(() => {
-      // Générer nouvelle position à 600-1000m DU PARENT (pas de la position précédente)
-      const newLocation = generateRandomLocation(parentLocation, 600, 1000);
-      setChildLocation(newLocation);
+      // Déplacer l'enfant de 100-200m de sa position ACTUELLE (pas du parent)
+      setChildLocation((prevChildLocation) => {
+        const newLocation = generateRandomLocation(prevChildLocation, 100, 200);
 
-      const newDistance = calculateDistance(parentLocation, newLocation);
-      setDistance(newDistance);
+        // Calculer la nouvelle distance par rapport au parent
+        const newDistance = calculateDistance(parentLocation, newLocation);
+        setDistance(newDistance);
+
+        return newLocation;
+      });
     }, 5000); // Toutes les 5 secondes
 
     return () => clearInterval(interval);

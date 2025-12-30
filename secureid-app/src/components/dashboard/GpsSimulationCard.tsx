@@ -16,7 +16,8 @@ import { DEFAULT_SAFE_ZONE, DEFAULT_TRAJECTORY, POI_COLORS, POI_ICONS, generateP
  *
  * Carte GPS interactive avec vraie Google Maps
  * - Géolocalisation position parent (dashboard)
- * - Position enfant simulée à ~5km
+ * - Position enfant simulée à 800-1000m du parent
+ * - Déplacement enfant: 100-200m toutes les 5 secondes
  * - Polyline animée bleue avec pointillés ondulants
  * - Marqueurs personnalisés
  * - Calcul distance et temps réel
@@ -104,8 +105,8 @@ export function GpsSimulationCard({
           };
           setParentLocation(newParentLocation);
 
-          // Générer position enfant à ~50-100m (pour démo)
-          const newChildLocation = generateRandomLocation(newParentLocation, 50, 100);
+          // Générer position enfant à 800-1000m du parent (pour démo)
+          const newChildLocation = generateRandomLocation(newParentLocation, 800, 1000);
           setChildLocation(newChildLocation);
 
           // Calculer distance
@@ -114,15 +115,15 @@ export function GpsSimulationCard({
         },
         (error) => {
           logger.info('Geolocation denied, using default location', { error: error.message });
-          // Générer position enfant depuis position par défaut à ~50-100m (pour démo)
-          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 50, 100);
+          // Générer position enfant depuis position par défaut à 800-1000m (pour démo)
+          const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 800, 1000);
           setChildLocation(newChildLocation);
           setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
         }
       );
     } else {
-      // Générer position enfant depuis position par défaut à ~50-100m (pour démo)
-      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 50, 100);
+      // Générer position enfant depuis position par défaut à 800-1000m (pour démo)
+      const newChildLocation = generateRandomLocation(DEFAULT_LOCATION, 800, 1000);
       setChildLocation(newChildLocation);
       setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
     }
@@ -188,8 +189,8 @@ export function GpsSimulationCard({
   useEffect(() => {
     const interval = setInterval(() => {
       setChildLocation((prev) => {
-        // Mouvement aléatoire visible (20-50m) - simule marche/trottinette
-        const newLocation = generateRandomLocation(prev, 20, 50);
+        // Mouvement aléatoire visible (100-200m) - simule déplacement enfant
+        const newLocation = generateRandomLocation(prev, 100, 200);
         setDistance(calculateDistance(parentLocation, newLocation));
 
         // Ajouter à l'historique de trajet
