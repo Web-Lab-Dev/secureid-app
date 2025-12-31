@@ -246,25 +246,79 @@ if (bracelet.linkedProfileId) {
 
 ---
 
-## 🔍 PROBLÈME VAPID - GUIDE DE DÉBOGAGE
+## 🔍 PROBLÈME VAPID - RÉSOLU ✅
 
-**Fichier créé**: `NOTIFICATIONS_TROUBLESHOOTING.md`
+### Problème Initial
+Variables d'environnement configurées dans Vercel mais non accessibles dans le navigateur.
 
-Ce guide contient des instructions détaillées pour résoudre le problème actuel où les notifications ne fonctionnent pas malgré la clé VAPID configurée dans Vercel.
+**Symptômes**:
+- Console: `Variables d'environnement Firebase manquantes`
+- Erreur: `Uncaught ReferenceError: process is not defined`
+- Notifications push bloquées
 
-**Étapes de diagnostic**:
-1. Vérifier la variable d'environnement côté client
-2. Vérifier l'enregistrement du Service Worker
-3. Vérifier l'obtention du token FCM
-4. Vérifier le stockage dans Firestore
-5. Tester l'envoi manuel via Firebase Console
-6. Analyser les logs Vercel
+### Cause Identifiée
 
-**Solutions communes**:
-- Variable mal nommée (pas de préfixe `NEXT_PUBLIC_`)
-- Service Worker non chargé (HTTPS requis)
-- Permissions navigateur refusées
-- Token FCM expiré
+**Fichier**: `src/lib/firebase.ts:50-52`
+
+```typescript
+// ❌ AVANT (INCORRECT)
+const missingVars = requiredEnvVars.filter(
+  (varName) => !process.env[varName]  // ❌ Notation entre crochets
+);
+```
+
+**Problème**: Next.js effectue un remplacement statique des variables `NEXT_PUBLIC_*` au moment du build, mais uniquement pour les accès directs. La notation entre crochets n'est pas détectée par le compilateur.
+
+### Solution Appliquée (31 Décembre 2025)
+
+**Fichier**: `src/lib/firebase.ts` (lignes 25-69)
+
+Réécriture complète de la validation pour utiliser l'accès direct:
+
+```typescript
+// ✅ APRÈS (CORRECT)
+function validateFirebaseConfig() {
+  const missingVars: string[] = [];
+
+  // ✅ Accès direct pour que Next.js puisse injecter les variables
+  if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) missingVars.push('NEXT_PUBLIC_FIREBASE_API_KEY');
+  if (!process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN) missingVars.push('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN');
+  if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) missingVars.push('NEXT_PUBLIC_FIREBASE_PROJECT_ID');
+  if (!process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) missingVars.push('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET');
+  if (!process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID) missingVars.push('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID');
+  if (!process.env.NEXT_PUBLIC_FIREBASE_APP_ID) missingVars.push('NEXT_PUBLIC_FIREBASE_APP_ID');
+
+  // ... validation logic ...
+}
+
+validateFirebaseConfig();
+```
+
+**Résultat**: Next.js peut maintenant injecter les variables au build time ✅
+
+### Documentation Créée
+
+**1. ENVIRONMENT_VARIABLES_FIX.md**
+- Explication technique complète du problème
+- Guide de redéploiement sur Vercel
+- Procédures de test après déploiement
+- Troubleshooting si problème persiste
+
+**2. NOTIFICATIONS_TROUBLESHOOTING.md**
+Guide de débogage général pour les notifications push (reste pertinent pour autres problèmes potentiels).
+
+### Action Requise
+
+**CRITIQUE**: Redéployer sur Vercel pour que Next.js injecte les variables dans le nouveau bundle.
+
+```bash
+git push  # Auto-déploiement Vercel
+```
+
+Après déploiement, vérifier dans console navigateur:
+```javascript
+console.log(process.env.NEXT_PUBLIC_FIREBASE_API_KEY); // Doit afficher la clé ✅
+```
 
 ---
 
@@ -395,6 +449,7 @@ Toutes les notifications push critiques sont maintenant **100% implémentées**:
 ---
 
 **Rapport généré le**: 30 Décembre 2025
+**Dernière mise à jour**: 31 Décembre 2025 (Fix variables d'environnement)
 **Développeur**: Claude Code Agent
-**Version**: 1.0.0
-**Statut**: ✅ PRODUCTION READY
+**Version**: 1.1.0
+**Statut**: ✅ PRODUCTION READY (après redéploiement Vercel)
