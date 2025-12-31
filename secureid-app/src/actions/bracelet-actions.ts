@@ -5,6 +5,7 @@ import { logger } from '@/lib/logger';
 import type { BraceletDocument, BraceletStatus } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
 import { z } from 'zod';
+import { sendBraceletLostNotification, sendBraceletFoundNotification } from './notification-actions';
 
 /**
  * BRACELET SERVER ACTIONS - Gestion des bracelets (activation, transfert, gestion de statuts)
@@ -514,6 +515,37 @@ export async function updateBraceletStatus(
     await braceletRef.update({
       status,
     });
+
+    // Envoyer notification selon le changement de statut
+    if (bracelet.linkedProfileId) {
+      try {
+        const profileSnap = await adminDb.collection('profiles').doc(bracelet.linkedProfileId).get();
+
+        if (profileSnap.exists) {
+          const profile = profileSnap.data() as ProfileDocument;
+          const childName = profile.fullName;
+
+          // Notification si déclaré perdu (ACTIVE/autre → LOST)
+          if (status === 'LOST' && bracelet.status !== 'LOST') {
+            await sendBraceletLostNotification(userId, childName);
+            logger.info('Bracelet lost notification sent', { braceletId, userId, childName });
+          }
+
+          // Notification si réactivé (LOST → ACTIVE)
+          if (status === 'ACTIVE' && bracelet.status === 'LOST') {
+            await sendBraceletFoundNotification(userId, childName);
+            logger.info('Bracelet found notification sent', { braceletId, userId, childName });
+          }
+        }
+      } catch (notifError) {
+        // Ne pas faire échouer la mise à jour du statut si notification échoue
+        logger.error('Error sending bracelet status notification', {
+          error: notifError,
+          braceletId,
+          status,
+        });
+      }
+    }
 
     return { success: true };
   } catch (error) {

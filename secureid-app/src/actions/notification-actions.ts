@@ -204,3 +204,34 @@ export async function sendBraceletFoundNotification(
     },
   });
 }
+
+/**
+ * Envoie une notification de sortie de zone de sécurité
+ *
+ * @param parentId - ID du parent
+ * @param childName - Nom de l'enfant
+ * @param duration - Durée hors zone en secondes (optionnel)
+ */
+export async function sendGeofenceExitNotification(
+  parentId: string,
+  childName: string,
+  duration?: number
+): Promise<SendNotificationResult> {
+  'use server';
+
+  const durationText = duration
+    ? ` depuis ${Math.floor(duration / 60)} minute${Math.floor(duration / 60) > 1 ? 's' : ''}`
+    : '';
+
+  return sendNotificationToParent({
+    parentId,
+    title: '🚨 ALERTE ZONE DE SÉCURITÉ',
+    body: `${childName} est sorti(e) de la zone de sécurité${durationText}`,
+    data: {
+      type: 'geofence_exit',
+      childName,
+      duration: duration?.toString() || '0',
+      timestamp: new Date().toISOString(),
+    },
+  });
+}

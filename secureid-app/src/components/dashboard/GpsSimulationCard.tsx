@@ -10,6 +10,8 @@ import { darkModeMapStyles } from '@/lib/map-styles';
 import { logger } from '@/lib/logger';
 import type { PointOfInterest, TrajectoryPoint } from '@/lib/types/gps';
 import { DEFAULT_SAFE_ZONE, DEFAULT_TRAJECTORY, POI_COLORS, POI_ICONS, generatePoiSvg, encodeSvgToDataUrl } from '@/lib/constants/gps';
+import { sendGeofenceExitNotification } from '@/actions/notification-actions';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 /**
  * PHASE 15 - GPS SIMULATION CARD (GOOGLE MAPS INTEGRATION)
@@ -35,6 +37,7 @@ export function GpsSimulationCard({
   childName = "Votre enfant",
   childPhotoUrl
 }: GpsSimulationCardProps) {
+  const { user } = useAuthContext();
   const [parentLocation, setParentLocation] = useState<LatLng>(DEFAULT_LOCATION);
   const [childLocation, setChildLocation] = useState<LatLng>(DEFAULT_LOCATION);
   const [distance, setDistance] = useState<number>(0);
@@ -272,8 +275,18 @@ export function GpsSimulationCard({
     // Si l'enfant SORT de la zone (transition sûre → hors zone)
     if (wasInZone && !inZone) {
       // Démarrer le timer de 1 minute (60 secondes)
-      const timer = setTimeout(() => {
+      const timer = setTimeout(async () => {
         setShowSecurityAlert(true);
+
+        // Envoyer notification push au parent
+        if (user?.uid) {
+          try {
+            await sendGeofenceExitNotification(user.uid, childName, 60);
+            logger.info('Geofence exit notification sent', { parentId: user.uid, childName });
+          } catch (error) {
+            logger.error('Error sending geofence notification', { error, parentId: user.uid });
+          }
+        }
       }, 60000); // 60 secondes = 1 minute
 
       setOutOfZoneTimer(timer);
