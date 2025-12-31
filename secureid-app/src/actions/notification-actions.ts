@@ -66,7 +66,9 @@ export async function sendNotificationToParent(
           channelId: 'secureid_alerts',
           priority: 'high' as const,
           sound: 'default',
-          vibrationPattern: [200, 100, 200],
+          // Vibration: format correct pour Android (en millisecondes)
+          defaultVibrateTimings: false,
+          vibrateTimingsMillis: [200, 100, 200],
         },
       },
       apns: {
@@ -83,6 +85,8 @@ export async function sendNotificationToParent(
           badge: '/badge-72x72.png',
           requireInteraction: true,
           tag: 'secureid-scan',
+          // Vibration pour Web Push (format différent d'Android)
+          vibrate: [200, 100, 200],
         },
         fcmOptions: {
           link: '/dashboard',
