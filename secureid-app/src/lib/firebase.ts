@@ -23,49 +23,50 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 /**
- * Liste des variables d'environnement Firebase obligatoires
+ * Validation des variables d'environnement Firebase
  *
- * Ces variables doivent être définies dans .env.local
- * Elles sont préfixées NEXT_PUBLIC_ pour être accessibles côté client
- */
-const requiredEnvVars = [
-  'NEXT_PUBLIC_FIREBASE_API_KEY',
-  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
-  'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
-  'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
-  'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
-  'NEXT_PUBLIC_FIREBASE_APP_ID',
-] as const;
-
-/**
- * Validation des variables d'environnement au démarrage
+ * IMPORTANT: Next.js remplace process.env.NEXT_PUBLIC_* uniquement avec l'accès direct,
+ * PAS avec la notation entre crochets (process.env[varName]).
+ *
+ * Cette fonction valide que toutes les variables requises sont présentes.
+ * En production Vercel, les variables sont injectées au moment du build.
  *
  * LOGIQUE:
  * - Côté serveur (SSR): Lance une erreur fatale si variables manquantes
  * - Côté client: Log une erreur mais continue (évite les crashs en dev)
- *
- * Cette différence permet un meilleur DX en développement tout en
- * garantissant que le build production échouera si configuration incomplète
  */
-const missingVars = requiredEnvVars.filter(
-  (varName) => !process.env[varName]
-);
+function validateFirebaseConfig() {
+  const missingVars: string[] = [];
 
-if (missingVars.length > 0) {
-  if (typeof window === 'undefined') {
-    // Côté serveur - Configuration manquante = erreur critique
-    throw new Error(
-      `Variables d'environnement Firebase manquantes: ${missingVars.join(', ')}\n` +
-      `Assurez-vous d'avoir créé le fichier .env.local à partir de .env.local.example`
-    );
-  } else {
-    // Côté client - Afficher l'erreur mais ne pas crasher l'app
-    console.error(
-      `Variables d'environnement Firebase manquantes: ${missingVars.join(', ')}\n` +
-      `Assurez-vous d'avoir créé le fichier .env.local à partir de .env.local.example`
-    );
+  // ⚠️ CRITIQUE: Utiliser l'accès direct pour que Next.js puisse injecter les variables
+  if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) missingVars.push('NEXT_PUBLIC_FIREBASE_API_KEY');
+  if (!process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN) missingVars.push('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN');
+  if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) missingVars.push('NEXT_PUBLIC_FIREBASE_PROJECT_ID');
+  if (!process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) missingVars.push('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET');
+  if (!process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID) missingVars.push('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID');
+  if (!process.env.NEXT_PUBLIC_FIREBASE_APP_ID) missingVars.push('NEXT_PUBLIC_FIREBASE_APP_ID');
+
+  if (missingVars.length > 0) {
+    if (typeof window === 'undefined') {
+      // Côté serveur - Configuration manquante = erreur critique
+      throw new Error(
+        `Variables d'environnement Firebase manquantes: ${missingVars.join(', ')}\n` +
+        `En production Vercel: Vérifiez que les variables sont configurées dans Settings > Environment Variables\n` +
+        `En local: Créez le fichier .env.local avec toutes les variables NEXT_PUBLIC_FIREBASE_*`
+      );
+    } else {
+      // Côté client - Afficher l'erreur mais ne pas crasher l'app
+      console.error(
+        `Variables d'environnement Firebase manquantes: ${missingVars.join(', ')}\n` +
+        `En production Vercel: Vérifiez que les variables sont configurées dans Settings > Environment Variables\n` +
+        `En local: Créez le fichier .env.local avec toutes les variables NEXT_PUBLIC_FIREBASE_*`
+      );
+    }
   }
 }
+
+// Valider la configuration au chargement du module
+validateFirebaseConfig();
 
 /**
  * Configuration Firebase chargée depuis les variables d'environnement
