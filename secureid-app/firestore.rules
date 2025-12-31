@@ -39,15 +39,16 @@ service cloud.firestore {
 
     match /bracelets/{braceletId} {
 
-      // LECTURE: Publique pour scan QR Code (Phase 5 - Mode Urgence)
+      // LECTURE: Seulement par le propriétaire OU via Server Actions
       // ⚠️ SÉCURITÉ CRITIQUE:
-      // - Firestore Rules ne peuvent PAS masquer des champs spécifiques
-      // - Le secretToken EST visible côté client via cette règle
-      // - SOLUTION IMPÉRATIVE: Toutes les lectures DOIVENT passer par Server Actions
-      //   qui filtrent le secretToken avant de renvoyer au client
-      // - Ne JAMAIS utiliser getDocs() ou getDoc() directement côté client
-      // - Toujours utiliser les Server Actions dans src/actions/bracelet-actions.ts
-      allow read: if true;
+      // - secretToken ne doit JAMAIS être accessible côté client
+      // - Seules les Server Actions peuvent lire les bracelets
+      // - Pour mode urgence: utiliser emergency-actions.ts qui filtre secretToken
+      allow read: if isAuthenticated() &&
+                     (resource.data.linkedUserId == request.auth.uid ||
+                      // Ou via linkedProfileId
+                      exists(/databases/$(database)/documents/profiles/$(resource.data.linkedProfileId)) &&
+                      get(/databases/$(database)/documents/profiles/$(resource.data.linkedProfileId)).data.parentId == request.auth.uid);
 
       // CRÉATION: INTERDITE côté client
       // Les bracelets sont créés uniquement via le script de provisioning (Admin SDK)
@@ -103,9 +104,12 @@ service cloud.firestore {
 
     match /profiles/{profileId} {
 
-      // LECTURE: Publique pour affichage mode urgence (Phase 5)
-      // Les informations sont visibles aux secouristes
-      allow read: if true;
+      // LECTURE: Seulement par le parent propriétaire
+      // ⚠️ SÉCURITÉ CRITIQUE:
+      // - doctorPin ne doit JAMAIS être accessible publiquement
+      // - Mode urgence: utiliser emergency-actions.ts qui filtre doctorPin
+      allow read: if isAuthenticated() &&
+                     resource.data.parentId == request.auth.uid;
 
       // CRÉATION: Seulement par le parent authentifié
       allow create: if isAuthenticated() &&
@@ -151,7 +155,10 @@ service cloud.firestore {
                        request.resource.data.parentId == request.auth.uid &&
                        // Empêcher la modification de l'ID et du parentId
                        !request.resource.data.diff(resource.data).affectedKeys()
-                         .hasAny(['id', 'parentId', 'createdAt']);
+                         .hasAny(['id', 'parentId', 'createdAt']) &&
+                       // Valider le PIN si modifié (4 chiffres)
+                       (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['doctorPin']) ||
+                        request.resource.data.doctorPin.matches('^[0-9]{4}$'));
 
       // SUPPRESSION: Archivage seulement (pas de vraie suppression)
       // On change le statut à ARCHIVED au lieu de supprimer
@@ -240,8 +247,15 @@ service cloud.firestore {
                        (request.resource.data.lng == null || request.resource.data.lng is number) &&
                        request.resource.data.userAgent is string;
 
-      // LECTURE: Réservée aux parents (via bracelet lié au profile)
-      allow read: if isAuthenticated();
+      // LECTURE: Réservée aux parents des bracelets scannés
+      // ⚠️ SÉCURITÉ: Vérifier que le scan concerne un bracelet du parent
+      allow read: if isAuthenticated() &&
+                     // Vérifier que le bracelet scanné appartient au parent
+                     exists(/databases/$(database)/documents/bracelets/$(resource.data.braceletId)) &&
+                     (get(/databases/$(database)/documents/bracelets/$(resource.data.braceletId)).data.linkedUserId == request.auth.uid ||
+                      // Ou via linkedProfileId
+                      (exists(/databases/$(database)/documents/profiles/$(get(/databases/$(database)/documents/bracelets/$(resource.data.braceletId)).data.linkedProfileId)) &&
+                       get(/databases/$(database)/documents/profiles/$(get(/databases/$(database)/documents/bracelets/$(resource.data.braceletId)).data.linkedProfileId)).data.parentId == request.auth.uid));
 
       // MISE À JOUR: Permettre aux parents de marquer les scans comme lus
       // Uniquement pour le champ isRead
