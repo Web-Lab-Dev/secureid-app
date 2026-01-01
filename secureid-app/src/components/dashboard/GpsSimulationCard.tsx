@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer, OverlayView } from '@react-google-maps/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Target, Navigation, Zap, Shield, Route, Home, School, Heart, Settings, X, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
@@ -472,30 +472,54 @@ export function GpsSimulationCard({
           }}
         />
 
-        {/* Marqueur enfant avec photo ou icône */}
-        <Marker
+        {/* Marqueur enfant avec photo - OverlayView */}
+        <OverlayView
           position={childLocation}
-          icon={{
-            url: childPhotoUrl || 'data:image/svg+xml;base64,' + btoa(`
-              <svg width="60" height="80" xmlns="http://www.w3.org/2000/svg">
-                <!-- Pulse radar -->
-                <circle cx="30" cy="30" r="28" fill="#3b82f6" opacity="0.2">
-                  <animate attributeName="r" from="28" to="50" dur="2s" repeatCount="indefinite"/>
-                  <animate attributeName="opacity" from="0.5" to="0" dur="2s" repeatCount="indefinite"/>
-                </circle>
-                <!-- Cercle principal avec photo de fond -->
-                <circle cx="30" cy="30" r="24" fill="white" stroke="#3b82f6" stroke-width="4"/>
-                <circle cx="30" cy="30" r="20" fill="#3b82f6"/>
-                <!-- Icône enfant -->
-                <path d="M30 22 L30 32 M25 27 L35 27" stroke="white" stroke-width="3" stroke-linecap="round"/>
-                <!-- Pointe du pin -->
-                <path d="M30 56 L22 68 L38 68 Z" fill="white" stroke="#3b82f6" stroke-width="2"/>
-              </svg>
-            `),
-            scaledSize: new google.maps.Size(60, 80),
-            anchor: new google.maps.Point(30, 80),
-          }}
-        />
+          mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+        >
+          <div style={{ transform: 'translate(-50%, -100%)', position: 'absolute' }}>
+            <div className="relative flex flex-col items-center">
+              {/* Pulse radar animé */}
+              <motion.div
+                className="absolute left-1/2 top-8 -translate-x-1/2 -translate-y-1/2 h-16 w-16 rounded-full bg-blue-500"
+                animate={{
+                  scale: [1, 2, 1],
+                  opacity: [0.5, 0, 0.5],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeOut",
+                }}
+              />
+
+              {/* Photo circulaire avec bordure */}
+              <div className="relative h-16 w-16 rounded-full bg-white p-1 shadow-2xl ring-4 ring-blue-500 z-10">
+                {childPhotoUrl ? (
+                  <Image
+                    src={childPhotoUrl}
+                    alt={childName}
+                    width={64}
+                    height={64}
+                    className="h-full w-full rounded-full object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center rounded-full bg-blue-500">
+                    <MapPin className="h-8 w-8 text-white" />
+                  </div>
+                )}
+              </div>
+
+              {/* Pointe du pin */}
+              <div className="relative -mt-1 z-10">
+                <svg width="32" height="20" viewBox="0 0 32 20">
+                  <path d="M16 0 L0 20 L32 20 Z" fill="white" stroke="#3b82f6" strokeWidth="3"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </OverlayView>
       </GoogleMap>
 
       {/* HUD: Badge LIVE (top left) */}
