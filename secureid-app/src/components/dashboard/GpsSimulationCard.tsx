@@ -12,6 +12,7 @@ import type { PointOfInterest, TrajectoryPoint } from '@/lib/types/gps';
 import { DEFAULT_SAFE_ZONE, DEFAULT_TRAJECTORY, POI_COLORS, POI_ICONS, generatePoiSvg, encodeSvgToDataUrl } from '@/lib/constants/gps';
 import { sendGeofenceExitNotification } from '@/actions/notification-actions';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { OUAGADOUGOU_LOCATIONS, DEFAULT_PARENT_LOCATION } from '@/lib/mock-locations';
 
 /**
  * PHASE 15 - GPS SIMULATION CARD (GOOGLE MAPS INTEGRATION)
@@ -30,8 +31,8 @@ interface GpsSimulationCardProps {
   childPhotoUrl?: string;
 }
 
-// Position par défaut (Paris) si géolocalisation refusée
-const DEFAULT_LOCATION: LatLng = { lat: 48.8566, lng: 2.3522 };
+// Position par défaut (Ouagadougou) si géolocalisation refusée
+const DEFAULT_LOCATION: LatLng = DEFAULT_PARENT_LOCATION;
 
 export function GpsSimulationCard({
   childName = "Votre enfant",
@@ -312,37 +313,37 @@ export function GpsSimulationCard({
     };
   }, [outOfZoneTimer]);
 
-  // 3️⃣ CRÉER POI (Points d'Intérêt) - Maison, École, Docteur
+  // 3️⃣ CRÉER POI (Points d'Intérêt) - Maison, École, Hôpital (Ouagadougou)
   useEffect(() => {
     if (!mapRef || pointsOfInterest.length > 0) return; // Ne générer que si vide
 
-    // Générer 3 POI simulés autour de la position parent (distances visibles sur carte)
+    // Utiliser les coordonnées réelles de Ouagadougou formant un triangle d'environ 1km
     const pois: PointOfInterest[] = [
       {
         id: 'home',
         name: 'Maison',
-        position: generateRandomLocation(parentLocation, 100, 150),
+        position: OUAGADOUGOU_LOCATIONS.HOME,
         type: 'HOME',
         icon: '🏠'
       },
       {
         id: 'school',
         name: 'École Primaire',
-        position: generateRandomLocation(parentLocation, 200, 300),
+        position: OUAGADOUGOU_LOCATIONS.SCHOOL,
         type: 'SCHOOL',
         icon: '🏫'
       },
       {
         id: 'doctor',
-        name: 'Cabinet Médical',
-        position: generateRandomLocation(parentLocation, 150, 250),
+        name: 'Hôpital CHU Yalgado',
+        position: OUAGADOUGOU_LOCATIONS.HOSPITAL,
         type: 'DOCTOR',
         icon: '🏥'
       }
     ];
 
     setPointsOfInterest(pois);
-  }, [mapRef, parentLocation]); // Générer uniquement au chargement
+  }, [mapRef]); // Générer uniquement au chargement (pas de dépendance à parentLocation)
 
   // 4️⃣ AFFICHER MARKERS POI SUR LA CARTE
   useEffect(() => {
