@@ -46,7 +46,6 @@ export function GpsSimulationCard({
   const [dashOffset, setDashOffset] = useState<number>(0);
   const [showTraffic, setShowTraffic] = useState<boolean>(true);
   const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('roadmap');
-  const [childMarkerPosition, setChildMarkerPosition] = useState<{ x: number; y: number } | null>(null);
 
   // NOUVELLES FEATURES - Geofencing, POI, Trajectory
   const [safeZoneCircle, setSafeZoneCircle] = useState<google.maps.Circle | null>(null);
@@ -133,45 +132,6 @@ export function GpsSimulationCard({
     }
   }, []);
 
-  // Fonction pour mettre à jour la position du marqueur enfant
-  const updateChildMarkerPosition = useCallback((map: google.maps.Map, location: LatLng) => {
-    const projection = map.getProjection();
-    const zoom = map.getZoom();
-    if (projection && zoom !== undefined) {
-      const point = projection.fromLatLngToPoint(new google.maps.LatLng(location.lat, location.lng));
-      const bounds = map.getBounds();
-      const ne = bounds?.getNorthEast();
-      const sw = bounds?.getSouthWest();
-
-      if (point && ne && sw) {
-        const nePoint = projection.fromLatLngToPoint(ne);
-        const swPoint = projection.fromLatLngToPoint(sw);
-
-        if (nePoint && swPoint) {
-          const scale = Math.pow(2, zoom);
-          const worldPoint = new google.maps.Point(
-            point.x * scale,
-            point.y * scale
-          );
-          const worldNe = new google.maps.Point(
-            nePoint.x * scale,
-            nePoint.y * scale
-          );
-          const worldSw = new google.maps.Point(
-            swPoint.x * scale,
-            swPoint.y * scale
-          );
-
-          const mapSize = map.getDiv().getBoundingClientRect();
-          const x = ((worldPoint.x - worldSw.x) / (worldNe.x - worldSw.x)) * mapSize.width;
-          const y = ((worldPoint.y - worldNe.y) / (worldSw.y - worldNe.y)) * mapSize.height;
-
-          setChildMarkerPosition({ x, y });
-        }
-      }
-    }
-  }, []);
-
   const onLoad = useCallback((map: google.maps.Map) => {
     setMapRef(map);
 
@@ -182,12 +142,7 @@ export function GpsSimulationCard({
     // Centrer sur le point milieu avec zoom fixe optimal
     map.setCenter({ lat: centerLat, lng: centerLng });
     map.setZoom(13); // Zoom fixe qui affiche bien les rues et l'environnement
-
-    // Écouter les changements de vue (pan/zoom) pour repositionner le marqueur
-    map.addListener('idle', () => {
-      updateChildMarkerPosition(map, childLocation);
-    });
-  }, [childLocation, parentLocation, updateChildMarkerPosition]);
+  }, [childLocation, parentLocation]);
 
   // Simuler mouvement de l'enfant (visible sur carte)
   useEffect(() => {
@@ -213,18 +168,6 @@ export function GpsSimulationCard({
 
     return () => clearInterval(interval);
   }, [parentLocation]);
-
-  // Mettre à jour la position du marqueur quand la carte est prête
-  useEffect(() => {
-    if (!mapRef) return;
-
-    // Attendre que la carte soit complètement chargée
-    const timer = setTimeout(() => {
-      updateChildMarkerPosition(mapRef, childLocation);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [childLocation, mapRef, updateChildMarkerPosition]);
 
   // Animation ondulation des pointillés (0-100%)
   useEffect(() => {
@@ -488,30 +431,28 @@ export function GpsSimulationCard({
           fullscreenControl: false,
         }}
       >
-        {/* Polyline (trajet avec pointillés ondulants) - Seulement si positions valides */}
-        {parentLocation.lat !== DEFAULT_LOCATION.lat && childLocation.lat !== DEFAULT_LOCATION.lat && (
-          <Polyline
-            path={[parentLocation, childLocation]}
-            options={{
-              strokeColor: '#3b82f6',
-              strokeOpacity: 0, // Ligne invisible, on utilise seulement les icônes
-              strokeWeight: 4,
-              icons: [
-                {
-                  icon: {
-                    path: 'M 0,-1 0,1', // Petit trait vertical
-                    strokeOpacity: 1,
-                    strokeColor: '#3b82f6',
-                    strokeWeight: 4,
-                    scale: 4,
-                  },
-                  offset: `${dashOffset}%`,
-                  repeat: '20px', // Espacement entre les points
+        {/* Polyline (trajet avec pointillés ondulants) - Toujours affichée */}
+        <Polyline
+          path={[parentLocation, childLocation]}
+          options={{
+            strokeColor: '#3b82f6',
+            strokeOpacity: 0, // Ligne invisible, on utilise seulement les icônes
+            strokeWeight: 4,
+            icons: [
+              {
+                icon: {
+                  path: 'M 0,-1 0,1', // Petit trait vertical
+                  strokeOpacity: 1,
+                  strokeColor: '#3b82f6',
+                  strokeWeight: 4,
+                  scale: 4,
                 },
-              ],
-            }}
-          />
-        )}
+                offset: `${dashOffset}%`,
+                repeat: '20px', // Espacement entre les points
+              },
+            ],
+          }}
+        />
 
         {/* Traffic Layer pour plus de réalisme */}
         {showTraffic && <TrafficLayer />}
@@ -531,17 +472,28 @@ export function GpsSimulationCard({
           }}
         />
 
-        {/* Marqueur enfant - Ne pas utiliser la photo directement, on va créer un overlay personnalisé */}
+        {/* Marqueur enfant avec photo ou icône */}
         <Marker
           position={childLocation}
           icon={{
-            url: 'data:image/svg+xml;base64,' + btoa(`
-              <svg width="1" height="1" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="0.5" cy="0.5" r="0.5" fill="transparent"/>
+            url: childPhotoUrl || 'data:image/svg+xml;base64,' + btoa(`
+              <svg width="60" height="80" xmlns="http://www.w3.org/2000/svg">
+                <!-- Pulse radar -->
+                <circle cx="30" cy="30" r="28" fill="#3b82f6" opacity="0.2">
+                  <animate attributeName="r" from="28" to="50" dur="2s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" from="0.5" to="0" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <!-- Cercle principal avec photo de fond -->
+                <circle cx="30" cy="30" r="24" fill="white" stroke="#3b82f6" stroke-width="4"/>
+                <circle cx="30" cy="30" r="20" fill="#3b82f6"/>
+                <!-- Icône enfant -->
+                <path d="M30 22 L30 32 M25 27 L35 27" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                <!-- Pointe du pin -->
+                <path d="M30 56 L22 68 L38 68 Z" fill="white" stroke="#3b82f6" stroke-width="2"/>
               </svg>
             `),
-            scaledSize: new google.maps.Size(1, 1),
-            anchor: new google.maps.Point(0, 0),
+            scaledSize: new google.maps.Size(60, 80),
+            anchor: new google.maps.Point(30, 80),
           }}
         />
       </GoogleMap>
@@ -576,68 +528,6 @@ export function GpsSimulationCard({
         </motion.div>
       </motion.div>
 
-      {/* Marqueur enfant personnalisé avec photo (overlay DOM) */}
-      {childMarkerPosition && (
-        <div
-          className="absolute z-20 pointer-events-none transition-all duration-300"
-          style={{
-            left: `${childMarkerPosition.x}px`,
-            top: `${childMarkerPosition.y}px`,
-            transform: `translate(-50%, -100%)`,
-          }}
-        >
-        <motion.div
-          className="relative"
-          animate={{
-            y: [0, -8, 0],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          {/* Pin avec photo */}
-          <div className="relative flex flex-col items-center">
-            {/* Photo circulaire avec ombre */}
-            <div className="relative h-16 w-16 rounded-full bg-white p-1 shadow-2xl ring-4 ring-blue-500">
-              {childPhotoUrl ? (
-                <Image
-                  src={childPhotoUrl}
-                  alt={childName}
-                  width={64}
-                  height={64}
-                  className="h-full w-full rounded-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center rounded-full bg-blue-500">
-                  <MapPin className="h-8 w-8 text-white" />
-                </div>
-              )}
-
-              {/* Pulse radar autour de la photo */}
-              <motion.div
-                className="absolute inset-0 -m-2 rounded-full bg-blue-500"
-                animate={{
-                  scale: [1, 1.8, 1],
-                  opacity: [0.5, 0, 0.5],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeOut",
-                }}
-              />
-            </div>
-
-            {/* Pointe du pin (triangle) */}
-            <div className="relative -mt-1">
-              <div className="h-0 w-0 border-l-12 border-r-12 border-t-16 border-l-transparent border-r-transparent border-t-white drop-shadow-lg" />
-            </div>
-          </div>
-        </motion.div>
-        </div>
-      )}
 
       {/* Tooltip distance et temps - déplacé en haut à droite */}
       <motion.div
