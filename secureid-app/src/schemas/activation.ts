@@ -167,8 +167,45 @@ export const quickProfileSchema = z.object({
 /**
  * Schema partiel pour mise à jour de profil
  * Toutes les propriétés sont optionnelles pour permettre les updates partiels
+ *
+ * Note: On ne peut pas utiliser .partial() car medicalFormSchema contient des .refine()
+ * donc on recrée le schéma manuellement avec tous les champs optionnels
  */
-export const updateProfileSchema = medicalFormSchema.partial();
+export const updateProfileSchema = z.object({
+  // Informations de base
+  fullName: z
+    .string()
+    .min(2, 'Le nom doit contenir au moins 2 caractères')
+    .max(100, 'Le nom est trop long')
+    .optional(),
+
+  dateOfBirth: z.date().optional(),
+
+  photoUrl: z.string().url().optional().or(z.literal('')),
+
+  // Informations médicales
+  bloodType: z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'UNKNOWN']).optional(),
+
+  allergies: z.array(z.string()).optional(),
+
+  conditions: z.array(z.string()).optional(),
+
+  medications: z.array(z.string()).optional(),
+
+  medicalNotes: z
+    .string()
+    .max(1000, 'Les notes médicales sont trop longues')
+    .optional()
+    .or(z.literal('')),
+
+  // Code PIN médecin
+  doctorPin: doctorPinSchema.optional(),
+
+  confirmDoctorPin: doctorPinSchema.optional(),
+
+  // Contacts d'urgence
+  emergencyContacts: z.array(emergencyContactSchema).optional(),
+});
 
 /**
  * Types inférés des schemas (utiles pour TypeScript)
