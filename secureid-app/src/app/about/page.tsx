@@ -12,18 +12,18 @@ import { SocialMediaCarousel } from '@/components/about/SocialMediaCarousel';
 export default function AboutPage() {
   // Images d'annonces réseaux sociaux (sélection des plus impactantes)
   const socialMediaImages = [
-    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_11139_www.facebook.com.jpeg',
-    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_11250_www.facebook.com.jpeg',
-    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_111113_www.facebook.com.jpeg',
-    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_111219_www.facebook.com.jpeg',
-    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_111326_www.facebook.com.jpeg',
-    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_111537_www.facebook.com.jpeg',
-    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_11176_www.facebook.com.jpeg',
-    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_111821_www.facebook.com.jpeg',
-    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_112227_www.facebook.com.jpeg',
-    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_112331_www.facebook.com.jpeg',
-    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_112840_www.facebook.com.jpeg',
-    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_113039_www.facebook.com.jpeg',
+    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_11139_www.facebook.com.jpeg',
+    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_11250_www.facebook.com.jpeg',
+    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_111113_www.facebook.com.jpeg',
+    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_111219_www.facebook.com.jpeg',
+    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_111326_www.facebook.com.jpeg',
+    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_111537_www.facebook.com.jpeg',
+    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_11176_www.facebook.com.jpeg',
+    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_111821_www.facebook.com.jpeg',
+    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_112227_www.facebook.com.jpeg',
+    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_112331_www.facebook.com.jpeg',
+    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_112840_www.facebook.com.jpeg',
+    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_113039_www.facebook.com.jpeg',
   ];
 
   return (
@@ -188,10 +188,10 @@ export default function AboutPage() {
               {/* Photo du CEO */}
               <div className="relative h-48 w-48 flex-shrink-0 overflow-hidden rounded-full border-4 border-orange-200 shadow-2xl">
                 <Image
-                  src="/Ceo secureID.jpg"
+                  src="/Ceo%20secureID.jpg"
                   alt="SWABO HAMADOU - CEO SecureID"
                   fill
-                  className="object-cover"
+                  className="object-cover object-[center_20%]"
                   priority
                 />
               </div>
