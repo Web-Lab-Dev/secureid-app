@@ -2,13 +2,30 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { Shield, Lock, Zap, Heart, Users, MapPin, Quote } from 'lucide-react';
+import { Shield, Lock, Zap, Heart, Quote } from 'lucide-react';
 import Header from '@/components/landing/Header';
 import Footer from '@/components/landing/Footer';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { SocialMediaCarousel } from '@/components/about/SocialMediaCarousel';
 
 export default function AboutPage() {
+  // Images d'annonces réseaux sociaux (sélection des plus impactantes)
+  const socialMediaImages = [
+    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_11139_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_11250_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_111113_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_111219_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_111326_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_111537_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_11176_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_111821_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_112227_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_112331_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_112840_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_113039_www.facebook.com.jpeg',
+  ];
+
   return (
     <div className="overflow-x-hidden bg-[#FAFAF9]">
       <Header />
@@ -57,32 +74,16 @@ export default function AboutPage() {
               <span className="text-orange-400">chaque jour</span>.
             </h2>
 
-            {/* Carrousel de placeholders */}
-            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((item, index) => (
-                <motion.div
-                  key={item}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.1 * index }}
-                  className="flex h-64 items-center justify-center rounded-2xl border-2 border-dashed border-stone-600 bg-stone-800"
-                >
-                  <div className="text-center">
-                    <Image
-                      src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21 15 16 10 5 21'/%3E%3C/svg%3E"
-                      alt="Screenshot placeholder"
-                      width={64}
-                      height={64}
-                      className="mx-auto opacity-50"
-                    />
-                    <p className="mt-4 font-outfit text-sm text-stone-500">
-                      Screenshot Facebook/WhatsApp #{item}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            {/* Carrousel d'annonces réseaux sociaux */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="mt-12"
+            >
+              <SocialMediaCarousel images={socialMediaImages} interval={4000} />
+            </motion.div>
 
             {/* Texte d'accompagnement */}
             <motion.div
@@ -184,15 +185,21 @@ export default function AboutPage() {
             className="mt-12 rounded-3xl bg-white p-8 shadow-xl shadow-orange-100 sm:p-12"
           >
             <div className="flex flex-col items-center gap-8 lg:flex-row lg:gap-12">
-              {/* Photo placeholder */}
-              <div className="flex h-48 w-48 flex-shrink-0 items-center justify-center rounded-full border-4 border-orange-200 bg-gradient-to-br from-orange-100 to-amber-100">
-                <Users className="h-20 w-20 text-orange-500" />
+              {/* Photo du CEO */}
+              <div className="relative h-48 w-48 flex-shrink-0 overflow-hidden rounded-full border-4 border-orange-200 shadow-2xl">
+                <Image
+                  src="/Ceo secureID.jpg"
+                  alt="SWABO HAMADOU - CEO SecureID"
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </div>
 
               {/* Bio */}
               <div className="flex-1">
                 <p className="font-outfit text-lg leading-relaxed text-[#57534e]">
-                  "Je m'appelle <span className="font-semibold text-[#1c1917]">[Ton Nom]</span>.
+                  "Je m'appelle <span className="font-semibold text-[#1c1917]">SWABO HAMADOU</span>.
                   Développeur web, expert en IA et automatisation, j'ai développé cette solution
                   en partant d'une page blanche pour garantir une sécurité totale. Aujourd'hui, je
                   travaille en direct avec les premiers parents utilisateurs pour faire évoluer ce
