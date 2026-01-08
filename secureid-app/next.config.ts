@@ -28,11 +28,15 @@ const nextConfig: NextConfig = {
     'http://localhost:3000',
   ],
 
-  // Configuration des images (pour optimisation future)
+  // Configuration des images optimisée
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 jours de cache
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     // Domaines autorisés pour les images externes
     remotePatterns: [
       {

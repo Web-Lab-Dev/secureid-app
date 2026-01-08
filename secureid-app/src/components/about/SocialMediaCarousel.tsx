@@ -23,6 +23,7 @@ interface SocialMediaCarouselProps {
 export function SocialMediaCarousel({ images, interval = 4000 }: SocialMediaCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetTimeout = () => {
@@ -30,6 +31,25 @@ export function SocialMediaCarousel({ images, interval = 4000 }: SocialMediaCaro
       clearTimeout(timeoutRef.current);
     }
   };
+
+  // Précharger les images au montage
+  useEffect(() => {
+    const preloadImages = async () => {
+      const imagePromises = images.slice(0, 3).map((src) => {
+        return new Promise((resolve, reject) => {
+          const img = new window.Image();
+          img.src = src;
+          img.onload = resolve;
+          img.onerror = reject;
+        });
+      });
+
+      await Promise.all(imagePromises);
+      setIsLoaded(true);
+    };
+
+    preloadImages();
+  }, [images]);
 
   // Fonction pour passer à l'image suivante
   const goToNext = () => {
@@ -69,13 +89,19 @@ export function SocialMediaCarousel({ images, interval = 4000 }: SocialMediaCaro
     >
       {/* Container du carrousel */}
       <div className="relative h-96 overflow-hidden rounded-2xl bg-stone-800">
+        {!isLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent"></div>
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
           <motion.div
             key={currentIndex}
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
             className="absolute inset-0"
           >
             <Image
@@ -84,6 +110,9 @@ export function SocialMediaCarousel({ images, interval = 4000 }: SocialMediaCaro
               fill
               className="object-contain"
               priority={currentIndex === 0}
+              quality={75}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+              loading={currentIndex === 0 ? "eager" : "lazy"}
             />
           </motion.div>
         </AnimatePresence>
