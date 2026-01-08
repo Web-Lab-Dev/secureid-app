@@ -35,9 +35,9 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-amber-600 transition-colors">
+                <Link href="/about" className="hover:text-amber-600 transition-colors">
                   À propos
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
