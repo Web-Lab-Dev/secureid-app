@@ -1,5 +1,4 @@
-import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { adminDb } from '@/lib/firebase-admin';
 import { redirect } from 'next/navigation';
 import { ErrorPage } from '@/components/ErrorPage';
 import { UnknownStatusPage } from '@/components/UnknownStatusPage';
@@ -62,13 +61,13 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
   const searchParamsResolved = await searchParams;
   const token = searchParamsResolved.token || searchParamsResolved.t;
 
-  const braceletRef = doc(db, 'bracelets', slug);
-  const braceletSnap = await getDoc(braceletRef);
+  const braceletRef = adminDb.collection('bracelets').doc(slug);
+  const braceletSnap = await braceletRef.get();
 
   // ============================================================================
   // VÉRIFICATION 1 - Existence du bracelet
   // ============================================================================
-  if (!braceletSnap.exists()) {
+  if (!braceletSnap.exists) {
     return <ErrorPage type="not-found" slug={slug} />;
   }
 
@@ -126,10 +125,10 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
       );
     }
 
-    const profileRef = doc(db, 'profiles', profileId);
-    const profileSnap = await getDoc(profileRef);
+    const profileRef = adminDb.collection('profiles').doc(profileId);
+    const profileSnap = await profileRef.get();
 
-    if (!profileSnap.exists()) {
+    if (!profileSnap.exists) {
       return (
         <ErrorPage
           type="not-found"
