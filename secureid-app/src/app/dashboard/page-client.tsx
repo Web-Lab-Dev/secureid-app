@@ -14,7 +14,7 @@ import { SchoolDialog } from '@/components/dashboard/SchoolDialog';
 import { ScanHistoryDialog } from '@/components/dashboard/ScanHistoryDialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { InstallBanner } from '@/components/pwa/InstallBanner';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { BraceletDocument } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
@@ -78,29 +78,26 @@ export function DashboardPageClient() {
 
         const braceletsMap: Record<string, BraceletDocument> = {};
 
-        // FIX P1: Firestore 'in' query limitée à 10 items max
-        // Diviser en batches de 10 pour supporter 11+ profils
-        const BATCH_SIZE = 10;
-        const batches = [];
-
-        for (let i = 0; i < braceletIds.length; i += BATCH_SIZE) {
-          batches.push(braceletIds.slice(i, i + BATCH_SIZE));
-        }
-
-        // Exécuter toutes les queries en parallèle
+        // Charger chaque bracelet individuellement avec getDoc
+        // Plus fiable que where('id', 'in') car utilise directement l'ID du document Firestore
         await Promise.all(
-          batches.map(async (batch) => {
-            const braceletsQuery = query(
-              collection(db, 'bracelets'),
-              where('id', 'in', batch)
-            );
+          braceletIds.map(async (braceletId) => {
+            try {
+              const braceletRef = doc(db, 'bracelets', braceletId);
+              const braceletSnap = await getDoc(braceletRef);
 
-            const braceletsSnap = await getDocs(braceletsQuery);
-
-            braceletsSnap.forEach((doc) => {
-              const data = doc.data() as BraceletDocument;
-              braceletsMap[data.id] = data;
-            });
+              if (braceletSnap.exists()) {
+                const data = {
+                  id: braceletSnap.id,
+                  ...braceletSnap.data(),
+                } as BraceletDocument;
+                braceletsMap[braceletId] = data;
+              } else {
+                logger.warn('Bracelet not found', { braceletId });
+              }
+            } catch (err) {
+              logger.warn('Failed to load bracelet', { braceletId, error: err });
+            }
           })
         );
 
