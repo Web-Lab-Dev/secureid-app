@@ -41,12 +41,25 @@ if (!admin.apps.length && !isBuildTime) {
     );
   }
 
+  // Parser la clé privée pour gérer différents formats
+  // Format 1: "-----BEGIN...\\n...\\n-----END..." (avec guillemets et \\n échappés)
+  // Format 2: -----BEGIN...\\n...\\n-----END... (sans guillemets)
+  // Format 3: -----BEGIN...\n...\n-----END... (avec vrais \n)
+  let parsedPrivateKey = privateKey;
+
+  // Enlever les guillemets si présents (Vercel peut les inclure)
+  if (parsedPrivateKey.startsWith('"') && parsedPrivateKey.endsWith('"')) {
+    parsedPrivateKey = parsedPrivateKey.slice(1, -1);
+  }
+
+  // Remplacer \\n échappés par de vrais sauts de ligne
+  parsedPrivateKey = parsedPrivateKey.replace(/\\n/g, '\n');
+
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId,
       clientEmail,
-      // La clé privée peut contenir des \n échappés, il faut les remplacer
-      privateKey: privateKey.replace(/\\n/g, '\n'),
+      privateKey: parsedPrivateKey,
     }),
   });
 }
