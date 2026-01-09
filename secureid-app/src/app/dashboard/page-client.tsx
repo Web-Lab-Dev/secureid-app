@@ -14,8 +14,7 @@ import { SchoolDialog } from '@/components/dashboard/SchoolDialog';
 import { ScanHistoryDialog } from '@/components/dashboard/ScanHistoryDialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { InstallBanner } from '@/components/pwa/InstallBanner';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getBraceletsByProfileIds } from '@/actions/bracelet-actions';
 import type { BraceletDocument } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
 
@@ -29,7 +28,7 @@ import type { ProfileDocument } from '@/types/profile';
  */
 
 export function DashboardPageClient() {
-  const {} = useAuthContext();
+  const { user } = useAuthContext();
   const router = useRouter();
   const { profiles, loading, refetch } = useProfiles();
   const { hasPermission, requestPermission, loading: notifLoading } = useNotifications();
@@ -57,51 +56,37 @@ export function DashboardPageClient() {
     profile: ProfileDocument | null;
   }>({ isOpen: false, profile: null });
 
-  // Charger les bracelets liés aux profils
+  // Charger les bracelets liés aux profils via Server Action sécurisée
   useEffect(() => {
     const loadBracelets = async () => {
-      if (!profiles || profiles.length === 0) {
+      if (!profiles || profiles.length === 0 || !user) {
         setLoadingBracelets(false);
         return;
       }
 
       try {
-        // Récupérer tous les IDs de bracelets liés
-        const braceletIds = profiles
-          .map((p) => p.currentBraceletId)
-          .filter((id): id is string => id !== null);
+        // Récupérer tous les IDs de profils
+        const profileIds = profiles.map((p) => p.id).filter((id): id is string => !!id);
 
-        if (braceletIds.length === 0) {
+        if (profileIds.length === 0) {
           setLoadingBracelets(false);
           return;
         }
 
-        const braceletsMap: Record<string, BraceletDocument> = {};
+        // ✅ SÉCURITÉ: Utilisation de Server Action (Admin SDK)
+        // - Valide que tous les profils appartiennent au user
+        // - Filtre automatiquement secretToken
+        // - Pas d'exposition Client SDK
+        const result = await getBraceletsByProfileIds({
+          profileIds,
+          userId: user.uid,
+        });
 
-        // Charger chaque bracelet individuellement avec getDoc
-        // Plus fiable que where('id', 'in') car utilise directement l'ID du document Firestore
-        await Promise.all(
-          braceletIds.map(async (braceletId) => {
-            try {
-              const braceletRef = doc(db, 'bracelets', braceletId);
-              const braceletSnap = await getDoc(braceletRef);
-
-              if (braceletSnap.exists()) {
-                const data = {
-                  id: braceletSnap.id,
-                  ...braceletSnap.data(),
-                } as BraceletDocument;
-                braceletsMap[braceletId] = data;
-              } else {
-                logger.warn('Bracelet not found', { braceletId });
-              }
-            } catch (err) {
-              logger.warn('Failed to load bracelet', { braceletId, error: err });
-            }
-          })
-        );
-
-        setBracelets(braceletsMap);
+        if (result.success && result.bracelets) {
+          setBracelets(result.bracelets);
+        } else {
+          logger.warn('Failed to load bracelets', { error: result.error });
+        }
       } catch (error) {
         logger.error('Error loading bracelets', { error, profileCount: profiles.length });
       } finally {
@@ -110,7 +95,7 @@ export function DashboardPageClient() {
     };
 
     loadBracelets();
-  }, [profiles]);
+  }, [profiles, user]);
 
   const handleStatusChange = () => {
     // Rafraîchir les profils et bracelets

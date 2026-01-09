@@ -239,10 +239,24 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
 
     if (sanitizedGeolocation?.lat && sanitizedGeolocation?.lng) {
       try {
-        // Validation de l'URL pour prévenir SSRF
+        // Validation stricte de l'URL pour prévenir SSRF
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-        if (!appUrl.startsWith('http://') && !appUrl.startsWith('https://')) {
-          throw new Error('Invalid app URL');
+
+        // Whitelist des hosts autorisés
+        const ALLOWED_HOSTS = [
+          'secureid-app.vercel.app',
+          'localhost:3000',
+          'localhost:3001',
+        ];
+
+        try {
+          const url = new URL(appUrl);
+          if (!ALLOWED_HOSTS.includes(url.host)) {
+            throw new Error(`Host non autorisé: ${url.host}`);
+          }
+        } catch (urlError) {
+          logger.error('Invalid app URL', { appUrl, error: urlError });
+          throw new Error('URL de l\'application invalide');
         }
 
         // Appeler notre API de geocoding
