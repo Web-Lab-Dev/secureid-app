@@ -2,8 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { GpsDisclaimerModal } from '@/components/dashboard/GpsDisclaimerModal';
 import { TrackingClient } from './tracking-client';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { adminDb } from '@/lib/firebase-admin';
 import type { ProfileDocument } from '@/types/profile';
 
 /**
@@ -17,6 +16,8 @@ import type { ProfileDocument } from '@/types/profile';
  *
  * Route: /dashboard/profile/[id]/tracking
  * Protection: AuthGuard dans dashboard/layout.tsx
+ *
+ * MIGRATION: Utilise Admin SDK au lieu de Client SDK pour éviter erreurs permissions
  */
 
 interface TrackingPageProps {
@@ -28,12 +29,11 @@ interface TrackingPageProps {
 export default async function TrackingPage({ params }: TrackingPageProps) {
   const { id } = await params;
 
-  // Charger le profil de l'enfant
+  // Charger le profil de l'enfant via Admin SDK
   let profile: ProfileDocument | null = null;
   try {
-    const profileRef = doc(db, 'profiles', id);
-    const profileSnap = await getDoc(profileRef);
-    if (profileSnap.exists()) {
+    const profileSnap = await adminDb.collection('profiles').doc(id).get();
+    if (profileSnap.exists) {
       profile = profileSnap.data() as ProfileDocument;
     }
   } catch (error) {
