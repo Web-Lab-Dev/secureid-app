@@ -3,8 +3,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { Shield, Radio, User, Battery, Droplet, ChevronLeft, ChevronRight, Sparkles, ShieldCheck, X } from 'lucide-react';
-import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { logger } from '@/lib/logger';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import Header from '@/components/landing/Header';
 import HeroSection from '@/components/landing/HeroSection';
 import TrustBar from '@/components/landing/TrustBar';
@@ -274,6 +275,7 @@ function PartnershipModal({ isOpen, onClose }: { isOpen: boolean; onClose: () =>
  */
 function DashboardCarouselSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
 
   const dashboardSlides = useMemo(() => [
     {
@@ -308,21 +310,23 @@ function DashboardCarouselSection() {
     },
   ], []);
 
-  // Auto-scroll toutes les 4 secondes
+  // Auto-scroll toutes les 4 secondes (désactivé si prefers-reduced-motion)
   useEffect(() => {
+    if (prefersReducedMotion) return;
+
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % dashboardSlides.length);
     }, 4000);
     return () => clearInterval(timer);
+  }, [dashboardSlides.length, prefersReducedMotion]);
+
+  const handlePrevious = useCallback(() => {
+    setCurrentSlide((prev) => (prev - 1 + dashboardSlides.length) % dashboardSlides.length);
   }, [dashboardSlides.length]);
 
-  const handlePrevious = () => {
-    setCurrentSlide((prev) => (prev - 1 + dashboardSlides.length) % dashboardSlides.length);
-  };
-
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % dashboardSlides.length);
-  };
+  }, [dashboardSlides.length]);
 
   return (
     <section className="relative z-10 overflow-hidden bg-gradient-to-b from-stone-50 to-white px-4 py-20 sm:py-32">
@@ -575,26 +579,29 @@ const testimonials: Testimonial[] = [
 function TestimonialsCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
 
-  // Auto-rotation toutes les 5 secondes
+  // Auto-rotation toutes les 5 secondes (désactivé si prefers-reduced-motion)
   useEffect(() => {
+    if (prefersReducedMotion) return;
+
     const timer = setInterval(() => {
       setDirection(1);
       setCurrentIndex((prev) => (prev + 1) % testimonials.length);
     }, 5000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [prefersReducedMotion]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     setDirection(-1);
     setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-  };
+  }, []);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     setDirection(1);
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-  };
+  }, []);
 
   const bgColorClasses = {
     amber: 'bg-amber-50',
