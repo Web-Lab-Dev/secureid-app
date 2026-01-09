@@ -30,7 +30,7 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: {
     default: "SecureID - Parce qu'il est votre monde",
-    template: "%s | SecureID",
+    template: "%s | Bracelet",
   },
   description:
     "Un lien invisible qui veille sur vos enfants quand vos yeux ne le peuvent pas. Bracelet connecté avec identification rapide, dossier médical d'urgence et contact familial au Burkina Faso.",
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "SecureID",
+    title: "Bracelet",
   },
   icons: {
     icon: [

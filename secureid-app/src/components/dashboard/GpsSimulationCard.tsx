@@ -40,9 +40,6 @@ export function GpsSimulationCard({
 }: GpsSimulationCardProps) {
   const { user } = useAuthContext();
   const [parentLocation, setParentLocation] = useState<LatLng>(DEFAULT_LOCATION);
-
-  // Debug: Log pour vérifier si la photo est bien reçue
-  logger.info('GpsSimulationCard mounted', { childName, childPhotoUrl, hasPhoto: !!childPhotoUrl });
   const [childLocation, setChildLocation] = useState<LatLng>(DEFAULT_LOCATION);
   const [distance, setDistance] = useState<number>(0);
   const [mapRef, setMapRef] = useState<google.maps.Map | null>(null);
@@ -134,6 +131,18 @@ export function GpsSimulationCard({
       setDistance(calculateDistance(DEFAULT_LOCATION, newChildLocation));
     }
   }, []);
+
+  // Debug détaillé pour la photo enfant
+  useEffect(() => {
+    logger.info('🖼️ Photo enfant - Debug détaillé', {
+      childName,
+      childPhotoUrl,
+      hasPhoto: !!childPhotoUrl,
+      photoLength: childPhotoUrl?.length || 0,
+      photoTrimmed: childPhotoUrl?.trim() || '',
+      isValidUrl: childPhotoUrl && childPhotoUrl.trim() !== '',
+    });
+  }, [childName, childPhotoUrl]);
 
   const onLoad = useCallback((map: google.maps.Map) => {
     setMapRef(map);
