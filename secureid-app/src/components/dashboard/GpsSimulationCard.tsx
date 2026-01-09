@@ -132,9 +132,9 @@ export function GpsSimulationCard({
     }
   }, []);
 
-  // Debug détaillé pour la photo enfant
+  // Debug détaillé pour la photo enfant (console.log direct pour debug production)
   useEffect(() => {
-    logger.info('🖼️ Photo enfant - Debug détaillé', {
+    console.log('🖼️ Photo enfant - Debug détaillé', {
       childName,
       childPhotoUrl,
       hasPhoto: !!childPhotoUrl,
@@ -517,7 +517,7 @@ export function GpsSimulationCard({
                       className="object-cover"
                       unoptimized
                       onError={(e) => {
-                        logger.error('Failed to load child photo', { url: childPhotoUrl });
+                        console.error('❌ Failed to load child photo', { url: childPhotoUrl });
                         // Remplacer par le fallback si l'image échoue
                         e.currentTarget.style.display = 'none';
                       }}
