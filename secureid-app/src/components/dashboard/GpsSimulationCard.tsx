@@ -496,14 +496,15 @@ export function GpsSimulationCard({
               {/* Photo circulaire avec bordure */}
               <div className="relative h-16 w-16 rounded-full bg-white p-1 shadow-2xl ring-4 ring-blue-500 z-10">
                 {childPhotoUrl ? (
-                  <Image
-                    src={childPhotoUrl}
-                    alt={childName}
-                    width={64}
-                    height={64}
-                    className="h-full w-full rounded-full object-cover"
-                    unoptimized
-                  />
+                  <div className="relative h-full w-full overflow-hidden rounded-full">
+                    <Image
+                      src={childPhotoUrl}
+                      alt={childName}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </div>
                 ) : (
                   <div className="flex h-full w-full items-center justify-center rounded-full bg-blue-500">
                     <MapPin className="h-8 w-8 text-white" />

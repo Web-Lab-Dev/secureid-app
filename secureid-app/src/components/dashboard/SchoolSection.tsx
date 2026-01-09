@@ -2,7 +2,7 @@
 
 import { logger } from '@/lib/logger';
 import { useState } from 'react';
-import { GraduationCap, Plus, Trash2, Lock, Calendar, User } from 'lucide-react';
+import { GraduationCap, Plus, Trash2, Lock, Calendar, User, X } from 'lucide-react';
 import Image from 'next/image';
 import type { ProfileDocument, PickupDocument } from '@/types/profile';
 import { usePickups } from '@/hooks/usePickups';
@@ -32,6 +32,7 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
   const [newPin, setNewPin] = useState('');
   const [pinError, setPinError] = useState('');
   const [pinLoading, setPinLoading] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; name: string } | null>(null);
 
   const handleUpdatePin = async () => {
     if (!user) return;
@@ -241,7 +242,11 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
                   )}
 
                   {/* Photo */}
-                  <div className="relative mx-auto mb-3 h-24 w-24 overflow-hidden rounded-full border-2 border-indigo-400">
+                  <div
+                    className="relative mx-auto mb-3 h-24 w-24 cursor-pointer overflow-hidden rounded-full border-2 border-indigo-400 transition-transform hover:scale-110"
+                    onClick={() => setSelectedPhoto({ url: pickup.photoUrl, name: pickup.name })}
+                    title="Cliquez pour agrandir"
+                  >
                     <Image
                       src={pickup.photoUrl}
                       alt={pickup.name}
@@ -286,6 +291,37 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
         onClose={() => setIsAddDialogOpen(false)}
         profileId={profile.id}
       />
+
+      {/* Modale Zoom Photo */}
+      {selectedPhoto && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <div className="relative max-h-[90vh] max-w-[90vw]">
+            <Button
+              onClick={() => setSelectedPhoto(null)}
+              variant="ghost"
+              size="icon"
+              className="absolute -right-4 -top-4 rounded-full bg-slate-800 text-white hover:bg-slate-700"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+            <div className="relative h-[80vh] w-[80vw] overflow-hidden rounded-lg">
+              <Image
+                src={selectedPhoto.url}
+                alt={selectedPhoto.name}
+                fill
+                className="object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+            <p className="mt-4 text-center text-lg font-semibold text-white">
+              {selectedPhoto.name}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
