@@ -211,7 +211,7 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
     }
 
     // Validation stricte des coordonnées GPS si présentes
-    let sanitizedGeolocation = geolocation;
+    let sanitizedGeolocation: GeolocationData | null = geolocation;
     if (geolocation?.lat !== undefined && geolocation?.lng !== undefined) {
       const gpsValidation = validateGpsCoordinates(geolocation.lat, geolocation.lng);
       if (!gpsValidation.valid) {
@@ -222,11 +222,7 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
           error: gpsValidation.error
         });
         // Ne pas bloquer le scan, juste invalider les coordonnées
-        sanitizedGeolocation = {
-          lat: null,
-          lng: null,
-          accuracy: null,
-        };
+        sanitizedGeolocation = null;
       }
     }
 

@@ -792,7 +792,7 @@ export async function getBraceletsByProfileIds(
             const braceletData = braceletSnap.data() as BraceletDocument;
 
             // ⚠️ SÉCURITÉ: Ne JAMAIS exposer secretToken
-            const { secretToken, ...safeBraceletData } = braceletData;
+            const { secretToken, id, ...safeBraceletData } = braceletData;
 
             braceletsMap[braceletId] = {
               id: braceletSnap.id,
