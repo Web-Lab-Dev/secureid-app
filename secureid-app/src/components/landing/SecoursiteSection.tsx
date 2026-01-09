@@ -88,15 +88,15 @@ export default function SecoursiteSection() {
         </motion.div>
 
         {/* 3 Phones Overlap - Responsive viewport height */}
-        <div className="relative mx-auto max-w-5xl">
-          <div className="flex items-center justify-center gap-1 sm:gap-2 md:gap-0 scale-75 sm:scale-90 md:scale-100">
+        <div className="relative mx-auto max-w-5xl overflow-hidden">
+          <div className="flex items-center justify-center gap-0 sm:gap-1 md:gap-0 scale-90 sm:scale-95 md:scale-100">
             {/* Phone 1 - Gauche (Alerte) */}
             <motion.div
               initial={{ opacity: 0, x: -100, rotateY: -15 }}
               whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative z-10 w-40 sm:w-44 md:w-48 lg:w-52 md:-mr-12"
+              className="relative z-10 w-[30vw] sm:w-44 md:w-48 lg:w-52 -mr-8 sm:-mr-10 md:-mr-12"
               style={{ perspective: '1000px' }}
             >
               <PhoneMockup
@@ -117,7 +117,7 @@ export default function SecoursiteSection() {
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="relative z-20 w-48 sm:w-52 md:w-56 lg:w-60"
+              className="relative z-20 w-[38vw] sm:w-52 md:w-56 lg:w-60"
             >
               <PhoneMockup
                 src="/landing/showcase/secouriste page/secouriste ia.jpg"
@@ -148,7 +148,7 @@ export default function SecoursiteSection() {
               whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="relative z-10 w-40 sm:w-44 md:w-48 lg:w-52 md:-ml-12"
+              className="relative z-10 w-[30vw] sm:w-44 md:w-48 lg:w-52 -ml-8 sm:-ml-10 md:-ml-12"
               style={{ perspective: '1000px' }}
             >
               <PhoneMockup
