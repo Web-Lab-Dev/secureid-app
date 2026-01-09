@@ -434,7 +434,7 @@ function DashboardCarouselSection() {
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative mx-auto w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[400px] max-h-[75vh]"
+            className="relative mx-auto w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[400px]"
           >
             {/* Phone Mockup statique avec carrousel interne */}
             <motion.div
@@ -446,15 +446,15 @@ function DashboardCarouselSection() {
                 repeat: Infinity,
                 ease: 'easeInOut',
               }}
-              className="relative"
+              className="relative max-h-[60vh]"
             >
               {/* iPhone Mockup Frame */}
-              <div className="relative overflow-hidden rounded-[3rem] border-[12px] border-gray-900 bg-gray-900 shadow-2xl shadow-black/40">
+              <div className="relative overflow-hidden rounded-[3rem] border-[12px] border-gray-900 bg-gray-900 shadow-2xl shadow-black/40 max-h-[60vh]">
                 {/* Notch iPhone */}
                 <div className="absolute left-1/2 top-0 z-10 h-7 w-40 -translate-x-1/2 rounded-b-3xl bg-gray-900" />
 
                 {/* Carrousel d'images à l'intérieur */}
-                <div className="relative aspect-[9/19.5] overflow-hidden bg-white">
+                <div className="relative aspect-[9/19.5] max-h-[60vh] overflow-hidden bg-white">
                   <AnimatePresence initial={false}>
                     <motion.div
                       key={currentSlide}

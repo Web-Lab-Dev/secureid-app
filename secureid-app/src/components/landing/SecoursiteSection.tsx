@@ -32,12 +32,12 @@ function PhoneMockup({ src, alt, className = '', floatAnimation = false, priorit
       className={`relative ${className}`}
     >
       {/* iPhone Mockup Frame */}
-      <div className="relative overflow-hidden rounded-[3rem] border-[12px] border-gray-900 bg-gray-900 shadow-2xl shadow-black/40">
+      <div className="relative overflow-hidden rounded-[3rem] border-[12px] border-gray-900 bg-gray-900 shadow-2xl shadow-black/40 max-h-[50vh]">
         {/* Notch iPhone */}
         <div className="absolute left-1/2 top-0 z-10 h-7 w-40 -translate-x-1/2 rounded-b-3xl bg-gray-900" />
 
         {/* Screenshot */}
-        <div className="relative aspect-[9/19.5] overflow-hidden bg-white">
+        <div className="relative aspect-[9/19.5] max-h-[50vh] overflow-hidden bg-white">
           <Image
             src={src}
             alt={alt}
@@ -89,14 +89,14 @@ export default function SecoursiteSection() {
 
         {/* 3 Phones Overlap - Responsive viewport height */}
         <div className="relative mx-auto max-w-5xl">
-          <div className="flex items-center justify-center gap-2 md:gap-0">
+          <div className="flex items-center justify-center gap-2 md:gap-0 max-h-[65vh] overflow-visible">
             {/* Phone 1 - Gauche (Alerte) */}
             <motion.div
               initial={{ opacity: 0, x: -100, rotateY: -15 }}
               whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative z-10 w-36 sm:w-44 md:w-48 lg:w-52 md:-mr-12 max-h-[45vh]"
+              className="relative z-10 w-36 sm:w-44 md:w-48 lg:w-52 md:-mr-12"
               style={{ perspective: '1000px' }}
             >
               <PhoneMockup
@@ -117,7 +117,7 @@ export default function SecoursiteSection() {
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="relative z-20 w-44 sm:w-52 md:w-56 lg:w-60 max-h-[55vh]"
+              className="relative z-20 w-44 sm:w-52 md:w-56 lg:w-60"
             >
               <PhoneMockup
                 src="/landing/showcase/secouriste page/secouriste ia.jpg"
@@ -148,7 +148,7 @@ export default function SecoursiteSection() {
               whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="relative z-10 w-36 sm:w-44 md:w-48 lg:w-52 md:-ml-12 max-h-[45vh]"
+              className="relative z-10 w-36 sm:w-44 md:w-48 lg:w-52 md:-ml-12"
               style={{ perspective: '1000px' }}
             >
               <PhoneMockup
@@ -171,7 +171,7 @@ export default function SecoursiteSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.8 }}
-          className="mt-20 grid gap-8 sm:grid-cols-3"
+          className="mt-12 grid gap-8 sm:grid-cols-3"
         >
           {/* Stat 1 */}
           <div className="rounded-2xl border border-slate-700 bg-slate-800/50 p-6 text-center backdrop-blur-sm">
