@@ -89,14 +89,14 @@ export default function SecoursiteSection() {
 
         {/* 3 Phones Overlap - Responsive viewport height */}
         <div className="relative mx-auto max-w-5xl">
-          <div className="flex items-center justify-center gap-4 md:gap-0">
+          <div className="flex items-center justify-center gap-2 md:gap-0">
             {/* Phone 1 - Gauche (Alerte) */}
             <motion.div
               initial={{ opacity: 0, x: -100, rotateY: -15 }}
               whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative z-10 w-48 sm:w-56 md:w-64 lg:w-72 md:-mr-16 max-h-[60vh]"
+              className="relative z-10 w-36 sm:w-44 md:w-48 lg:w-52 md:-mr-12 max-h-[45vh]"
               style={{ perspective: '1000px' }}
             >
               <PhoneMockup
@@ -105,9 +105,9 @@ export default function SecoursiteSection() {
                 className="rotate-[-5deg] transform"
               />
               {/* Label */}
-              <div className="mt-4 text-center">
-                <p className="font-outfit text-sm font-semibold text-red-400">Alerte Vitale</p>
-                <p className="font-outfit text-xs text-slate-400">Infos médicales en 2s</p>
+              <div className="mt-2 text-center">
+                <p className="font-outfit text-xs sm:text-sm font-semibold text-red-400">Alerte Vitale</p>
+                <p className="font-outfit text-[10px] sm:text-xs text-slate-400">Infos médicales en 2s</p>
               </div>
             </motion.div>
 
@@ -117,7 +117,7 @@ export default function SecoursiteSection() {
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="relative z-20 w-56 sm:w-64 md:w-72 lg:w-80 max-h-[70vh]"
+              className="relative z-20 w-44 sm:w-52 md:w-56 lg:w-60 max-h-[55vh]"
             >
               <PhoneMockup
                 src="/landing/showcase/secouriste page/secouriste ia.jpg"
@@ -131,14 +131,14 @@ export default function SecoursiteSection() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: 1.2, type: 'spring' }}
-                className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 font-outfit text-sm font-bold text-white shadow-lg"
+                className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-3 py-1.5 sm:px-4 sm:py-2 font-outfit text-xs sm:text-sm font-bold text-white shadow-lg"
               >
                 Son Passeport
               </motion.div>
               {/* Label */}
-              <div className="mt-4 text-center">
-                <p className="font-outfit text-sm font-semibold text-emerald-400">IA Bienveillante</p>
-                <p className="font-outfit text-xs text-slate-400">Gestes vitaux guidés</p>
+              <div className="mt-2 text-center">
+                <p className="font-outfit text-xs sm:text-sm font-semibold text-emerald-400">IA Bienveillante</p>
+                <p className="font-outfit text-[10px] sm:text-xs text-slate-400">Gestes vitaux guidés</p>
               </div>
             </motion.div>
 
@@ -148,7 +148,7 @@ export default function SecoursiteSection() {
               whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="relative z-10 w-48 sm:w-56 md:w-64 lg:w-72 md:-ml-16 max-h-[60vh]"
+              className="relative z-10 w-36 sm:w-44 md:w-48 lg:w-52 md:-ml-12 max-h-[45vh]"
               style={{ perspective: '1000px' }}
             >
               <PhoneMockup
@@ -157,9 +157,9 @@ export default function SecoursiteSection() {
                 className="rotate-[5deg] transform"
               />
               {/* Label */}
-              <div className="mt-4 text-center">
-                <p className="font-outfit text-sm font-semibold text-blue-400">GPS WhatsApp</p>
-                <p className="font-outfit text-xs text-slate-400">Contact immédiat</p>
+              <div className="mt-2 text-center">
+                <p className="font-outfit text-xs sm:text-sm font-semibold text-blue-400">GPS WhatsApp</p>
+                <p className="font-outfit text-[10px] sm:text-xs text-slate-400">Contact immédiat</p>
               </div>
             </motion.div>
           </div>

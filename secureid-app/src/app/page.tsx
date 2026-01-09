@@ -434,7 +434,7 @@ function DashboardCarouselSection() {
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative mx-auto w-full max-w-sm lg:max-w-md"
+            className="relative mx-auto w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[400px] max-h-[75vh]"
           >
             {/* Phone Mockup statique avec carrousel interne */}
             <motion.div
