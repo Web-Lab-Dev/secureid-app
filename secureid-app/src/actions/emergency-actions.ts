@@ -211,6 +211,7 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
     }
 
     // Validation stricte des coordonnées GPS si présentes
+    let sanitizedGeolocation = geolocation;
     if (geolocation?.lat !== undefined && geolocation?.lng !== undefined) {
       const gpsValidation = validateGpsCoordinates(geolocation.lat, geolocation.lng);
       if (!gpsValidation.valid) {
@@ -221,8 +222,11 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
           error: gpsValidation.error
         });
         // Ne pas bloquer le scan, juste invalider les coordonnées
-        geolocation.lat = null as any;
-        geolocation.lng = null as any;
+        sanitizedGeolocation = {
+          lat: null,
+          lng: null,
+          accuracy: null,
+        };
       }
     }
 
@@ -233,7 +237,7 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
     let city: string | undefined;
     let country: string | undefined;
 
-    if (geolocation?.lat && geolocation?.lng) {
+    if (sanitizedGeolocation?.lat && sanitizedGeolocation?.lng) {
       try {
         // Validation de l'URL pour prévenir SSRF
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -246,8 +250,8 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            lat: geolocation.lat,
-            lng: geolocation.lng,
+            lat: sanitizedGeolocation.lat,
+            lng: sanitizedGeolocation.lng,
           }),
         });
 
@@ -265,8 +269,8 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
     const scanData = {
       braceletId,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      lat: geolocation?.lat || null,
-      lng: geolocation?.lng || null,
+      lat: sanitizedGeolocation?.lat || null,
+      lng: sanitizedGeolocation?.lng || null,
       userAgent: userAgent || 'unknown',
       deviceType: deviceInfo.deviceType,
       browser: deviceInfo.browser,

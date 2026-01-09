@@ -55,7 +55,18 @@ export function serializeFirestoreData<T extends Record<string, any>>(data: T): 
   for (const [key, value] of Object.entries(data)) {
     if (isTimestamp(value)) {
       serialized[key] = timestampToDate(value).toISOString();
-    } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+    } else if (Array.isArray(value)) {
+      // Traiter récursivement les éléments du tableau
+      serialized[key] = value.map(item => {
+        if (isTimestamp(item)) {
+          return timestampToDate(item).toISOString();
+        } else if (item && typeof item === 'object') {
+          return serializeFirestoreData(item);
+        } else {
+          return item;
+        }
+      });
+    } else if (value && typeof value === 'object') {
       serialized[key] = serializeFirestoreData(value);
     } else {
       serialized[key] = value;

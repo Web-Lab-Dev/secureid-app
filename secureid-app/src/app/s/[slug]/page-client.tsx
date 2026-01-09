@@ -40,6 +40,8 @@ export function EmergencyViewClient({ bracelet, profile }: EmergencyViewClientPr
 
   // Enregistrer le scan au chargement
   useEffect(() => {
+    let cancelled = false;
+
     if (!scanRecorded) {
       const userAgent = navigator.userAgent;
 
@@ -48,9 +50,19 @@ export function EmergencyViewClient({ bracelet, profile }: EmergencyViewClientPr
         geolocation: geolocation.data,
         userAgent,
       }).then(() => {
-        setScanRecorded(true);
+        if (!cancelled) {
+          setScanRecorded(true);
+        }
+      }).catch((error) => {
+        if (!cancelled) {
+          console.error('Failed to record scan:', error);
+        }
       });
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [bracelet.id, geolocation.data, scanRecorded]);
 
   // Animation variants
