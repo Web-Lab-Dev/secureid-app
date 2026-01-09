@@ -87,7 +87,7 @@ export default function SecoursiteSection() {
           </p>
         </motion.div>
 
-        {/* 3 Phones Overlap */}
+        {/* 3 Phones Overlap - Responsive viewport height */}
         <div className="relative mx-auto max-w-5xl">
           <div className="flex items-center justify-center gap-4 md:gap-0">
             {/* Phone 1 - Gauche (Alerte) */}
@@ -96,7 +96,7 @@ export default function SecoursiteSection() {
               whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative z-10 w-64 md:w-80 md:-mr-16"
+              className="relative z-10 w-48 sm:w-56 md:w-64 lg:w-72 md:-mr-16 max-h-[60vh]"
               style={{ perspective: '1000px' }}
             >
               <PhoneMockup
@@ -117,7 +117,7 @@ export default function SecoursiteSection() {
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="relative z-20 w-72 md:w-96"
+              className="relative z-20 w-56 sm:w-64 md:w-72 lg:w-80 max-h-[70vh]"
             >
               <PhoneMockup
                 src="/landing/showcase/secouriste page/secouriste ia.jpg"
@@ -148,7 +148,7 @@ export default function SecoursiteSection() {
               whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="relative z-10 w-64 md:w-80 md:-ml-16"
+              className="relative z-10 w-48 sm:w-56 md:w-64 lg:w-72 md:-ml-16 max-h-[60vh]"
               style={{ perspective: '1000px' }}
             >
               <PhoneMockup
