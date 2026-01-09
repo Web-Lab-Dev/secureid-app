@@ -1,30 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Roboto_Mono, Playfair_Display, Outfit } from "next/font/google";
+import { Playfair_Display, Outfit } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const robotoMono = Roboto_Mono({
-  variable: "--font-roboto-mono",
-  subsets: ["latin"],
-});
-
 // PHASE 10 - Fonts Landing Page émotionnelle
+// Utilise uniquement Playfair (headings) et Outfit (body, buttons)
+// Inter et Roboto_Mono supprimés pour réduire le poids des fonts (-~30KB)
 const playfairDisplay = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
   weight: ["400", "700"],
+  display: "swap", // Optimisation: swap pour éviter FOIT
 });
 
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
   weight: ["300", "400", "600", "700"],
+  display: "swap", // Optimisation: swap pour éviter FOIT
 });
 
 export const metadata: Metadata = {
@@ -156,7 +150,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} ${robotoMono.variable} ${playfairDisplay.variable} ${outfit.variable} antialiased`}
+        className={`${playfairDisplay.variable} ${outfit.variable} font-outfit antialiased`}
       >
         <ErrorBoundary>
           <AuthProvider>{children}</AuthProvider>

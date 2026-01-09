@@ -1,7 +1,7 @@
 'use client';
 
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { X, Clock, MapPin, Loader2 } from 'lucide-react';
 import { collection, query, where, orderBy, getDocs, writeBatch, doc, QueryDocumentSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -29,8 +29,10 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadScans = async () => {
+  // Memoize braceletId pour éviter re-fetches inutiles
+  const braceletId = useMemo(() => profile.currentBraceletId, [profile.currentBraceletId]);
+
+  const loadScans = useCallback(async () => {
       if (!isOpen || !profile.currentBraceletId) {
         setLoading(false);
         return;
@@ -91,28 +93,29 @@ export function ScanHistoryDialog({ isOpen, onClose, profile }: ScanHistoryDialo
       } finally {
         setLoading(false);
       }
-    };
+  }, [isOpen, braceletId]);
 
-    // Fonction pour marquer les scans comme lus
-    const markScansAsRead = async (scanDocs: Array<QueryDocumentSnapshot>) => {
-      try {
-        const batch = writeBatch(db);
-        const unreadScans = scanDocs.filter((doc) => doc.data().isRead === false);
+  // Fonction pour marquer les scans comme lus
+  const markScansAsRead = useCallback(async (scanDocs: Array<QueryDocumentSnapshot>) => {
+    try {
+      const batch = writeBatch(db);
+      const unreadScans = scanDocs.filter((doc) => doc.data().isRead === false);
 
-        if (unreadScans.length === 0) return;
+      if (unreadScans.length === 0) return;
 
-        unreadScans.forEach((scanDoc) => {
-          batch.update(doc(db, 'scans', scanDoc.id), { isRead: true });
-        });
+      unreadScans.forEach((scanDoc) => {
+        batch.update(doc(db, 'scans', scanDoc.id), { isRead: true });
+      });
 
-        await batch.commit();
-      } catch (error) {
-        logger.error('Error marking scans as read:', error);
-      }
-    };
+      await batch.commit();
+    } catch (error) {
+      logger.error('Error marking scans as read:', error);
+    }
+  }, []);
 
+  useEffect(() => {
     loadScans();
-  }, [isOpen, profile.currentBraceletId]);
+  }, [loadScans]);
 
   const formatDate = (timestamp: unknown): string => {
     if (!timestamp) return 'Date inconnue';

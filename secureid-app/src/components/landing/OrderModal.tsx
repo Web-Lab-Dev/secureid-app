@@ -91,12 +91,16 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
     setIsSubmitting(true);
     setSubmitError(null);
 
+    // AbortController pour timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
     try {
       // Générer l'ID de commande
       const orderId = generateOrderId();
       const totalAmount = formData.quantity * PRICING.bracelet.priceInCFA;
 
-      // Appeler l'API directement (comme le partenariat)
+      // Appeler l'API directement avec AbortController
       const response = await fetch('/api/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -111,7 +115,10 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
           gpsLocation: formData.gpsLocation,
           deliveryNotes: formData.deliveryNotes,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const result = await response.json();
 
@@ -134,8 +141,14 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
         throw new Error(result.details || result.error || 'Erreur lors de l\'envoi');
       }
     } catch (error) {
-      logger.error('Failed to submit order', error);
-      setSubmitError(error instanceof Error ? error.message : 'Une erreur est survenue');
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        logger.error('Order request timeout after 30s');
+        setSubmitError('La requête a expiré. Veuillez réessayer.');
+      } else {
+        logger.error('Failed to submit order', error);
+        setSubmitError(error instanceof Error ? error.message : 'Une erreur est survenue');
+      }
     } finally {
       setIsSubmitting(false);
     }
