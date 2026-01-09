@@ -8,23 +8,30 @@ import Link from 'next/link';
 import { LogoutConfirmDialog } from '@/components/auth/LogoutConfirmDialog';
 import { logger } from '@/lib/logger';
 import { NotificationBadge } from '@/components/ui/notification-badge';
-import { collection, query, where, onSnapshot, writeBatch, doc, Timestamp } from 'firebase/firestore';
+import { writeBatch, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useProfiles } from '@/hooks/useProfiles';
-import type { ScanDocument } from '@/types/scan';
 import { APP_CONFIG } from '@/lib/config';
+import { getRecentScans } from '@/actions/bracelet-actions';
 
 /**
  * PHASE 4 - NAVIGATION DASHBOARD
  * PHASE 9 - Ajout de la confirmation de déconnexion
+ * MIGRATION: onSnapshot -> Server Action pour éviter erreurs permissions
  *
  * Barre de navigation pour le dashboard parent
  * Affiche : Accueil, Mon Compte, Déconnexion
  */
 
-interface ScanWithProfile extends ScanDocument {
+interface ScanWithProfile {
   scanId: string;
-  childName: string;
+  braceletId: string;
+  timestamp: string;
+  lat: number | null;
+  lng: number | null;
+  userAgent: string;
+  isRead?: boolean;
+  childName?: string;
 }
 
 export function DashboardNav() {
@@ -39,72 +46,55 @@ export function DashboardNav() {
   const [unreadScanIds, setUnreadScanIds] = useState<string[]>([]); // IDs des scans non lus (pour le batch update)
   const isMarkingAsReadRef = useRef(false); // Flag ref pour éviter écrasement par onSnapshot
 
-  // Écouter TOUS les scans récents (lus et non lus) pour l'affichage dans le modal
+  // Charger les scans récents via Server Action (évite erreurs permissions avec onSnapshot)
   useEffect(() => {
-    if (!user || !profiles || profiles.length === 0) return;
-
-    const braceletIds = profiles
-      .map((p) => p.currentBraceletId)
-      .filter((id): id is string => id !== null);
-
-    if (braceletIds.length === 0) {
+    if (!user || !profiles || profiles.length === 0) {
       setDisplayedScans([]);
       setUnreadScansCount(0);
       setUnreadScanIds([]);
       return;
     }
 
-    // IMPORTANT: Firestore limite le where('in') à 10 éléments max
-    // Query pour TOUS les scans récents (pas de filtre isRead)
-    const scansQuery = query(
-      collection(db, 'scans'),
-      where('braceletId', 'in', braceletIds.slice(0, 10))
-    );
+    const profileIds = profiles.map((p) => p.id).filter((id): id is string => !!id);
 
-    const unsubscribe = onSnapshot(scansQuery, (snapshot) => {
-      const scans: ScanWithProfile[] = [];
-      const unreadIds: string[] = [];
+    if (profileIds.length === 0) {
+      setDisplayedScans([]);
+      setUnreadScansCount(0);
+      setUnreadScanIds([]);
+      return;
+    }
 
-      snapshot.forEach((docSnap) => {
-        const scanData = docSnap.data() as ScanDocument;
+    const loadScans = async () => {
+      try {
+        const result = await getRecentScans({
+          profileIds,
+          userId: user.uid,
+        });
 
-        const matchingProfile = profiles.find(
-          (p) => p.currentBraceletId === scanData.braceletId
-        );
+        if (result.success && result.scans) {
+          setDisplayedScans(result.scans);
 
-        if (matchingProfile) {
-          scans.push({
-            ...scanData,
-            scanId: docSnap.id,
-            childName: matchingProfile.fullName,
-          });
+          // Ne pas écraser les compteurs si on est en train de marquer comme lu
+          if (!isMarkingAsReadRef.current) {
+            const unreadIds = result.scans
+              .filter((scan) => scan.isRead !== true)
+              .map((scan) => scan.scanId);
 
-          // Collecter les IDs des scans non lus (isRead === false ou undefined)
-          if (scanData.isRead !== true) {
-            unreadIds.push(docSnap.id);
+            setUnreadScanIds(unreadIds);
+            setUnreadScansCount(result.unreadCount || 0);
           }
         }
-      });
-
-      // Trier par date décroissante
-      scans.sort((a, b) => {
-        const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
-        const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : 0;
-        return timeB - timeA;
-      });
-
-      // Toujours mettre à jour displayedScans (pour avoir les nouvelles notifications)
-      setDisplayedScans(scans);
-
-      // MAIS ne pas écraser les compteurs si on est en train de marquer comme lu
-      // (évite la race condition avec l'optimistic update)
-      if (!isMarkingAsReadRef.current) {
-        setUnreadScanIds(unreadIds);
-        setUnreadScansCount(unreadIds.length);
+      } catch (error) {
+        logger.error('Error loading scans', { error });
       }
-    });
+    };
 
-    return () => unsubscribe();
+    loadScans();
+
+    // Polling toutes les 30 secondes pour rafraîchir les scans
+    const interval = setInterval(loadScans, 30000);
+
+    return () => clearInterval(interval);
   }, [user, profiles]);
 
   const handleSignOut = async () => {
@@ -169,9 +159,10 @@ export function DashboardNav() {
     }
   };
 
-  const formatDate = (timestamp: Timestamp | null | undefined): string => {
-    if (!timestamp || !timestamp.toDate) return 'Date invalide';
-    const date = timestamp.toDate();
+  const formatDate = (timestamp: string | null | undefined): string => {
+    if (!timestamp) return 'Date invalide';
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return 'Date invalide';
     return new Intl.DateTimeFormat('fr-FR', {
       weekday: 'long',
       year: 'numeric',
@@ -182,10 +173,7 @@ export function DashboardNav() {
     }).format(date);
   };
 
-  const formatLocation = (scan: ScanDocument): string => {
-    if (scan.city && scan.country) {
-      return `${scan.city}, ${scan.country}`;
-    }
+  const formatLocation = (scan: ScanWithProfile): string => {
     if (scan.lat && scan.lng) {
       return `${scan.lat.toFixed(4)}°, ${scan.lng.toFixed(4)}°`;
     }
@@ -193,18 +181,14 @@ export function DashboardNav() {
   };
 
   const getDeviceIcon = (deviceType?: string): string => {
-    if (deviceType === 'mobile') return '📱';
-    if (deviceType === 'tablet') return '📟';
-    if (deviceType === 'desktop') return '💻';
-    return '📱';
+    return '📱'; // Icône par défaut
   };
 
-  const getDeviceLabel = (scan: ScanDocument): string => {
-    const parts = [];
-    if (scan.deviceType) parts.push(scan.deviceType.charAt(0).toUpperCase() + scan.deviceType.slice(1));
-    if (scan.os) parts.push(scan.os);
-    if (scan.browser) parts.push(scan.browser);
-    return parts.length > 0 ? parts.join(' • ') : 'Appareil inconnu';
+  const getDeviceLabel = (scan: ScanWithProfile): string => {
+    // Extraire info basique du user agent
+    if (scan.userAgent.includes('Mobile')) return 'Mobile';
+    if (scan.userAgent.includes('Tablet')) return 'Tablette';
+    return 'Appareil';
   };
 
   return (
@@ -337,7 +321,7 @@ export function DashboardNav() {
 
                       {/* Appareil */}
                       <div className="mt-2 flex items-center gap-2 text-sm text-slate-500">
-                        <span className="text-base">{getDeviceIcon(scan.deviceType)}</span>
+                        <span className="text-base">{getDeviceIcon()}</span>
                         <span>{getDeviceLabel(scan)}</span>
                       </div>
                     </div>

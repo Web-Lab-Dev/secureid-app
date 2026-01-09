@@ -820,3 +820,133 @@ export async function getBraceletsByProfileIds(
     };
   }
 }
+
+/**
+ * Récupère les scans récents pour les profils d'un utilisateur
+ * Alternative sécurisée au onSnapshot côté client qui cause des erreurs de permissions
+ */
+
+interface GetRecentScansInput {
+  profileIds: string[];
+  userId: string;
+}
+
+interface ScanData {
+  scanId: string;
+  braceletId: string;
+  timestamp: string;
+  lat: number | null;
+  lng: number | null;
+  userAgent: string;
+  isRead?: boolean;
+  childName?: string;
+}
+
+interface GetRecentScansResult {
+  success: boolean;
+  scans?: ScanData[];
+  unreadCount?: number;
+  error?: string;
+}
+
+export async function getRecentScans(
+  input: GetRecentScansInput
+): Promise<GetRecentScansResult> {
+  try {
+    const { profileIds, userId } = input;
+
+    if (!userId) {
+      return {
+        success: false,
+        error: 'Utilisateur non authentifié',
+      };
+    }
+
+    if (!profileIds || profileIds.length === 0) {
+      return {
+        success: true,
+        scans: [],
+        unreadCount: 0,
+      };
+    }
+
+    // 1. Vérifier ownership des profils et récupérer braceletIds
+    const braceletIds: string[] = [];
+    const profilesMap = new Map<string, string>(); // braceletId -> childName
+
+    for (const profileId of profileIds) {
+      const profileSnap = await adminDb.collection('profiles').doc(profileId).get();
+
+      if (!profileSnap.exists) {
+        continue;
+      }
+
+      const profileData = profileSnap.data() as ProfileDocument;
+
+      // Vérifier ownership
+      if (profileData.parentId !== userId) {
+        logger.warn('Tentative d\'accès non autorisé aux scans', { userId, profileId });
+        continue;
+      }
+
+      if (profileData.currentBraceletId) {
+        braceletIds.push(profileData.currentBraceletId);
+        profilesMap.set(profileData.currentBraceletId, profileData.fullName);
+      }
+    }
+
+    if (braceletIds.length === 0) {
+      return {
+        success: true,
+        scans: [],
+        unreadCount: 0,
+      };
+    }
+
+    // 2. Récupérer les scans pour ces bracelets (limité à 10 bracelets max par Firestore)
+    const scansSnapshot = await adminDb
+      .collection('scans')
+      .where('braceletId', 'in', braceletIds.slice(0, 10))
+      .orderBy('timestamp', 'desc')
+      .limit(50) // Limiter à 50 scans récents
+      .get();
+
+    const scans: ScanData[] = [];
+    let unreadCount = 0;
+
+    scansSnapshot.forEach((doc) => {
+      const data = doc.data();
+      const childName = profilesMap.get(data.braceletId) || 'Inconnu';
+
+      scans.push({
+        scanId: doc.id,
+        braceletId: data.braceletId,
+        timestamp: data.timestamp?._seconds
+          ? new Date(data.timestamp._seconds * 1000).toISOString()
+          : new Date().toISOString(),
+        lat: data.lat ?? null,
+        lng: data.lng ?? null,
+        userAgent: data.userAgent || '',
+        isRead: data.isRead === true,
+        childName,
+      });
+
+      if (data.isRead !== true) {
+        unreadCount++;
+      }
+    });
+
+    return {
+      success: true,
+      scans,
+      unreadCount,
+    };
+
+  } catch (error) {
+    logger.error('Error getting recent scans', { error, profileIds: input.profileIds });
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erreur lors de la récupération des scans',
+    };
+  }
+}
