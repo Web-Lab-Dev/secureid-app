@@ -6,6 +6,7 @@ import Image from 'next/image';
 import type { PickupDocument } from '@/types/profile';
 import { getAuthorizedPickups } from '@/actions/school-actions';
 import { logger } from '@/lib/logger';
+import { Button } from '@/components/ui/button';
 
 /**
  * PHASE 8 - SCHOOL PORTAL
@@ -26,6 +27,7 @@ interface SchoolPortalProps {
 export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPortalProps) {
   const [pickups, setPickups] = useState<PickupDocument[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; name: string } | null>(null);
 
   useEffect(() => {
     if (isOpen && profileId) {
@@ -151,7 +153,11 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
                     )}
 
                     {/* Photo */}
-                    <div className="relative mx-auto mb-4 h-40 w-40 overflow-hidden rounded-full border-4 border-indigo-400 shadow-[0_0_30px_rgba(99,102,241,0.3)]">
+                    <div
+                      className="relative mx-auto mb-4 h-40 w-40 cursor-pointer overflow-hidden rounded-full border-4 border-indigo-400 shadow-[0_0_30px_rgba(99,102,241,0.3)] transition-transform hover:scale-110"
+                      onClick={() => setSelectedPhoto({ url: pickup.photoUrl, name: pickup.name })}
+                      title="Cliquez pour agrandir"
+                    >
                       <Image
                         src={pickup.photoUrl}
                         alt={pickup.name}
@@ -195,6 +201,37 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
           </div>
         </div>
       </div>
+
+      {/* Modale Zoom Photo */}
+      {selectedPhoto && (
+        <div
+          className="fixed inset-0 z-60 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <div className="relative max-h-[90vh] max-w-[90vw]">
+            <Button
+              onClick={() => setSelectedPhoto(null)}
+              variant="ghost"
+              size="icon"
+              className="absolute -right-4 -top-4 rounded-full bg-slate-800 text-white hover:bg-slate-700"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+            <div className="relative h-[80vh] w-[80vw] overflow-hidden rounded-lg">
+              <Image
+                src={selectedPhoto.url}
+                alt={selectedPhoto.name}
+                fill
+                className="object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+            <p className="mt-4 text-center text-lg font-semibold text-white">
+              {selectedPhoto.name}
+            </p>
+          </div>
+        </div>
+      )}
     </>
   );
 }

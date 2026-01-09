@@ -40,6 +40,9 @@ export function GpsSimulationCard({
 }: GpsSimulationCardProps) {
   const { user } = useAuthContext();
   const [parentLocation, setParentLocation] = useState<LatLng>(DEFAULT_LOCATION);
+
+  // Debug: Log pour vérifier si la photo est bien reçue
+  logger.info('GpsSimulationCard mounted', { childName, childPhotoUrl, hasPhoto: !!childPhotoUrl });
   const [childLocation, setChildLocation] = useState<LatLng>(DEFAULT_LOCATION);
   const [distance, setDistance] = useState<number>(0);
   const [mapRef, setMapRef] = useState<google.maps.Map | null>(null);
@@ -495,14 +498,20 @@ export function GpsSimulationCard({
 
               {/* Photo circulaire avec bordure */}
               <div className="relative h-16 w-16 rounded-full bg-white p-1 shadow-2xl ring-4 ring-blue-500 z-10">
-                {childPhotoUrl ? (
-                  <div className="relative h-full w-full overflow-hidden rounded-full">
+                {childPhotoUrl && childPhotoUrl.trim() !== '' ? (
+                  <div className="relative h-full w-full overflow-hidden rounded-full bg-slate-200">
                     <Image
                       src={childPhotoUrl}
                       alt={childName}
                       fill
+                      sizes="64px"
                       className="object-cover"
                       unoptimized
+                      onError={(e) => {
+                        logger.error('Failed to load child photo', { url: childPhotoUrl });
+                        // Remplacer par le fallback si l'image échoue
+                        e.currentTarget.style.display = 'none';
+                      }}
                     />
                   </div>
                 ) : (

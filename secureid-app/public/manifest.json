@@ -1,6 +1,6 @@
 {
   "name": "Bracelet de protection",
-  "short_name": "SecureID",
+  "short_name": "Bracelet",
   "description": "Bracelet de protection familiale",
   "start_url": "/dashboard",
   "display": "standalone",
