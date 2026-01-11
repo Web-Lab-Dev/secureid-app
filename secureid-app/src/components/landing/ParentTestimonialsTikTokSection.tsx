@@ -124,13 +124,23 @@ export default function ParentTestimonialsTikTokSection() {
                 <div className="group relative overflow-hidden rounded-2xl bg-slate-800/50 p-3 backdrop-blur-sm transition-all duration-300 hover:bg-slate-800/70 hover:scale-[1.02]">
                   {/* Image annonce */}
                   <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-900">
-                    <Image
-                      src={announcement.imagePath}
-                      alt={announcement.caption}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      sizes="320px"
-                    />
+                    {/* Placeholder avec dégradé et texte */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-red-900/40 via-slate-900 to-slate-900 p-6">
+                      <div className="text-center">
+                        <div className="mb-4 text-6xl">🔍</div>
+                        <p className="mb-2 font-outfit text-lg font-bold text-white">
+                          AVIS DE RECHERCHE
+                        </p>
+                        <p className="mb-4 font-outfit text-sm text-slate-300">
+                          Enfant disparu
+                        </p>
+                        <div className="rounded-lg bg-red-500/20 px-4 py-2 backdrop-blur-sm">
+                          <p className="font-outfit text-xs text-white">
+                            {announcement.caption}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
                     {/* Overlay gradient */}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-slate-900/20" />
