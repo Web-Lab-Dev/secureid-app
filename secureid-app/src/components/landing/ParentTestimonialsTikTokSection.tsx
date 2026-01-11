@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
+import Script from 'next/script';
 
 /**
  * SECTION TÉMOIGNAGES TIKTOK PARENTS
@@ -21,6 +23,8 @@ interface TikTokEmbed {
 }
 
 export default function ParentTestimonialsTikTokSection() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   // Vidéos TikTok de parents cherchant leurs enfants
   const tiktokEmbeds: TikTokEmbed[] = [
     {
@@ -56,12 +60,19 @@ export default function ParentTestimonialsTikTokSection() {
   ];
 
   return (
-    <section className="relative z-10 overflow-hidden bg-slate-900 px-4 py-20 sm:py-32">
-      {/* Background effects */}
-      <div className="absolute left-0 top-1/4 -z-10 h-96 w-96 rounded-full bg-red-500/5 blur-3xl" />
-      <div className="absolute bottom-1/4 right-0 -z-10 h-96 w-96 rounded-full bg-orange-500/5 blur-3xl" />
+    <>
+      {/* Script TikTok officiel */}
+      <Script
+        src="https://www.tiktok.com/embed.js"
+        strategy="lazyOnload"
+      />
 
-      <div className="mx-auto max-w-7xl">
+      <section ref={containerRef} className="relative z-10 overflow-hidden bg-slate-900 px-4 py-20 sm:py-32">
+        {/* Background effects */}
+        <div className="absolute left-0 top-1/4 -z-10 h-96 w-96 rounded-full bg-red-500/5 blur-3xl" />
+        <div className="absolute bottom-1/4 right-0 -z-10 h-96 w-96 rounded-full bg-orange-500/5 blur-3xl" />
+
+        <div className="mx-auto max-w-7xl">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -103,18 +114,27 @@ export default function ParentTestimonialsTikTokSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="relative mx-auto w-full max-w-[325px]"
+              className="relative mx-auto w-full max-w-[605px]"
             >
-              {/* TikTok iframe direct */}
+              {/* TikTok blockquote - Le script officiel le transformera en iframe */}
               <div className="relative overflow-hidden rounded-2xl bg-slate-800/50 p-2 backdrop-blur-sm">
-                <iframe
-                  src={`https://www.tiktok.com/embed/v2/${embed.videoId}?lang=fr`}
-                  className="w-full h-[600px] rounded-xl"
-                  allowFullScreen
-                  scrolling="no"
-                  allow="encrypted-media;"
-                  style={{ border: 'none' }}
-                />
+                <blockquote
+                  className="tiktok-embed"
+                  cite={`https://www.tiktok.com/@${embed.username}/video/${embed.videoId}`}
+                  data-video-id={embed.videoId}
+                  style={{ maxWidth: '605px', minWidth: '325px', margin: '0 auto' }}
+                >
+                  <section>
+                    <a
+                      target="_blank"
+                      title={`@${embed.username}`}
+                      href={`https://www.tiktok.com/@${embed.username}?refer=embed`}
+                      rel="noopener noreferrer"
+                    >
+                      @{embed.username}
+                    </a>
+                  </section>
+                </blockquote>
               </div>
 
               {/* Caption */}
@@ -178,7 +198,8 @@ export default function ParentTestimonialsTikTokSection() {
             </div>
           </div>
         </motion.div>
-      </div>
-    </section>
+        </div>
+      </section>
+    </>
   );
 }
