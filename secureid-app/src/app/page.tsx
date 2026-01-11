@@ -15,6 +15,8 @@ const ProblemSolutionSection = lazy(() => import('@/components/landing/ProblemSo
 const ShieldSection = lazy(() => import('@/components/landing/ShieldSection'));
 const FeaturesSection = lazy(() => import('@/components/landing/FeaturesSection'));
 const IASection = lazy(() => import('@/components/landing/IASection'));
+const ParentTestimonialsTikTokSection = lazy(() => import('@/components/landing/ParentTestimonialsTikTokSection'));
+const GeofencingSection = lazy(() => import('@/components/landing/GeofencingSection'));
 const SecoursiteSection = lazy(() => import('@/components/landing/SecoursiteSection'));
 const CTASection = lazy(() => import('@/components/landing/CTASection'));
 const PartnershipSection = lazy(() => import('@/components/landing/PartnershipSection'));
@@ -767,6 +769,16 @@ export default function LandingPage() {
         <ShieldSection />
         <FeaturesSection />
         <IASection />
+      </Suspense>
+
+      {/* NOUVELLE SECTION: Témoignages TikTok Parents - Choc émotionnel */}
+      <Suspense fallback={<div className="h-screen w-full bg-slate-900" />}>
+        <ParentTestimonialsTikTokSection />
+      </Suspense>
+
+      {/* NOUVELLE SECTION: Geofencing GPS - Solution proactive */}
+      <Suspense fallback={<div className="h-screen w-full bg-gradient-to-br from-indigo-50 to-blue-50" />}>
+        <GeofencingSection />
       </Suspense>
 
       <Suspense fallback={<div className="h-screen w-full bg-slate-900" />}>
