@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Heart } from 'lucide-react';
+import { Heart, ExternalLink, Play } from 'lucide-react';
+import Image from 'next/image';
 
 /**
  * SECTION TÉMOIGNAGES TIKTOK PARENTS
@@ -12,117 +12,58 @@ import { Heart } from 'lucide-react';
  *
  * Positionnement: Après IASection, AVANT GeofencingSection
  * Impact psychologique: Peur viscérale → transition vers solution (Geofencing)
+ *
+ * Note: Les vidéos TikTok sont liées directement (ouverture nouvel onglet)
+ * car les embeds TikTok nécessitent des configurations serveur spécifiques
  */
 
-interface TikTokEmbed {
+interface TikTokVideo {
   id: string;
   videoId: string;
   username: string;
   caption: string;
+  thumbnailUrl: string;
 }
 
 export default function ParentTestimonialsTikTokSection() {
-  const [scriptsLoaded, setScriptsLoaded] = useState(false);
-
   // Vidéos TikTok de parents cherchant leurs enfants
-  const tiktokEmbeds: TikTokEmbed[] = [
+  const tiktokVideos: TikTokVideo[] = [
     {
       id: '1',
       videoId: '7558224161739410702',
       username: 'yaramomagassouba',
       caption: 'Témoignage Yaramo Magassouba',
+      thumbnailUrl: '/landing/tiktok-placeholder.jpg',
     },
     {
       id: '2',
       videoId: '7553731807838063928',
       username: 'canal3burkina',
       caption: 'Reportage Canal3 Burkina - Disparitions inquiétantes',
+      thumbnailUrl: '/landing/tiktok-placeholder.jpg',
     },
     {
       id: '3',
       videoId: '7586415331686616332',
       username: 'acn_gabon3',
       caption: 'Alerte disparition Loko Pascal, 13 ans - Gabon',
+      thumbnailUrl: '/landing/tiktok-placeholder.jpg',
     },
     {
       id: '4',
       videoId: '7573030894202539286',
       username: 'jourjlalumiere',
       caption: 'Fille de la chantre Lyha retrouvée après 3 jours',
+      thumbnailUrl: '/landing/tiktok-placeholder.jpg',
     },
     {
       id: '5',
       videoId: '7559232596270419212',
       username: 'sidiabassemaiga64',
       caption: 'Avis de recherche - Disparu depuis 1er septembre à Tampouy',
+      thumbnailUrl: '/landing/tiktok-placeholder.jpg',
     },
   ];
-
-  // Charger le script TikTok de manière robuste
-  useEffect(() => {
-    let script: HTMLScriptElement | null = null;
-    let timeoutId: NodeJS.Timeout;
-
-    // Fonction pour charger/recharger le script
-    const loadTikTokScript = () => {
-      // Vérifier si le script existe déjà
-      const existingScript = document.getElementById('tiktok-embed-script');
-
-      if (existingScript) {
-        // Le script existe, forcer le re-render
-        // @ts-ignore
-        if (window.tiktokEmbed) {
-          try {
-            // @ts-ignore
-            window.tiktokEmbed.lib.render(document.querySelectorAll('.tiktok-embed'));
-            setScriptsLoaded(true);
-          } catch (error) {
-            console.error('Erreur TikTok render:', error);
-          }
-        }
-      } else {
-        // Créer un nouveau script
-        script = document.createElement('script');
-        script.id = 'tiktok-embed-script';
-        script.src = 'https://www.tiktok.com/embed.js';
-        script.async = true;
-
-        script.onload = () => {
-          console.log('✅ Script TikTok chargé');
-          setScriptsLoaded(true);
-
-          // Attendre que le script s'initialise complètement
-          timeoutId = setTimeout(() => {
-            // @ts-ignore
-            if (window.tiktokEmbed) {
-              try {
-                // @ts-ignore
-                window.tiktokEmbed.lib.render(document.querySelectorAll('.tiktok-embed'));
-                console.log('✅ TikTok embeds rendus');
-              } catch (error) {
-                console.error('Erreur TikTok render:', error);
-              }
-            }
-          }, 500);
-        };
-
-        script.onerror = () => {
-          console.error('❌ Erreur chargement script TikTok');
-        };
-
-        document.body.appendChild(script);
-      }
-    };
-
-    // Délai pour s'assurer que le DOM est prêt
-    const initialTimeout = setTimeout(loadTikTokScript, 100);
-
-    return () => {
-      clearTimeout(initialTimeout);
-      if (timeoutId) clearTimeout(timeoutId);
-      // Ne pas supprimer le script pour éviter conflits
-    };
-  }, []);
 
   return (
     <section className="relative z-10 overflow-hidden bg-slate-900 px-4 py-20 sm:py-32">
@@ -163,70 +104,71 @@ export default function ParentTestimonialsTikTokSection() {
           </p>
         </motion.div>
 
-        {/* Grille Vidéos TikTok */}
+        {/* Grille Vidéos TikTok - Cards cliquables */}
         <div className="mb-16 grid gap-8 sm:grid-cols-2 lg:gap-12">
-          {tiktokEmbeds.map((embed, index) => (
-            <motion.div
-              key={embed.id}
+          {tiktokVideos.map((video, index) => (
+            <motion.a
+              key={video.id}
+              href={`https://www.tiktok.com/@${video.username}/video/${video.videoId}`}
+              target="_blank"
+              rel="noopener noreferrer"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="relative mx-auto w-full max-w-[605px]"
+              className="group relative mx-auto w-full max-w-[605px] cursor-pointer"
             >
-              {/* TikTok Embed Container */}
-              <div className="relative overflow-hidden rounded-2xl bg-slate-800/50 p-4 backdrop-blur-sm">
-                {/* Blockquote TikTok officiel */}
-                <blockquote
-                  className="tiktok-embed"
-                  cite={`https://www.tiktok.com/@${embed.username}/video/${embed.videoId}`}
-                  data-video-id={embed.videoId}
-                  data-embed-from="oembed"
-                  style={{
-                    maxWidth: '605px',
-                    minWidth: '325px',
-                    margin: '0 auto'
-                  }}
-                >
-                  <section>
-                    <a
-                      target="_blank"
-                      title={`@${embed.username}`}
-                      href={`https://www.tiktok.com/@${embed.username}?refer=embed`}
-                      rel="noopener noreferrer"
-                    >
-                      @{embed.username}
-                    </a>
-                    <p></p>
-                    <a
-                      target="_blank"
-                      title="♬ son original"
-                      href={`https://www.tiktok.com/@${embed.username}/video/${embed.videoId}?refer=embed`}
-                      rel="noopener noreferrer"
-                    >
-                      ♬ son original
-                    </a>
-                  </section>
-                </blockquote>
+              {/* Card Container */}
+              <div className="relative overflow-hidden rounded-2xl bg-slate-800/50 p-4 backdrop-blur-sm transition-all duration-300 hover:bg-slate-800/70 hover:scale-[1.02]">
+                {/* Aspect ratio container pour video TikTok (9:16) */}
+                <div className="relative aspect-[9/16] overflow-hidden rounded-xl bg-slate-900">
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-slate-900/20 z-10" />
 
-                {/* Fallback si script ne charge pas */}
-                {!scriptsLoaded && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-slate-800/90 rounded-xl">
-                    <div className="text-center">
-                      <div className="mb-3 h-8 w-8 animate-spin rounded-full border-4 border-slate-600 border-t-orange-400 mx-auto" />
-                      <p className="font-outfit text-sm text-slate-400">
-                        Chargement de la vidéo...
-                      </p>
+                  {/* Play button overlay */}
+                  <div className="absolute inset-0 z-20 flex items-center justify-center">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-500/90 backdrop-blur-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-red-500">
+                      <Play className="h-10 w-10 text-white fill-white ml-1" />
                     </div>
                   </div>
-                )}
+
+                  {/* TikTok logo en haut à droite */}
+                  <div className="absolute right-4 top-4 z-20 flex items-center gap-2 rounded-full bg-slate-900/80 px-3 py-1.5 backdrop-blur-sm">
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" className="text-white" />
+                    </svg>
+                    <span className="font-outfit text-xs font-semibold text-white">
+                      TikTok
+                    </span>
+                  </div>
+
+                  {/* Username en bas */}
+                  <div className="absolute bottom-4 left-4 z-20">
+                    <p className="font-outfit text-sm font-semibold text-white">
+                      @{video.username}
+                    </p>
+                  </div>
+
+                  {/* Background placeholder */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900" />
+                </div>
+
+                {/* External link icon */}
+                <div className="absolute right-6 top-6 z-30 rounded-full bg-slate-900/80 p-2 backdrop-blur-sm opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <ExternalLink className="h-4 w-4 text-white" />
+                </div>
               </div>
 
               {/* Caption */}
-              <p className="mt-3 text-center font-outfit text-sm text-slate-400">
-                {embed.caption}
+              <p className="mt-3 text-center font-outfit text-sm text-slate-400 group-hover:text-slate-300 transition-colors">
+                {video.caption}
               </p>
-            </motion.div>
+
+              {/* Indicateur "Cliquer pour voir" */}
+              <p className="mt-1 text-center font-outfit text-xs text-orange-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                Cliquer pour voir la vidéo →
+              </p>
+            </motion.a>
           ))}
         </div>
 
