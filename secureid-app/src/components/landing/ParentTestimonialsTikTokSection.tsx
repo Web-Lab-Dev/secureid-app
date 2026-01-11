@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Quote } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 /**
  * SECTION TÉMOIGNAGES TIKTOK PARENTS
@@ -14,78 +13,44 @@ import { Heart, Quote } from 'lucide-react';
  * Impact psychologique: Peur viscérale → transition vers solution (Geofencing)
  */
 
-// Déclaration TypeScript pour l'API TikTok Embed
-declare global {
-  interface Window {
-    tiktokEmbed?: {
-      lib: {
-        render: (elements: NodeListOf<Element>) => void;
-      };
-    };
-  }
-}
-
 interface TikTokEmbed {
   id: string;
-  embedCode: string;
-  caption?: string;
+  videoId: string;
+  username: string;
+  caption: string;
 }
 
 export default function ParentTestimonialsTikTokSection() {
-  // Charger le script TikTok embed et initialiser les widgets
-  useEffect(() => {
-    // Charger le script TikTok
-    const script = document.createElement('script');
-    script.src = 'https://www.tiktok.com/embed.js';
-    script.async = true;
-
-    // Quand le script charge, initialiser les embeds
-    script.onload = () => {
-      // Le script TikTok crée automatiquement les iframes
-      // On attend un peu que le DOM soit prêt
-      setTimeout(() => {
-        if (window.tiktokEmbed) {
-          window.tiktokEmbed.lib.render(document.querySelectorAll('.tiktok-embed'));
-        }
-      }, 100);
-    };
-
-    document.body.appendChild(script);
-
-    return () => {
-      // Cleanup si besoin
-      const existingScript = document.querySelector('script[src="https://www.tiktok.com/embed.js"]');
-      if (existingScript) {
-        document.body.removeChild(existingScript);
-      }
-    };
-  }, []);
-
-  // Codes embed TikTok de parents cherchant leurs enfants
+  // Vidéos TikTok de parents cherchant leurs enfants
   const tiktokEmbeds: TikTokEmbed[] = [
     {
       id: '1',
-      embedCode: '<blockquote class="tiktok-embed" cite="https://www.tiktok.com/@yaramomagassouba/video/7558224161739410702" data-video-id="7558224161739410702" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@yaramomagassouba" href="https://www.tiktok.com/@yaramomagassouba?refer=embed">@yaramomagassouba</a> <p></p> <a target="_blank" title="♬ original sound - Yaramo Magassouba" href="https://www.tiktok.com/music/original-sound-7558224234930654007?refer=embed">♬ original sound - Yaramo Magassouba</a> </section> </blockquote>',
+      videoId: '7558224161739410702',
+      username: 'yaramomagassouba',
       caption: 'Témoignage Yaramo Magassouba',
     },
     {
       id: '2',
-      embedCode: '<blockquote class="tiktok-embed" cite="https://www.tiktok.com/@canal3burkina/video/7553731807838063928" data-video-id="7553731807838063928" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@canal3burkina" href="https://www.tiktok.com/@canal3burkina?refer=embed">@canal3burkina</a> Disparition d\'enfants : un phénomène de plus en plus inquiétant  Des avis de recherche sont publiés à travers les réseaux sociaux et les médias. Ces disparitions sont de plus en plus inquiétantes dans les rues de Ouagadougou. Des témoins en parlent dans ce reportage.<a title="ouagadougou" target="_blank" href="https://www.tiktok.com/tag/ouagadougou?refer=embed">#Ouagadougou</a> <a title="burkinafaso" target="_blank" href="https://www.tiktok.com/tag/burkinafaso?refer=embed">#BurkinaFaso</a> <a target="_blank" title="♬ son original - Canal3burkina" href="https://www.tiktok.com/music/son-original-7553731849417509688?refer=embed">♬ son original - Canal3burkina</a> </section> </blockquote>',
+      videoId: '7553731807838063928',
+      username: 'canal3burkina',
       caption: 'Reportage Canal3 Burkina - Disparitions inquiétantes',
     },
     {
       id: '3',
-      embedCode: '<blockquote class="tiktok-embed" cite="https://www.tiktok.com/@acn_gabon3/video/7586415331686616332" data-video-id="7586415331686616332" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@acn_gabon3" href="https://www.tiktok.com/@acn_gabon3?refer=embed">@acn_gabon3</a> ⚠️ ALERTE DISPARITION – APPEL À LA SOLIDARITÉ Un enfant de 13 ans, Loko Pascal, est porté disparu à Nzeng-Ayong. Sorti jeudi vers 19h pour aller à la boutique près de son domicile, il n\'est jamais rentré et n\'a toujours pas été retrouvé à ce jour. 👉 Si vous l\'avez vu ou si vous détenez la moindre information, merci de contacter immédiatement la famille : 📞 074 19 55 35 📞 074 40 37 03 📞 066 13 76 87 🙏 Partagez massivement. Chaque minute compte. Chaque vie compte. <a title="gabon" target="_blank" href="https://www.tiktok.com/tag/gabon?refer=embed">#Gabon</a> <a title="acnnews" target="_blank" href="https://www.tiktok.com/tag/acnnews?refer=embed">#acnnews</a> <a target="_blank" title="♬ son original - ACN_GABON" href="https://www.tiktok.com/music/son-original-7586415351894657804?refer=embed">♬ son original - ACN_GABON</a> </section> </blockquote>',
+      videoId: '7586415331686616332',
+      username: 'acn_gabon3',
       caption: 'Alerte disparition Loko Pascal, 13 ans - Gabon',
     },
     {
       id: '4',
-      embedCode: '<blockquote class="tiktok-embed" cite="https://www.tiktok.com/@jourjlalumiere/video/7573030894202539286" data-video-id="7573030894202539286" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@jourjlalumiere" href="https://www.tiktok.com/@jourjlalumiere?refer=embed">@jourjlalumiere</a> la fille de la chantre lyha retrouvée après 3 jours <a title="fyp" target="_blank" href="https://www.tiktok.com/tag/fyp?refer=embed">#fyp</a> <a title="pourtoi" target="_blank" href="https://www.tiktok.com/tag/pourtoi?refer=embed">#pourtoi</a> <a title="viral" target="_blank" href="https://www.tiktok.com/tag/viral?refer=embed">#viral</a> <a title="visibilité" target="_blank" href="https://www.tiktok.com/tag/visibilit%C3%A9?refer=embed">#visibilité</a> <a target="_blank" title="♬ son original - Le Fils de Apoutchou National" href="https://www.tiktok.com/music/son-original-7573030897654516502?refer=embed">♬ son original - Le Fils de Apoutchou National</a> </section> </blockquote>',
+      videoId: '7573030894202539286',
+      username: 'jourjlalumiere',
       caption: 'Fille de la chantre Lyha retrouvée après 3 jours',
     },
     {
       id: '5',
-      embedCode: '<blockquote class="tiktok-embed" cite="https://www.tiktok.com/@sidiabassemaiga64/video/7559232596270419212" data-video-id="7559232596270419212" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@sidiabassemaiga64" href="https://www.tiktok.com/@sidiabassemaiga64?refer=embed">@sidiabassemaiga64</a> <p>aide moi a partager avis de recherche disparu depuis 1er septembre a tampouy </p> <a target="_blank" title="♬ son original - Aliyou Abdrahman" href="https://www.tiktok.com/music/son-original-7310703221578730245?refer=embed">♬ son original - Aliyou Abdrahman</a> </section> </blockquote>',
+      videoId: '7559232596270419212',
+      username: 'sidiabassemaiga64',
       caption: 'Avis de recherche - Disparu depuis 1er septembre à Tampouy',
     },
   ];
@@ -138,38 +103,24 @@ export default function ParentTestimonialsTikTokSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="relative"
+              className="relative mx-auto w-full max-w-[325px]"
             >
-              {/* TikTok Embed Container */}
-              <div className="relative overflow-hidden rounded-2xl bg-slate-800/50 p-1 backdrop-blur-sm">
-                {/* Placeholder si code embed vide */}
-                {!embed.embedCode ? (
-                  <div className="flex aspect-[9/16] items-center justify-center bg-slate-800 rounded-xl">
-                    <div className="text-center">
-                      <Quote className="mx-auto mb-4 h-12 w-12 text-slate-600" />
-                      <p className="font-outfit text-sm text-slate-400">
-                        Vidéo TikTok #{embed.id}
-                      </p>
-                      <p className="mt-2 font-outfit text-xs text-slate-500">
-                        {embed.caption}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  // Code embed TikTok sera inséré ici
-                  <div
-                    className="tiktok-embed-wrapper"
-                    dangerouslySetInnerHTML={{ __html: embed.embedCode }}
-                  />
-                )}
+              {/* TikTok iframe direct */}
+              <div className="relative overflow-hidden rounded-2xl bg-slate-800/50 p-2 backdrop-blur-sm">
+                <iframe
+                  src={`https://www.tiktok.com/embed/v2/${embed.videoId}?lang=fr`}
+                  className="w-full h-[600px] rounded-xl"
+                  allowFullScreen
+                  scrolling="no"
+                  allow="encrypted-media;"
+                  style={{ border: 'none' }}
+                />
               </div>
 
               {/* Caption */}
-              {embed.caption && (
-                <p className="mt-3 text-center font-outfit text-sm text-slate-400">
-                  {embed.caption}
-                </p>
-              )}
+              <p className="mt-3 text-center font-outfit text-sm text-slate-400">
+                {embed.caption}
+              </p>
             </motion.div>
           ))}
         </div>
