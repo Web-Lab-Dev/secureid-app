@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 
@@ -22,6 +22,8 @@ interface TikTokEmbed {
 }
 
 export default function ParentTestimonialsTikTokSection() {
+  const [scriptsLoaded, setScriptsLoaded] = useState(false);
+
   // Vidéos TikTok de parents cherchant leurs enfants
   const tiktokEmbeds: TikTokEmbed[] = [
     {
@@ -56,29 +58,69 @@ export default function ParentTestimonialsTikTokSection() {
     },
   ];
 
-  // Charger le script TikTok au montage du composant
+  // Charger le script TikTok de manière robuste
   useEffect(() => {
-    // Vérifier si le script existe déjà
-    const existingScript = document.getElementById('tiktok-embed-script');
+    let script: HTMLScriptElement | null = null;
+    let timeoutId: NodeJS.Timeout;
 
-    if (!existingScript) {
-      const script = document.createElement('script');
-      script.id = 'tiktok-embed-script';
-      script.src = 'https://www.tiktok.com/embed.js';
-      script.async = true;
-      document.body.appendChild(script);
-    } else {
-      // Si le script existe déjà, forcer le re-render des embeds
-      // @ts-ignore - L'API TikTok n'est pas typée
-      if (window.tiktokEmbed) {
+    // Fonction pour charger/recharger le script
+    const loadTikTokScript = () => {
+      // Vérifier si le script existe déjà
+      const existingScript = document.getElementById('tiktok-embed-script');
+
+      if (existingScript) {
+        // Le script existe, forcer le re-render
         // @ts-ignore
-        window.tiktokEmbed.lib.render(document.querySelectorAll('.tiktok-embed'));
-      }
-    }
+        if (window.tiktokEmbed) {
+          try {
+            // @ts-ignore
+            window.tiktokEmbed.lib.render(document.querySelectorAll('.tiktok-embed'));
+            setScriptsLoaded(true);
+          } catch (error) {
+            console.error('Erreur TikTok render:', error);
+          }
+        }
+      } else {
+        // Créer un nouveau script
+        script = document.createElement('script');
+        script.id = 'tiktok-embed-script';
+        script.src = 'https://www.tiktok.com/embed.js';
+        script.async = true;
 
-    // Cleanup - ne pas supprimer le script car d'autres instances peuvent l'utiliser
+        script.onload = () => {
+          console.log('✅ Script TikTok chargé');
+          setScriptsLoaded(true);
+
+          // Attendre que le script s'initialise complètement
+          timeoutId = setTimeout(() => {
+            // @ts-ignore
+            if (window.tiktokEmbed) {
+              try {
+                // @ts-ignore
+                window.tiktokEmbed.lib.render(document.querySelectorAll('.tiktok-embed'));
+                console.log('✅ TikTok embeds rendus');
+              } catch (error) {
+                console.error('Erreur TikTok render:', error);
+              }
+            }
+          }, 500);
+        };
+
+        script.onerror = () => {
+          console.error('❌ Erreur chargement script TikTok');
+        };
+
+        document.body.appendChild(script);
+      }
+    };
+
+    // Délai pour s'assurer que le DOM est prêt
+    const initialTimeout = setTimeout(loadTikTokScript, 100);
+
     return () => {
-      // Pas de cleanup pour éviter les conflits avec d'autres sections
+      clearTimeout(initialTimeout);
+      if (timeoutId) clearTimeout(timeoutId);
+      // Ne pas supprimer le script pour éviter conflits
     };
   }, []);
 
@@ -132,13 +174,19 @@ export default function ParentTestimonialsTikTokSection() {
               transition={{ duration: 0.6, delay: index * 0.1 }}
               className="relative mx-auto w-full max-w-[605px]"
             >
-              {/* TikTok blockquote - Le script le transformera automatiquement en iframe */}
+              {/* TikTok Embed Container */}
               <div className="relative overflow-hidden rounded-2xl bg-slate-800/50 p-4 backdrop-blur-sm">
+                {/* Blockquote TikTok officiel */}
                 <blockquote
                   className="tiktok-embed"
                   cite={`https://www.tiktok.com/@${embed.username}/video/${embed.videoId}`}
                   data-video-id={embed.videoId}
-                  style={{ maxWidth: '605px', minWidth: '325px' }}
+                  data-embed-from="oembed"
+                  style={{
+                    maxWidth: '605px',
+                    minWidth: '325px',
+                    margin: '0 auto'
+                  }}
                 >
                   <section>
                     <a
@@ -149,8 +197,29 @@ export default function ParentTestimonialsTikTokSection() {
                     >
                       @{embed.username}
                     </a>
+                    <p></p>
+                    <a
+                      target="_blank"
+                      title="♬ son original"
+                      href={`https://www.tiktok.com/@${embed.username}/video/${embed.videoId}?refer=embed`}
+                      rel="noopener noreferrer"
+                    >
+                      ♬ son original
+                    </a>
                   </section>
                 </blockquote>
+
+                {/* Fallback si script ne charge pas */}
+                {!scriptsLoaded && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-slate-800/90 rounded-xl">
+                    <div className="text-center">
+                      <div className="mb-3 h-8 w-8 animate-spin rounded-full border-4 border-slate-600 border-t-orange-400 mx-auto" />
+                      <p className="font-outfit text-sm text-slate-400">
+                        Chargement de la vidéo...
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Caption */}
