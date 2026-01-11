@@ -1,11 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Heart, ExternalLink, Play } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import Image from 'next/image';
 
 /**
- * SECTION TÉMOIGNAGES TIKTOK PARENTS
+ * SECTION TÉMOIGNAGES PARENTS - ANNONCES DISPARITIONS
  *
  * Objectif: Créer un choc émotionnel en montrant la réalité tragique
  * de parents cherchant désespérément leurs enfants perdus.
@@ -13,57 +13,54 @@ import Image from 'next/image';
  * Positionnement: Après IASection, AVANT GeofencingSection
  * Impact psychologique: Peur viscérale → transition vers solution (Geofencing)
  *
- * Note: Les vidéos TikTok sont liées directement (ouverture nouvel onglet)
- * car les embeds TikTok nécessitent des configurations serveur spécifiques
+ * Format: Carrousel défilant horizontal (bande défilante) avec 5 images d'annonces
+ * Style: Scroll automatique infini, responsive mobile-first
  */
 
-interface TikTokVideo {
+interface MissingChildAnnouncement {
   id: string;
-  videoId: string;
-  username: string;
+  imagePath: string;
   caption: string;
-  thumbnailUrl: string;
+  source: string;
 }
 
 export default function ParentTestimonialsTikTokSection() {
-  // Vidéos TikTok de parents cherchant leurs enfants
-  const tiktokVideos: TikTokVideo[] = [
+  // 5 meilleures images d'annonces de disparitions
+  const announcements: MissingChildAnnouncement[] = [
     {
       id: '1',
-      videoId: '7558224161739410702',
-      username: 'yaramomagassouba',
-      caption: 'Témoignage Yaramo Magassouba',
-      thumbnailUrl: '/landing/tiktok-placeholder.jpg',
+      imagePath: '/landing/missing/announcement-1.jpg',
+      caption: 'Avis de recherche - Ouagadougou',
+      source: 'Réseaux sociaux Burkina Faso',
     },
     {
       id: '2',
-      videoId: '7553731807838063928',
-      username: 'canal3burkina',
-      caption: 'Reportage Canal3 Burkina - Disparitions inquiétantes',
-      thumbnailUrl: '/landing/tiktok-placeholder.jpg',
+      imagePath: '/landing/missing/announcement-2.jpg',
+      caption: 'Enfant disparu - Appel à témoins',
+      source: 'Facebook Parents BF',
     },
     {
       id: '3',
-      videoId: '7586415331686616332',
-      username: 'acn_gabon3',
-      caption: 'Alerte disparition Loko Pascal, 13 ans - Gabon',
-      thumbnailUrl: '/landing/tiktok-placeholder.jpg',
+      imagePath: '/landing/missing/announcement-3.jpg',
+      caption: 'Alerte disparition - Urgent',
+      source: 'Canal3 Burkina',
     },
     {
       id: '4',
-      videoId: '7573030894202539286',
-      username: 'jourjlalumiere',
-      caption: 'Fille de la chantre Lyha retrouvée après 3 jours',
-      thumbnailUrl: '/landing/tiktok-placeholder.jpg',
+      imagePath: '/landing/missing/announcement-4.jpg',
+      caption: 'Recherche active en cours',
+      source: 'Communauté locale',
     },
     {
       id: '5',
-      videoId: '7559232596270419212',
-      username: 'sidiabassemaiga64',
-      caption: 'Avis de recherche - Disparu depuis 1er septembre à Tampouy',
-      thumbnailUrl: '/landing/tiktok-placeholder.jpg',
+      imagePath: '/landing/missing/announcement-5.jpg',
+      caption: 'Avis de disparition - Tampouy',
+      source: 'Groupe WhatsApp quartier',
     },
   ];
+
+  // Dupliquer les annonces pour créer un effet de loop infini
+  const duplicatedAnnouncements = [...announcements, ...announcements];
 
   return (
     <section className="relative z-10 overflow-hidden bg-slate-900 px-4 py-20 sm:py-32">
@@ -97,79 +94,66 @@ export default function ParentTestimonialsTikTokSection() {
 
           {/* Sous-titre */}
           <p className="mx-auto max-w-3xl font-outfit text-lg leading-relaxed text-slate-300 sm:text-xl">
-            Des vidéos qui glacent le sang. Des histoires qui ne devraient jamais exister.{' '}
+            Ces annonces inondent les réseaux sociaux. Des familles déchirées.{' '}
             <span className="font-semibold text-white">
-              Aucune mère ne devrait vivre cela.
+              Aucune famille ne devrait vivre cela.
             </span>
           </p>
         </motion.div>
 
-        {/* Grille Vidéos TikTok - Cards cliquables */}
-        <div className="mb-16 grid gap-8 sm:grid-cols-2 lg:gap-12">
-          {tiktokVideos.map((video, index) => (
-            <motion.a
-              key={video.id}
-              href={`https://www.tiktok.com/@${video.username}/video/${video.videoId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="group relative mx-auto w-full max-w-[605px] cursor-pointer"
-            >
-              {/* Card Container */}
-              <div className="relative overflow-hidden rounded-2xl bg-slate-800/50 p-4 backdrop-blur-sm transition-all duration-300 hover:bg-slate-800/70 hover:scale-[1.02]">
-                {/* Aspect ratio container pour video TikTok (9:16) */}
-                <div className="relative aspect-[9/16] overflow-hidden rounded-xl bg-slate-900">
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-slate-900/20 z-10" />
+        {/* Carrousel défilant automatique (bande défilante) */}
+        <div className="relative mb-16 overflow-hidden">
+          {/* Gradient fade gauche */}
+          <div className="absolute left-0 top-0 z-10 h-full w-20 bg-gradient-to-r from-slate-900 to-transparent pointer-events-none" />
 
-                  {/* Play button overlay */}
-                  <div className="absolute inset-0 z-20 flex items-center justify-center">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-500/90 backdrop-blur-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-red-500">
-                      <Play className="h-10 w-10 text-white fill-white ml-1" />
+          {/* Gradient fade droite */}
+          <div className="absolute right-0 top-0 z-10 h-full w-20 bg-gradient-to-l from-slate-900 to-transparent pointer-events-none" />
+
+          {/* Container de défilement */}
+          <div className="flex gap-6 animate-scroll-horizontal">
+            {duplicatedAnnouncements.map((announcement, index) => (
+              <motion.div
+                key={`${announcement.id}-${index}`}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.05 }}
+                className="flex-shrink-0 w-[280px] sm:w-[320px]"
+              >
+                {/* Card annonce */}
+                <div className="group relative overflow-hidden rounded-2xl bg-slate-800/50 p-3 backdrop-blur-sm transition-all duration-300 hover:bg-slate-800/70 hover:scale-[1.02]">
+                  {/* Image annonce */}
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-900">
+                    <Image
+                      src={announcement.imagePath}
+                      alt={announcement.caption}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="320px"
+                    />
+
+                    {/* Overlay gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-slate-900/20" />
+
+                    {/* Badge "AVIS DE RECHERCHE" */}
+                    <div className="absolute top-3 left-3 rounded-lg bg-red-500 px-3 py-1 font-outfit text-xs font-bold text-white shadow-lg">
+                      🚨 URGENT
                     </div>
                   </div>
 
-                  {/* TikTok logo en haut à droite */}
-                  <div className="absolute right-4 top-4 z-20 flex items-center gap-2 rounded-full bg-slate-900/80 px-3 py-1.5 backdrop-blur-sm">
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" className="text-white" />
-                    </svg>
-                    <span className="font-outfit text-xs font-semibold text-white">
-                      TikTok
-                    </span>
-                  </div>
-
-                  {/* Username en bas */}
-                  <div className="absolute bottom-4 left-4 z-20">
+                  {/* Caption */}
+                  <div className="mt-3">
                     <p className="font-outfit text-sm font-semibold text-white">
-                      @{video.username}
+                      {announcement.caption}
+                    </p>
+                    <p className="mt-1 font-outfit text-xs text-slate-400">
+                      {announcement.source}
                     </p>
                   </div>
-
-                  {/* Background placeholder */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900" />
                 </div>
-
-                {/* External link icon */}
-                <div className="absolute right-6 top-6 z-30 rounded-full bg-slate-900/80 p-2 backdrop-blur-sm opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                  <ExternalLink className="h-4 w-4 text-white" />
-                </div>
-              </div>
-
-              {/* Caption */}
-              <p className="mt-3 text-center font-outfit text-sm text-slate-400 group-hover:text-slate-300 transition-colors">
-                {video.caption}
-              </p>
-
-              {/* Indicateur "Cliquer pour voir" */}
-              <p className="mt-1 text-center font-outfit text-xs text-orange-400 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                Cliquer pour voir la vidéo →
-              </p>
-            </motion.a>
-          ))}
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         {/* Statistique choc */}
@@ -226,6 +210,26 @@ export default function ParentTestimonialsTikTokSection() {
           </div>
         </motion.div>
       </div>
+
+      {/* Styles pour l'animation de défilement */}
+      <style jsx>{`
+        @keyframes scroll-horizontal {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+
+        .animate-scroll-horizontal {
+          animation: scroll-horizontal 30s linear infinite;
+        }
+
+        .animate-scroll-horizontal:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
     </section>
   );
 }
