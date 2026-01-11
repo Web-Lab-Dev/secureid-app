@@ -14,6 +14,17 @@ import { Heart, Quote } from 'lucide-react';
  * Impact psychologique: Peur viscérale → transition vers solution (Geofencing)
  */
 
+// Déclaration TypeScript pour l'API TikTok Embed
+declare global {
+  interface Window {
+    tiktokEmbed?: {
+      lib: {
+        render: (elements: NodeListOf<Element>) => void;
+      };
+    };
+  }
+}
+
 interface TikTokEmbed {
   id: string;
   embedCode: string;
@@ -21,11 +32,24 @@ interface TikTokEmbed {
 }
 
 export default function ParentTestimonialsTikTokSection() {
-  // Charger le script TikTok embed (une seule fois)
+  // Charger le script TikTok embed et initialiser les widgets
   useEffect(() => {
+    // Charger le script TikTok
     const script = document.createElement('script');
     script.src = 'https://www.tiktok.com/embed.js';
     script.async = true;
+
+    // Quand le script charge, initialiser les embeds
+    script.onload = () => {
+      // Le script TikTok crée automatiquement les iframes
+      // On attend un peu que le DOM soit prêt
+      setTimeout(() => {
+        if (window.tiktokEmbed) {
+          window.tiktokEmbed.lib.render(document.querySelectorAll('.tiktok-embed'));
+        }
+      }, 100);
+    };
+
     document.body.appendChild(script);
 
     return () => {

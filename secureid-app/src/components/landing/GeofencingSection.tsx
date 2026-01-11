@@ -171,9 +171,6 @@ export default function GeofencingSection() {
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   priority
                 />
-
-                {/* Overlay pour masquer navbar centrale (barre fixe au milieu de la capture) */}
-                <div className="absolute left-0 right-0 top-[45%] h-[10%] bg-gradient-to-b from-indigo-100/0 via-indigo-50/90 to-indigo-100/0 backdrop-blur-sm pointer-events-none" />
               </div>
 
               {/* Badge alerte simulée */}
