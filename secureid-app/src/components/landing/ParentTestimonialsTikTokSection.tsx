@@ -25,37 +25,37 @@ interface MissingChildAnnouncement {
 }
 
 export default function ParentTestimonialsTikTokSection() {
-  // 5 meilleures images d'annonces de disparitions
+  // 5 meilleures images d'annonces de disparitions (vraies annonces Facebook/TikTok)
   const announcements: MissingChildAnnouncement[] = [
     {
       id: '1',
-      imagePath: '/landing/missing/announcement-1.jpg',
+      imagePath: '/annonce des reseaux sociaux/1748349037195.jpg',
       caption: 'Avis de recherche - Ouagadougou',
       source: 'Réseaux sociaux Burkina Faso',
     },
     {
       id: '2',
-      imagePath: '/landing/missing/announcement-2.jpg',
+      imagePath: '/annonce des reseaux sociaux/588892192_1263915672431986_6023818595300189528_n.jpg',
       caption: 'Enfant disparu - Appel à témoins',
       source: 'Facebook Parents BF',
     },
     {
       id: '3',
-      imagePath: '/landing/missing/announcement-3.jpg',
+      imagePath: "/annonce des reseaux sociaux/Capture d'écran_5-1-2026_11139_www.facebook.com.jpeg",
       caption: 'Alerte disparition - Urgent',
-      source: 'Canal3 Burkina',
+      source: 'Facebook Communauté',
     },
     {
       id: '4',
-      imagePath: '/landing/missing/announcement-4.jpg',
+      imagePath: "/annonce des reseaux sociaux/Capture d'écran_5-1-2026_112227_www.facebook.com.jpeg",
       caption: 'Recherche active en cours',
-      source: 'Communauté locale',
+      source: 'Communauté Facebook',
     },
     {
       id: '5',
-      imagePath: '/landing/missing/announcement-5.jpg',
-      caption: 'Avis de disparition - Tampouy',
-      source: 'Groupe WhatsApp quartier',
+      imagePath: '/annonce des reseaux sociaux/608965602_1573755057098913_1992962891135442864_n.jpg',
+      caption: 'Avis de disparition',
+      source: 'Réseaux sociaux locaux',
     },
   ];
 
@@ -124,23 +124,14 @@ export default function ParentTestimonialsTikTokSection() {
                 <div className="group relative overflow-hidden rounded-2xl bg-slate-800/50 p-3 backdrop-blur-sm transition-all duration-300 hover:bg-slate-800/70 hover:scale-[1.02]">
                   {/* Image annonce */}
                   <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-900">
-                    {/* Placeholder avec dégradé et texte */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-red-900/40 via-slate-900 to-slate-900 p-6">
-                      <div className="text-center">
-                        <div className="mb-4 text-6xl">🔍</div>
-                        <p className="mb-2 font-outfit text-lg font-bold text-white">
-                          AVIS DE RECHERCHE
-                        </p>
-                        <p className="mb-4 font-outfit text-sm text-slate-300">
-                          Enfant disparu
-                        </p>
-                        <div className="rounded-lg bg-red-500/20 px-4 py-2 backdrop-blur-sm">
-                          <p className="font-outfit text-xs text-white">
-                            {announcement.caption}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    {/* Image réelle de l'annonce */}
+                    <Image
+                      src={announcement.imagePath}
+                      alt={announcement.caption}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="320px"
+                    />
 
                     {/* Overlay gradient */}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-slate-900/20" />
