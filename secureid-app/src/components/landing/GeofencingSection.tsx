@@ -159,33 +159,21 @@ export default function GeofencingSection() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="relative"
           >
-            {/* Image carte GPS avec zones (à fournir par utilisateur) */}
+            {/* Image carte GPS avec zones sécurisées */}
             <div className="relative overflow-hidden rounded-3xl border-4 border-white shadow-2xl shadow-indigo-500/20">
-              {/* Placeholder carte GPS */}
-              <div className="aspect-square bg-gradient-to-br from-blue-100 to-indigo-100">
-                {/* Icône placeholder si pas d'image fournie */}
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="mx-auto mb-4 h-24 w-24 text-indigo-400" />
-                    <p className="font-outfit text-lg font-semibold text-indigo-700">
-                      Carte GPS Interactive
-                    </p>
-                    <p className="mt-2 font-outfit text-sm text-indigo-600">
-                      Zones sécurisées configurables
-                    </p>
-                  </div>
-                </div>
-
-                {/* Alternative: Image Next.js si fournie */}
-                {/*
+              {/* Carte GPS réelle - Localisation temps réel */}
+              <div className="relative aspect-[4/3]">
                 <Image
-                  src="/landing/geofencing-map.png"
-                  alt="Carte GPS avec zones de sécurité configurées"
+                  src="/landing/geofencing-map.jpeg"
+                  alt="Carte GPS Ouagadougou avec zones de sécurité configurées - Suivi temps réel"
                   fill
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
                 />
-                */}
+
+                {/* Overlay pour masquer navbar centrale (barre fixe au milieu de la capture) */}
+                <div className="absolute left-0 right-0 top-[45%] h-[10%] bg-gradient-to-b from-indigo-100/0 via-indigo-50/90 to-indigo-100/0 backdrop-blur-sm pointer-events-none" />
               </div>
 
               {/* Badge alerte simulée */}
