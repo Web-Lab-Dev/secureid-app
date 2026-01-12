@@ -98,14 +98,10 @@ export default function AboutPage() {
                   >
                     <div className="group relative overflow-hidden rounded-2xl bg-stone-800/50 p-3 backdrop-blur-sm transition-all duration-300 hover:bg-stone-800/70 hover:scale-[1.02]">
                       <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-stone-950">
-                        <Image
+                        <img
                           src={image}
                           alt="Annonce disparition enfant"
-                          fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          sizes="320px"
-                          quality={85}
-                          unoptimized
+                          className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-transparent to-stone-900/20" />
                         <div className="absolute top-3 left-3 rounded-lg bg-red-500 px-3 py-1 font-outfit text-xs font-bold text-white shadow-lg">

@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
-import Image from 'next/image';
 
 /**
  * SECTION TÉMOIGNAGES PARENTS - ANNONCES DISPARITIONS
@@ -212,14 +211,10 @@ export default function ParentTestimonialsTikTokSection() {
                   {/* Image annonce */}
                   <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-900">
                     {/* Image réelle de l'annonce */}
-                    <Image
+                    <img
                       src={announcement.imagePath}
                       alt={announcement.caption}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      sizes="320px"
-                      quality={85}
-                      unoptimized
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
 
                     {/* Overlay gradient */}
