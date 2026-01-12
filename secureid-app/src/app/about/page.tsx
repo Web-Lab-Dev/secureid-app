@@ -191,20 +191,21 @@ export default function AboutPage() {
               </p>
             </motion.div>
 
-            {/* Image/Illustration placeholder */}
+            {/* Image illustration */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="flex h-96 items-center justify-center rounded-3xl border-2 border-dashed border-stone-300 bg-stone-50"
+              className="relative h-96 overflow-hidden rounded-3xl shadow-2xl"
             >
-              <div className="text-center">
-                <Heart className="mx-auto h-16 w-16 text-orange-400" />
-                <p className="mt-4 font-outfit text-sm text-stone-500">
-                  Illustration - Protection enfant
-                </p>
-              </div>
+              <Image
+                src="/landing/feature-identity-joy.webp"
+                alt="Protection enfant - Identification sécurisée"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
             </motion.div>
           </div>
         </div>
@@ -248,7 +249,7 @@ export default function AboutPage() {
               <div className="flex-1">
                 <p className="font-outfit text-lg leading-relaxed text-[#57534e]">
                   "Je m'appelle <span className="font-semibold text-[#1c1917]">SWABO HAMADOU</span>.
-                  Développeur web, expert en IA et automatisation, j'ai développé cette solution
+                  Développeur web, IA et automatisation, j'ai développé cette solution
                   en partant d'une page blanche pour garantir une sécurité totale. Aujourd'hui, je
                   travaille en direct avec les premiers parents utilisateurs pour faire évoluer ce
                   bracelet selon vos besoins réels.
@@ -415,7 +416,7 @@ export default function AboutPage() {
                   rounded="full"
                 >
                   <Heart className="mr-2 h-5 w-5" />
-                  Devenir Parent Testeur
+                  Obtenir un Bracelet
                 </Button>
               </Link>
             </motion.div>
