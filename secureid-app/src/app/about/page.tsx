@@ -105,7 +105,7 @@ export default function AboutPage() {
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
                           sizes="320px"
                           quality={85}
-                          loading="lazy"
+                          unoptimized
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-transparent to-stone-900/20" />
                         <div className="absolute top-3 left-3 rounded-lg bg-red-500 px-3 py-1 font-outfit text-xs font-bold text-white shadow-lg">

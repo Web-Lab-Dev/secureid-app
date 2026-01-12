@@ -219,7 +219,7 @@ export default function ParentTestimonialsTikTokSection() {
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                       sizes="320px"
                       quality={85}
-                      loading="lazy"
+                      unoptimized
                     />
 
                     {/* Overlay gradient */}
