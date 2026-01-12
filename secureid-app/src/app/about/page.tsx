@@ -409,7 +409,7 @@ export default function AboutPage() {
               transition={{ duration: 0.6, delay: 0.15 }}
               className="mt-10"
             >
-              <Link href="/activate">
+              <Link href="/">
                 <Button
                   size="lg"
                   className="bg-white font-outfit text-lg font-semibold text-orange-600 shadow-2xl transition-all hover:scale-105 hover:bg-orange-50 hover:shadow-orange-900/50"
