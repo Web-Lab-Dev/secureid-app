@@ -30,6 +30,7 @@ export default function AboutPage() {
     "/annonce des reseaux sociaux/Capture d'écran_5-1-2026_113430_www.facebook.com.jpeg",
     "/annonce des reseaux sociaux/Capture d'écran_5-1-2026_113641_www.facebook.com.jpeg",
     "/annonce des reseaux sociaux/Capture d'écran_5-1-2026_114035_www.facebook.com.jpeg",
+    "/annonce des reseaux sociaux/Capture d'écran_5-1-2026_115913_x.com.jpeg",
   ];
 
   return (

@@ -141,6 +141,12 @@ export default function ParentTestimonialsTikTokSection() {
       caption: 'Avis de disparition',
       source: 'Facebook',
     },
+    {
+      id: '20',
+      imagePath: "/annonce des reseaux sociaux/Capture d'écran_5-1-2026_115913_x.com.jpeg",
+      caption: 'Recherche urgente',
+      source: 'X (Twitter)',
+    },
   ];
 
   // Dupliquer les annonces pour créer un effet de loop infini
