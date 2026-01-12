@@ -10,20 +10,27 @@ import Link from 'next/link';
 import { SocialMediaCarousel } from '@/components/about/SocialMediaCarousel';
 
 export default function AboutPage() {
-  // Images d'annonces réseaux sociaux (sélection des plus impactantes)
+  // Toutes les images d'annonces réseaux sociaux (optimisées)
   const socialMediaImages = [
-    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_11139_www.facebook.com.jpeg',
-    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_11250_www.facebook.com.jpeg',
-    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_111113_www.facebook.com.jpeg',
-    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_111219_www.facebook.com.jpeg',
-    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_111326_www.facebook.com.jpeg',
-    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_111537_www.facebook.com.jpeg',
-    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_11176_www.facebook.com.jpeg',
-    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_111821_www.facebook.com.jpeg',
-    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_112227_www.facebook.com.jpeg',
-    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_112331_www.facebook.com.jpeg',
-    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_112840_www.facebook.com.jpeg',
-    '/annonce%20des%20reseaux%20sociaux/Capture%20d%E2%80%99%C3%A9cran_5-1-2026_113039_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/1748349037195.jpg',
+    '/annonce des reseaux sociaux/514259469_1185791096901315_6877600043205809416_n.jpg',
+    '/annonce des reseaux sociaux/544957735_10237655735722780_3340514364428526235_n.jpg',
+    '/annonce des reseaux sociaux/557937877_4297361353837930_1250918240654904926_n.jpg',
+    '/annonce des reseaux sociaux/583654316_1423064349819038_4680589400454605467_n.jpg',
+    '/annonce des reseaux sociaux/588892192_1263915672431986_6023818595300189528_n.jpg',
+    '/annonce des reseaux sociaux/595822435_1414423353361131_7727737243419955463_n.jpg',
+    '/annonce des reseaux sociaux/608965602_1573755057098913_1992962891135442864_n.jpg',
+    '/annonce des reseaux sociaux/G8EhmZCWUAEpX1y.jpg',
+    '/annonce des reseaux sociaux/Capture d'écran_5-1-2026_111537_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d'écran_5-1-2026_111633_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d'écran_5-1-2026_111821_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d'écran_5-1-2026_11262_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d'écran_5-1-2026_112931_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d'écran_5-1-2026_113250_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d'écran_5-1-2026_11329_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d'écran_5-1-2026_113430_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d'écran_5-1-2026_113641_www.facebook.com.jpeg',
+    '/annonce des reseaux sociaux/Capture d'écran_5-1-2026_114035_www.facebook.com.jpeg',
   ];
 
   return (
@@ -36,7 +43,7 @@ export default function AboutPage() {
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
             className="font-playfair text-4xl font-bold text-[#1c1917] sm:text-5xl md:text-6xl lg:text-7xl"
           >
             Plus qu'un bracelet,{' '}
@@ -49,7 +56,7 @@ export default function AboutPage() {
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
             className="mx-auto mt-8 max-w-3xl font-outfit text-lg text-[#57534e] sm:text-xl"
           >
             Notre mission est simple : offrir aux enfants la liberté de grandir et aux parents la
@@ -66,7 +73,7 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
             className="text-center"
           >
             <h2 className="font-playfair text-3xl font-bold text-white sm:text-4xl md:text-5xl">
@@ -79,7 +86,7 @@ export default function AboutPage() {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
               className="mt-12"
             >
               <SocialMediaCarousel images={socialMediaImages} interval={4000} />
@@ -90,7 +97,7 @@ export default function AboutPage() {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.4 }}
+              transition={{ duration: 0.6, delay: 0.25 }}
               className="mt-12"
             >
               <p className="mx-auto max-w-3xl font-outfit text-lg leading-relaxed text-stone-300 sm:text-xl">
@@ -169,7 +176,7 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
             className="text-center"
           >
             <h2 className="font-playfair text-3xl font-bold text-[#1c1917] sm:text-4xl md:text-5xl">
@@ -181,7 +188,7 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
             className="mt-12 rounded-3xl bg-white p-8 shadow-xl shadow-orange-100 sm:p-12"
           >
             <div className="flex flex-col items-center gap-8 lg:flex-row lg:gap-12">
@@ -225,7 +232,7 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
             className="text-center"
           >
             <h2 className="font-playfair text-3xl font-bold text-[#1c1917] sm:text-4xl md:text-5xl">
@@ -344,7 +351,7 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
           >
             <h2 className="font-playfair text-3xl font-bold text-white sm:text-4xl md:text-5xl">
               Rejoignez les premiers parents qui nous font confiance
@@ -357,7 +364,7 @@ export default function AboutPage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
               className="mt-10"
             >
               <Link href="/activate">

@@ -25,37 +25,121 @@ interface MissingChildAnnouncement {
 }
 
 export default function ParentTestimonialsTikTokSection() {
-  // 5 meilleures images d'annonces de disparitions (vraies annonces Facebook/TikTok)
+  // Toutes les images d'annonces de disparitions (optimisées)
   const announcements: MissingChildAnnouncement[] = [
     {
       id: '1',
-      imagePath: '/annonce des reseaux sociaux/608524374_1322101283270295_8517123304157340260_n.jpg',
-      caption: 'Enfant Mamadou BAH disparu',
-      source: 'Réseaux sociaux Burkina Faso',
+      imagePath: '/annonce des reseaux sociaux/1748349037195.jpg',
+      caption: 'Avis de disparition',
+      source: 'Réseaux sociaux',
     },
     {
       id: '2',
-      imagePath: '/annonce des reseaux sociaux/557937877_4297361353837930_1250918240654904926_n.jpg',
-      caption: 'Alerte disparition urgente',
-      source: 'Facebook Parents BF',
+      imagePath: '/annonce des reseaux sociaux/514259469_1185791096901315_6877600043205809416_n.jpg',
+      caption: 'Enfant disparu',
+      source: 'Facebook',
     },
     {
       id: '3',
-      imagePath: '/annonce des reseaux sociaux/583654316_1423064349819038_4680589400454605467_n.jpg',
+      imagePath: '/annonce des reseaux sociaux/544957735_10237655735722780_3340514364428526235_n.jpg',
       caption: 'Recherche active',
-      source: 'Facebook Communauté',
+      source: 'Facebook',
     },
     {
       id: '4',
-      imagePath: '/annonce des reseaux sociaux/514259469_1185791096901315_6877600043205809416_n.jpg',
-      caption: 'Enfant disparu depuis 08h',
-      source: 'Communauté Facebook',
+      imagePath: '/annonce des reseaux sociaux/557937877_4297361353837930_1250918240654904926_n.jpg',
+      caption: 'Alerte disparition',
+      source: 'Facebook',
     },
     {
       id: '5',
+      imagePath: '/annonce des reseaux sociaux/583654316_1423064349819038_4680589400454605467_n.jpg',
+      caption: 'Recherche urgente',
+      source: 'Facebook',
+    },
+    {
+      id: '6',
+      imagePath: '/annonce des reseaux sociaux/588892192_1263915672431986_6023818595300189528_n.jpg',
+      caption: 'Avis de recherche',
+      source: 'Facebook',
+    },
+    {
+      id: '7',
       imagePath: '/annonce des reseaux sociaux/595822435_1414423353361131_7727737243419955463_n.jpg',
+      caption: 'Enfant disparu',
+      source: 'Facebook',
+    },
+    {
+      id: '8',
+      imagePath: '/annonce des reseaux sociaux/608965602_1573755057098913_1992962891135442864_n.jpg',
+      caption: 'Alerte disparition',
+      source: 'Facebook',
+    },
+    {
+      id: '9',
+      imagePath: '/annonce des reseaux sociaux/G8EhmZCWUAEpX1y.jpg',
+      caption: 'Recherche active',
+      source: 'Réseaux sociaux',
+    },
+    {
+      id: '10',
+      imagePath: '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_111537_www.facebook.com.jpeg',
       caption: 'Avis de disparition',
-      source: 'Réseaux sociaux locaux',
+      source: 'Facebook',
+    },
+    {
+      id: '11',
+      imagePath: '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_111633_www.facebook.com.jpeg',
+      caption: 'Recherche urgente',
+      source: 'Facebook',
+    },
+    {
+      id: '12',
+      imagePath: '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_111821_www.facebook.com.jpeg',
+      caption: 'Enfant disparu',
+      source: 'Facebook',
+    },
+    {
+      id: '13',
+      imagePath: '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_11262_www.facebook.com.jpeg',
+      caption: 'Alerte disparition',
+      source: 'Facebook',
+    },
+    {
+      id: '14',
+      imagePath: '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_112931_www.facebook.com.jpeg',
+      caption: 'Recherche active',
+      source: 'Facebook',
+    },
+    {
+      id: '15',
+      imagePath: '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_113250_www.facebook.com.jpeg',
+      caption: 'Avis de recherche',
+      source: 'Facebook',
+    },
+    {
+      id: '16',
+      imagePath: '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_11329_www.facebook.com.jpeg',
+      caption: 'Enfant disparu',
+      source: 'Facebook',
+    },
+    {
+      id: '17',
+      imagePath: '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_113430_www.facebook.com.jpeg',
+      caption: 'Alerte disparition',
+      source: 'Facebook',
+    },
+    {
+      id: '18',
+      imagePath: '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_113641_www.facebook.com.jpeg',
+      caption: 'Recherche urgente',
+      source: 'Facebook',
+    },
+    {
+      id: '19',
+      imagePath: '/annonce des reseaux sociaux/Capture d\'écran_5-1-2026_114035_www.facebook.com.jpeg',
+      caption: 'Avis de disparition',
+      source: 'Facebook',
     },
   ];
 
@@ -74,6 +158,7 @@ export default function ParentTestimonialsTikTokSection() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
           className="mb-16 text-center"
         >
           {/* Badge */}
@@ -131,6 +216,8 @@ export default function ParentTestimonialsTikTokSection() {
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                       sizes="320px"
+                      quality={85}
+                      loading="lazy"
                     />
 
                     {/* Overlay gradient */}
@@ -152,7 +239,7 @@ export default function ParentTestimonialsTikTokSection() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
           className="mb-12 text-center"
         >
           <div className="mx-auto max-w-3xl rounded-2xl border border-red-500/20 bg-red-500/5 p-8 backdrop-blur-sm">
@@ -173,7 +260,7 @@ export default function ParentTestimonialsTikTokSection() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.6 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
           className="text-center"
         >
           <div className="mx-auto max-w-2xl">
@@ -214,7 +301,7 @@ export default function ParentTestimonialsTikTokSection() {
         }
 
         .animate-scroll-horizontal {
-          animation: scroll-horizontal 30s linear infinite;
+          animation: scroll-horizontal 20s linear infinite;
         }
 
         .animate-scroll-horizontal:hover {

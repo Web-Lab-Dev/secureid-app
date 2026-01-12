@@ -110,7 +110,7 @@ export function SocialMediaCarousel({ images, interval = 4000 }: SocialMediaCaro
               fill
               className="object-contain"
               priority={currentIndex === 0}
-              quality={75}
+              quality={85}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
               loading={currentIndex === 0 ? "eager" : "lazy"}
             />
