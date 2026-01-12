@@ -7,7 +7,6 @@ import Header from '@/components/landing/Header';
 import Footer from '@/components/landing/Footer';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { SocialMediaCarousel } from '@/components/about/SocialMediaCarousel';
 
 export default function AboutPage() {
   // Toutes les images d'annonces réseaux sociaux (optimisées)
@@ -81,16 +80,61 @@ export default function AboutPage() {
               <span className="text-orange-400">chaque jour</span>.
             </h2>
 
-            {/* Carrousel d'annonces réseaux sociaux */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.15 }}
-              className="mt-12"
-            >
-              <SocialMediaCarousel images={socialMediaImages} interval={4000} />
-            </motion.div>
+            {/* Carrousel d'annonces réseaux sociaux - Défilement horizontal */}
+            <div className="relative mb-16 mt-12 overflow-hidden">
+              {/* Gradient fade gauche */}
+              <div className="absolute left-0 top-0 z-10 h-full w-20 bg-gradient-to-r from-stone-900 to-transparent pointer-events-none" />
+
+              {/* Gradient fade droite */}
+              <div className="absolute right-0 top-0 z-10 h-full w-20 bg-gradient-to-l from-stone-900 to-transparent pointer-events-none" />
+
+              {/* Container de défilement */}
+              <div className="flex gap-6 animate-scroll-horizontal">
+                {[...socialMediaImages, ...socialMediaImages].map((image, index) => (
+                  <div
+                    key={`${image}-${index}`}
+                    className="flex-shrink-0 w-[280px] sm:w-[320px]"
+                  >
+                    <div className="group relative overflow-hidden rounded-2xl bg-stone-800/50 p-3 backdrop-blur-sm transition-all duration-300 hover:bg-stone-800/70 hover:scale-[1.02]">
+                      <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-stone-950">
+                        <Image
+                          src={image}
+                          alt="Annonce disparition enfant"
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          sizes="320px"
+                          quality={85}
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-transparent to-stone-900/20" />
+                        <div className="absolute top-3 left-3 rounded-lg bg-red-500 px-3 py-1 font-outfit text-xs font-bold text-white shadow-lg">
+                          🚨 URGENT
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <style jsx>{`
+              @keyframes scroll-horizontal {
+                0% {
+                  transform: translateX(0);
+                }
+                100% {
+                  transform: translateX(-50%);
+                }
+              }
+
+              .animate-scroll-horizontal {
+                animation: scroll-horizontal 20s linear infinite;
+              }
+
+              .animate-scroll-horizontal:hover {
+                animation-play-state: paused;
+              }
+            `}</style>
 
             {/* Texte d'accompagnement */}
             <motion.div

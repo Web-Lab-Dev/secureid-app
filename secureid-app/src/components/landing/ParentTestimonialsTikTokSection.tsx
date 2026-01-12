@@ -197,12 +197,8 @@ export default function ParentTestimonialsTikTokSection() {
           {/* Container de défilement */}
           <div className="flex gap-6 animate-scroll-horizontal">
             {duplicatedAnnouncements.map((announcement, index) => (
-              <motion.div
+              <div
                 key={`${announcement.id}-${index}`}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
                 className="flex-shrink-0 w-[280px] sm:w-[320px]"
               >
                 {/* Card annonce */}
@@ -229,7 +225,7 @@ export default function ParentTestimonialsTikTokSection() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
