@@ -29,31 +29,31 @@ export default function ParentTestimonialsTikTokSection() {
   const announcements: MissingChildAnnouncement[] = [
     {
       id: '1',
-      imagePath: '/annonce des reseaux sociaux/1748349037195.jpg',
-      caption: 'Avis de recherche - Ouagadougou',
+      imagePath: '/annonce des reseaux sociaux/608524374_1322101283270295_8517123304157340260_n.jpg',
+      caption: 'Enfant Mamadou BAH disparu',
       source: 'Réseaux sociaux Burkina Faso',
     },
     {
       id: '2',
-      imagePath: '/annonce des reseaux sociaux/588892192_1263915672431986_6023818595300189528_n.jpg',
-      caption: 'Enfant disparu - Appel à témoins',
+      imagePath: '/annonce des reseaux sociaux/557937877_4297361353837930_1250918240654904926_n.jpg',
+      caption: 'Alerte disparition urgente',
       source: 'Facebook Parents BF',
     },
     {
       id: '3',
-      imagePath: "/annonce des reseaux sociaux/Capture d'écran_5-1-2026_11139_www.facebook.com.jpeg",
-      caption: 'Alerte disparition - Urgent',
+      imagePath: '/annonce des reseaux sociaux/583654316_1423064349819038_4680589400454605467_n.jpg',
+      caption: 'Recherche active',
       source: 'Facebook Communauté',
     },
     {
       id: '4',
-      imagePath: "/annonce des reseaux sociaux/Capture d'écran_5-1-2026_112227_www.facebook.com.jpeg",
-      caption: 'Recherche active en cours',
+      imagePath: '/annonce des reseaux sociaux/514259469_1185791096901315_6877600043205809416_n.jpg',
+      caption: 'Enfant disparu depuis 08h',
       source: 'Communauté Facebook',
     },
     {
       id: '5',
-      imagePath: '/annonce des reseaux sociaux/608965602_1573755057098913_1992962891135442864_n.jpg',
+      imagePath: '/annonce des reseaux sociaux/595822435_1414423353361131_7727737243419955463_n.jpg',
       caption: 'Avis de disparition',
       source: 'Réseaux sociaux locaux',
     },
@@ -140,16 +140,6 @@ export default function ParentTestimonialsTikTokSection() {
                     <div className="absolute top-3 left-3 rounded-lg bg-red-500 px-3 py-1 font-outfit text-xs font-bold text-white shadow-lg">
                       🚨 URGENT
                     </div>
-                  </div>
-
-                  {/* Caption */}
-                  <div className="mt-3">
-                    <p className="font-outfit text-sm font-semibold text-white">
-                      {announcement.caption}
-                    </p>
-                    <p className="mt-1 font-outfit text-xs text-slate-400">
-                      {announcement.source}
-                    </p>
                   </div>
                 </div>
               </motion.div>
