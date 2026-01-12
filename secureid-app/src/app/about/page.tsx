@@ -90,10 +90,10 @@ export default function AboutPage() {
               <div className="absolute right-0 top-0 z-10 h-full w-20 bg-gradient-to-l from-stone-900 to-transparent pointer-events-none" />
 
               {/* Container de défilement */}
-              <div className="flex gap-6 animate-scroll-horizontal">
+              <div className="flex gap-6 animate-scroll-horizontal" style={{ width: 'max-content' }}>
                 {[...socialMediaImages, ...socialMediaImages].map((image, index) => (
                   <div
-                    key={`${image}-${index}`}
+                    key={`image-${index}`}
                     className="flex-shrink-0 w-[280px] sm:w-[320px]"
                   >
                     <div className="group relative overflow-hidden rounded-2xl bg-stone-800/50 p-3 backdrop-blur-sm transition-all duration-300 hover:bg-stone-800/70 hover:scale-[1.02]">
@@ -129,7 +129,7 @@ export default function AboutPage() {
               }
 
               .animate-scroll-horizontal {
-                animation: scroll-horizontal 60s linear infinite;
+                animation: scroll-horizontal 20s linear infinite;
               }
 
               .animate-scroll-horizontal:hover {

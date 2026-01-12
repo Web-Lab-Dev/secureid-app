@@ -201,10 +201,10 @@ export default function ParentTestimonialsTikTokSection() {
           <div className="absolute right-0 top-0 z-10 h-full w-20 bg-gradient-to-l from-slate-900 to-transparent pointer-events-none" />
 
           {/* Container de défilement */}
-          <div className="flex gap-6 animate-scroll-horizontal">
+          <div className="flex gap-6 animate-scroll-horizontal" style={{ width: 'max-content' }}>
             {duplicatedAnnouncements.map((announcement, index) => (
               <div
-                key={`${announcement.id}-${index}`}
+                key={`announcement-${index}`}
                 className="flex-shrink-0 w-[280px] sm:w-[320px]"
               >
                 {/* Card annonce */}
@@ -303,7 +303,7 @@ export default function ParentTestimonialsTikTokSection() {
         }
 
         .animate-scroll-horizontal {
-          animation: scroll-horizontal 60s linear infinite;
+          animation: scroll-horizontal 20s linear infinite;
         }
 
         .animate-scroll-horizontal:hover {
