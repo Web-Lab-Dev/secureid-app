@@ -29,7 +29,7 @@ export default function ShieldSection() {
             >
               <div className="relative h-full w-full">
                 <Image
-                  src="/landing/bouclier.png"
+                  src="/landing/bouclier.webp"
                   alt="Bouclier de protection 3D"
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"

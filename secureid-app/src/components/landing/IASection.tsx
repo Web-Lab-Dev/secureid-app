@@ -31,7 +31,7 @@ export default function IASection() {
               className="relative aspect-square w-full max-w-md mx-auto"
             >
               <Image
-                src="/landing/section ia.png"
+                src="/landing/section ia.webp"
                 alt="Intelligence Artificielle SecureID - Protection bienveillante"
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"

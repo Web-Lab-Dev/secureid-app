@@ -25,7 +25,7 @@ export default function TestTokenPage() {
       }
 
       try {
-        console.log('🔍 Checking FCM token for user:', user.uid);
+        // console.log('🔍 Checking FCM token for user:', user.uid);
 
         const userRef = doc(db, 'users', user.uid);
         const userSnap = await getDoc(userRef);
@@ -37,7 +37,7 @@ export default function TestTokenPage() {
         }
 
         const userData = userSnap.data();
-        console.log('📄 User data:', userData);
+        // console.log('📄 User data:', userData);
 
         setTokenInfo({
           exists: userSnap.exists(),
@@ -50,7 +50,7 @@ export default function TestTokenPage() {
 
         setLoading(false);
       } catch (err) {
-        console.error('❌ Error:', err);
+        if (process.env.NODE_ENV !== 'production') console.error('❌ Error:', err);
         setError(`Erreur: ${err instanceof Error ? err.message : 'Erreur inconnue'}`);
         setLoading(false);
       }

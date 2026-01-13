@@ -134,14 +134,14 @@ export function GpsSimulationCard({
 
   // Debug détaillé pour la photo enfant (console.log direct pour debug production)
   useEffect(() => {
-    console.log('🖼️ Photo enfant - Debug détaillé', {
-      childName,
-      childPhotoUrl,
-      hasPhoto: !!childPhotoUrl,
-      photoLength: childPhotoUrl?.length || 0,
-      photoTrimmed: childPhotoUrl?.trim() || '',
-      isValidUrl: childPhotoUrl && childPhotoUrl.trim() !== '',
-    });
+    // console.log('🖼️ Photo enfant - Debug détaillé', {
+    //   childName,
+    //   childPhotoUrl,
+    //   hasPhoto: !!childPhotoUrl,
+    //   photoLength: childPhotoUrl?.length || 0,
+    //   photoTrimmed: childPhotoUrl?.trim() || '',
+    //   isValidUrl: childPhotoUrl && childPhotoUrl.trim() !== '',
+    // });
   }, [childName, childPhotoUrl]);
 
   const onLoad = useCallback((map: google.maps.Map) => {
@@ -517,7 +517,7 @@ export function GpsSimulationCard({
                       className="object-cover"
                       unoptimized
                       onError={(e) => {
-                        console.error('❌ Failed to load child photo', { url: childPhotoUrl });
+                        if (process.env.NODE_ENV !== 'production') console.error('❌ Failed to load child photo', { url: childPhotoUrl });
                         // Remplacer par le fallback si l'image échoue
                         e.currentTarget.style.display = 'none';
                       }}

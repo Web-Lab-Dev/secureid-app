@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Outfit } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -116,7 +117,30 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const jsonLd = {
+  // Schema.org - Structured Data pour SEO
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "SecureID",
+    "url": "https://secureid-app.vercel.app",
+    "logo": "https://secureid-app.vercel.app/icon-512.png",
+    "description": "Bracelet connecté intelligent pour la sécurité et l'identification rapide des enfants au Burkina Faso",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "BF",
+      "addressLocality": "Ouagadougou"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "availableLanguage": ["fr"]
+    },
+    "sameAs": [
+      "https://twitter.com/SecureID_BF"
+    ]
+  };
+
+  const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": "SecureID Bracelet de Sécurité Enfant",
@@ -125,6 +149,10 @@ export default function RootLayout({
     "brand": {
       "@type": "Brand",
       "name": "SecureID",
+    },
+    "manufacturer": {
+      "@type": "Organization",
+      "name": "SecureID"
     },
     "offers": {
       "@type": "Offer",
@@ -137,7 +165,7 @@ export default function RootLayout({
       "ratingValue": "4.8",
       "reviewCount": "127",
     },
-    "image": "https://secureid-app.vercel.app/landing/bouclier.png",
+    "image": "https://secureid-app.vercel.app/landing/bouclier.webp",
     "url": "https://secureid-app.vercel.app",
   };
 
@@ -146,7 +174,11 @@ export default function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
         />
       </head>
       <body
@@ -155,6 +187,7 @@ export default function RootLayout({
         <ErrorBoundary>
           <AuthProvider>{children}</AuthProvider>
         </ErrorBoundary>
+        <Analytics />
       </body>
     </html>
   );

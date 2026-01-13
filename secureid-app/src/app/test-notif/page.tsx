@@ -28,8 +28,8 @@ export default function TestNotifPage() {
     setResult(null);
 
     try {
-      console.log('🔔 Envoi de la notification test...');
-      console.log('User ID:', user.uid);
+      // console.log('🔔 Envoi de la notification test...');
+      // console.log('User ID:', user.uid);
 
       const res = await sendEmergencyScanNotification(
         user.uid,
@@ -37,7 +37,7 @@ export default function TestNotifPage() {
         'Paris, France'
       );
 
-      console.log('✅ Résultat:', res);
+      // console.log('✅ Résultat:', res);
 
       if (res.success) {
         setResult('✅ Notification envoyée! Vérifiez votre téléphone en veille dans 5-10 secondes.');
@@ -45,7 +45,7 @@ export default function TestNotifPage() {
         setResult(`❌ Échec: ${res.error}`);
       }
     } catch (error) {
-      console.error('❌ Erreur:', error);
+      if (process.env.NODE_ENV !== 'production') console.error('❌ Erreur:', error);
       setResult(`❌ Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     } finally {
       setLoading(false);
@@ -168,7 +168,7 @@ export default function TestNotifPage() {
               <button
                 onClick={() => {
                   navigator.serviceWorker.getRegistrations().then(regs => {
-                    console.log('Service Workers:', regs);
+                    // console.log('Service Workers:', regs);
                     alert(`Service Workers: ${regs.length}\n${regs.map(r => r.scope).join('\n')}`);
                   });
                 }}

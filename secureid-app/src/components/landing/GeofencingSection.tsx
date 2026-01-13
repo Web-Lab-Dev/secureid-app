@@ -164,7 +164,7 @@ export default function GeofencingSection() {
               {/* Carte GPS réelle - Localisation temps réel */}
               <div className="relative aspect-[4/3]">
                 <Image
-                  src="/landing/geofencing-map.jpeg"
+                  src="/landing/geofencing-map.webp"
                   alt="Carte GPS Ouagadougou avec zones de sécurité configurées - Suivi temps réel"
                   fill
                   className="object-cover"
