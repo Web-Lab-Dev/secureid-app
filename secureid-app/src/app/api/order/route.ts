@@ -1,10 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { logger } from '@/lib/logger';
+import { OrderSchema, validateInput } from '@/lib/api-validation';
+import { logApiRequest, logApiError, addCorrelationIdHeader } from '@/lib/api-logger';
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+
   try {
     const body = await request.json();
+
+    // Validation stricte avec Zod
+    const validation = validateInput(OrderSchema, body);
+
+    if (!validation.success) {
+      // Log tentative avec données invalides (sécurité)
+      await logApiRequest(request, 'order_validation_failed', {
+        errors: validation.errors,
+        hasOrderId: !!body.orderId,
+      });
+
+      return NextResponse.json(
+        {
+          error: 'Données invalides',
+          details: validation.errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Données validées et typées
     const {
       orderId,
       customerName,
@@ -15,16 +40,7 @@ export async function POST(request: NextRequest) {
       deliveryAddress,
       gpsLocation,
       deliveryNotes,
-    } = body;
-
-    // Validation basique
-    if (!orderId || !customerName || !customerPhone || !deliveryAddress) {
-      logger.error('Order validation failed - missing required fields', { orderId, customerName });
-      return NextResponse.json(
-        { error: 'Champs requis manquants' },
-        { status: 400 }
-      );
-    }
+    } = validation.data;
 
     // Configuration du transporteur SMTP (EXACTEMENT comme partenariat)
     const transporter = nodemailer.createTransport({
@@ -90,7 +106,20 @@ Email envoyé automatiquement depuis SecureID
       html: `<pre style="font-family: monospace; white-space: pre-wrap;">${emailContent}</pre>`,
     });
 
-    logger.info('Order email sent successfully', { orderId, messageId: info.messageId });
+    // Log succès avec contexte complet
+    const duration = Date.now() - startTime;
+    await logApiRequest(request, 'order_created', {
+      orderId,
+      customerPhone,
+      quantity,
+      totalAmount,
+      hasGpsLocation: !!gpsLocation,
+      messageId: info.messageId,
+      duration,
+    });
+
+    // Ajouter correlation ID à la réponse pour traçabilité
+    const headers = addCorrelationIdHeader(request);
 
     return NextResponse.json(
       {
@@ -98,10 +127,14 @@ Email envoyé automatiquement depuis SecureID
         message: 'Email de commande envoyé avec succès',
         messageId: info.messageId,
       },
-      { status: 200 }
+      { status: 200, headers }
     );
   } catch (error) {
-    logger.error('Failed to send order email', error);
+    // Log erreur avec contexte complet
+    logApiError(request, 'order_creation_failed', error, {
+      hasBody: !!request.body,
+    });
+
     return NextResponse.json(
       {
         error: "Erreur lors de l'envoi de l'email",

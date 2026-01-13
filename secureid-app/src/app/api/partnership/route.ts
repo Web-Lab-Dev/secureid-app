@@ -1,19 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { logger } from '@/lib/logger';
+import { PartnershipSchema, validateInput } from '@/lib/api-validation';
+import { logApiRequest, logApiError, addCorrelationIdHeader } from '@/lib/api-logger';
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+
   try {
     const body = await request.json();
-    const { etablissement, type, responsable, email, telephone, ville, nombreEleves, message } = body;
 
-    // Validation basique
-    if (!etablissement || !responsable || !email) {
+    // Validation stricte avec Zod
+    const validation = validateInput(PartnershipSchema, body);
+
+    if (!validation.success) {
+      // Log tentative avec données invalides (sécurité)
+      await logApiRequest(request, 'partnership_validation_failed', {
+        errors: validation.errors,
+        hasEtablissement: !!body.etablissement,
+      });
+
       return NextResponse.json(
-        { error: 'Champs requis manquants' },
+        {
+          error: 'Données invalides',
+          details: validation.errors,
+        },
         { status: 400 }
       );
     }
+
+    // Données validées et typées
+    const { etablissement, type, responsable, email, telephone, ville, nombreEleves, message } = validation.data;
 
     // Configuration du transporteur SMTP
     // Note: En production, utiliser des variables d'environnement sécurisées
@@ -61,17 +78,34 @@ Date : ${new Date().toLocaleString('fr-FR')}
       html: `<pre style="font-family: monospace; white-space: pre-wrap;">${emailContent}</pre>`,
     });
 
-    logger.info('Email envoyé:', info.messageId);
+    // Log succès avec contexte complet
+    const duration = Date.now() - startTime;
+    await logApiRequest(request, 'partnership_requested', {
+      etablissement,
+      type,
+      email,
+      ville,
+      nombreEleves: nombreEleves || 0,
+      messageId: info.messageId,
+      duration,
+    });
+
+    // Ajouter correlation ID à la réponse pour traçabilité
+    const headers = addCorrelationIdHeader(request);
 
     return NextResponse.json(
       {
         success: true,
         message: 'Demande envoyée avec succès',
       },
-      { status: 200 }
+      { status: 200, headers }
     );
   } catch (error) {
-    logger.error('Erreur envoi email:', error);
+    // Log erreur avec contexte complet
+    logApiError(request, 'partnership_request_failed', error, {
+      hasBody: !!request.body,
+    });
+
     return NextResponse.json(
       {
         error: 'Erreur lors de l\'envoi de la demande',

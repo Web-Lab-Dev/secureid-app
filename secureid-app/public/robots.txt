@@ -1,0 +1,27 @@
+# Robots.txt pour SecureID
+# https://secureid-app.vercel.app
+
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /activate
+
+# Sitemap
+Sitemap: https://secureid-app.vercel.app/sitemap.xml
+
+# Crawl-delay pour préserver les ressources serveur
+Crawl-delay: 1
+
+# Moteurs de recherche spécifiques
+User-agent: Googlebot
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /activate
+
+User-agent: Bingbot
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /activate

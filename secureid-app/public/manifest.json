@@ -1,13 +1,15 @@
 {
-  "name": "Bracelet de protection",
-  "short_name": "Bracelet",
-  "description": "Bracelet de protection familiale",
-  "start_url": "/dashboard",
+  "name": "SecureID - Bracelet Connecté",
+  "short_name": "SecureID",
+  "description": "Bracelet connecté intelligent pour la sécurité et l'identification rapide des enfants au Burkina Faso. Inclut dossier médical d'urgence, géolocalisation et contacts familiaux.",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#1c1917",
+  "theme_color": "#f97316",
   "orientation": "portrait",
   "scope": "/",
+  "lang": "fr",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -22,6 +24,24 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["lifestyle", "utilities"],
-  "screenshots": []
+  "categories": ["health", "safety", "lifestyle", "utilities"],
+  "screenshots": [],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Accéder au tableau de bord",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Scanner",
+      "short_name": "Scan",
+      "description": "Scanner un bracelet",
+      "url": "/scan",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
 }
