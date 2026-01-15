@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer, OverlayView, Circle } from '@react-google-maps/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Target, Navigation, Zap, Shield, Route, Home, School, Heart, X, AlertTriangle } from 'lucide-react';
+import { MapPin, Target, Navigation, Zap, Shield, Route, Home, School, Heart, X, AlertTriangle, Maximize, Minimize } from 'lucide-react';
 import Image from 'next/image';
 import useSound from 'use-sound';
 import { generateRandomLocation, calculateDistance, calculateETA, formatDistance, type LatLng } from '@/lib/geo-utils';
@@ -54,6 +54,7 @@ export function GpsSimulationCard({
   const [dashOffset, setDashOffset] = useState<number>(0);
   const [showTraffic, setShowTraffic] = useState<boolean>(true);
   const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('roadmap');
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   // NOUVELLES FEATURES - Geofencing Multi-Zones, POI, Trajectory
   const [safeZones, setSafeZones] = useState<SafeZoneDocument[]>([]);
@@ -447,6 +448,42 @@ export function GpsSimulationCard({
     logger.info('Demo: Child moved manually', { newLocation });
   };
 
+  // Gestion du mode plein écran
+  const toggleFullscreen = useCallback(() => {
+    const mapContainer = document.getElementById('gps-map-container');
+    if (!mapContainer) return;
+
+    if (!document.fullscreenElement) {
+      // Entrer en plein écran
+      mapContainer.requestFullscreen().then(() => {
+        setIsFullscreen(true);
+        logger.info('Entered fullscreen mode');
+      }).catch((err) => {
+        logger.error('Error entering fullscreen', { error: err });
+      });
+    } else {
+      // Quitter le plein écran
+      document.exitFullscreen().then(() => {
+        setIsFullscreen(false);
+        logger.info('Exited fullscreen mode');
+      }).catch((err) => {
+        logger.error('Error exiting fullscreen', { error: err });
+      });
+    }
+  }, []);
+
+  // Détecter les changements de fullscreen (ESC, F11, etc.)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
   if (!isLoaded) {
     return (
       <div className="relative h-[500px] w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 shadow-2xl">
@@ -461,7 +498,12 @@ export function GpsSimulationCard({
   }
 
   return (
-    <div className="relative h-[500px] w-full overflow-hidden rounded-3xl border border-slate-200 shadow-2xl">
+    <div
+      id="gps-map-container"
+      className={`relative w-full overflow-hidden rounded-3xl border border-slate-200 shadow-2xl transition-all ${
+        isFullscreen ? 'h-screen' : 'h-[500px]'
+      }`}
+    >
       <GoogleMap
         mapContainerStyle={{ width: '100%', height: '100%' }}
         center={parentLocation}
@@ -700,6 +742,25 @@ export function GpsSimulationCard({
           title={showTrajectory ? 'Masquer le parcours' : 'Voir le parcours'}
         >
           <Route className="h-5 w-5" />
+        </motion.button>
+
+        {/* Bouton Plein Écran */}
+        <motion.button
+          onClick={toggleFullscreen}
+          className={`flex h-12 w-12 items-center justify-center rounded-full shadow-xl transition-all hover:scale-110 hover:shadow-2xl ${
+            isFullscreen ? 'bg-purple-500 text-white' : 'bg-white text-slate-600'
+          }`}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.9, type: "spring" }}
+          whileTap={{ scale: 0.95 }}
+          title={isFullscreen ? 'Quitter le plein écran' : 'Mode plein écran'}
+        >
+          {isFullscreen ? (
+            <Minimize className="h-5 w-5" />
+          ) : (
+            <Maximize className="h-5 w-5" />
+          )}
         </motion.button>
 
       </div>
