@@ -193,6 +193,63 @@ service cloud.firestore {
         allow delete: if isAuthenticated() &&
                          get(/databases/$(database)/documents/profiles/$(profileId)).data.parentId == request.auth.uid;
       }
+
+      // SOUS-COLLECTION: safeZones (Zones de sécurité GPS)
+      match /safeZones/{zoneId} {
+        // Fonction de validation des données de zone
+        function isValidSafeZoneData() {
+          let data = request.resource.data;
+          return data.keys().hasAll(['name', 'icon', 'center', 'radius', 'color', 'enabled', 'alertDelay', 'profileId', 'createdAt', 'updatedAt']) &&
+                 data.name is string &&
+                 data.name.size() >= 2 &&
+                 data.name.size() <= 50 &&
+                 data.icon is string &&
+                 data.center is map &&
+                 data.center.keys().hasAll(['lat', 'lng']) &&
+                 data.center.lat is number &&
+                 data.center.lat >= -90 && data.center.lat <= 90 &&
+                 data.center.lng is number &&
+                 data.center.lng >= -180 && data.center.lng <= 180 &&
+                 data.radius is number &&
+                 data.radius >= 100 && data.radius <= 5000 &&
+                 data.color is string &&
+                 data.color.matches('^#[0-9A-Fa-f]{6}$') &&
+                 data.enabled is bool &&
+                 data.alertDelay is number &&
+                 data.alertDelay >= 1 && data.alertDelay <= 60 &&
+                 data.profileId == profileId;
+        }
+
+        // Fonction de validation des mises à jour
+        function isValidSafeZoneUpdate() {
+          let data = request.resource.data;
+          let existing = resource.data;
+          return data.updatedAt is timestamp &&
+                 data.updatedAt > existing.updatedAt &&
+                 data.createdAt == existing.createdAt &&
+                 data.profileId == existing.profileId;
+        }
+
+        // LECTURE: Seulement par le parent propriétaire du profil
+        allow read: if isAuthenticated() &&
+                       get(/databases/$(database)/documents/profiles/$(profileId)).data.parentId == request.auth.uid;
+
+        // CRÉATION: Seulement par le parent avec validation complète
+        allow create: if isAuthenticated() &&
+                         get(/databases/$(database)/documents/profiles/$(profileId)).data.parentId == request.auth.uid &&
+                         isValidSafeZoneData() &&
+                         request.resource.data.createdAt == request.resource.data.updatedAt;
+
+        // MISE À JOUR: Seulement par le parent avec validation
+        allow update: if isAuthenticated() &&
+                         get(/databases/$(database)/documents/profiles/$(profileId)).data.parentId == request.auth.uid &&
+                         isValidSafeZoneData() &&
+                         isValidSafeZoneUpdate();
+
+        // SUPPRESSION: Seulement par le parent propriétaire
+        allow delete: if isAuthenticated() &&
+                         get(/databases/$(database)/documents/profiles/$(profileId)).data.parentId == request.auth.uid;
+      }
     }
 
     // ============================================================================
