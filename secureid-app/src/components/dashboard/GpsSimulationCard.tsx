@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer, OverlayView } from '@react-google-maps/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Target, Navigation, Zap, Shield, Route, Home, School, Heart, Settings, X, AlertTriangle } from 'lucide-react';
+import { MapPin, Target, Navigation, Zap, Shield, Route, Home, School, Heart, X, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { generateRandomLocation, calculateDistance, calculateETA, formatDistance, type LatLng } from '@/lib/geo-utils';
 import { darkModeMapStyles } from '@/lib/map-styles';
@@ -55,7 +55,6 @@ export function GpsSimulationCard({
   const [showTrajectory, setShowTrajectory] = useState<boolean>(false);
   const [poiMarkers, setPoiMarkers] = useState<Map<string, google.maps.Marker>>(new Map());
   const [pointsOfInterest, setPointsOfInterest] = useState<PointOfInterest[]>([]);
-  const [showPoiConfig, setShowPoiConfig] = useState<boolean>(false);
 
   // Alerte zone de sécurité
   const [outOfZoneTimer, setOutOfZoneTimer] = useState<NodeJS.Timeout | null>(null);
@@ -648,134 +647,7 @@ export function GpsSimulationCard({
           <Route className="h-5 w-5" />
         </motion.button>
 
-        {/* Bouton Configuration POI (Démo) */}
-        <motion.button
-          onClick={() => setShowPoiConfig(!showPoiConfig)}
-          className={`flex h-12 w-12 items-center justify-center rounded-full shadow-xl transition-all hover:scale-110 hover:shadow-2xl ${
-            showPoiConfig ? 'bg-orange-500 text-white' : 'bg-white text-slate-600'
-          }`}
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.9, type: "spring" }}
-          whileTap={{ scale: 0.95 }}
-          title="Configurer les lieux (Démo)"
-        >
-          <Settings className="h-5 w-5" />
-        </motion.button>
       </div>
-
-      {/* Panel Configuration POI - Pour Présentations */}
-      <AnimatePresence>
-        {showPoiConfig && (
-          <motion.div
-            className="absolute left-4 top-4 z-20 max-h-[calc(100%-2rem)] w-80 overflow-y-auto rounded-xl bg-white p-4 shadow-2xl"
-            initial={{ opacity: 0, x: -20, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -20, scale: 0.95 }}
-            transition={{ type: "spring" }}
-          >
-            {/* Header */}
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-800">Configuration Lieux (Démo)</h3>
-              <button
-                onClick={() => setShowPoiConfig(false)}
-                className="rounded-full p-1 hover:bg-slate-100"
-              >
-                <X className="h-4 w-4 text-slate-600" />
-              </button>
-            </div>
-
-            {/* Liste des POI avec formulaire */}
-            <div className="space-y-3">
-              {pointsOfInterest.map((poi) => {
-                const Icon = poi.type === 'HOME' ? Home : poi.type === 'SCHOOL' ? School : Heart;
-                return (
-                  <div key={poi.id} className="rounded-lg bg-slate-50 p-3">
-                    <div className="mb-2 flex items-center gap-2">
-                      <Icon className="h-4 w-4" style={{ color: POI_COLORS[poi.type] }} />
-                      <span className="text-sm font-semibold text-slate-700">{poi.name}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-xs text-slate-500">Latitude</label>
-                        <input
-                          type="number"
-                          step="0.000001"
-                          value={poi.position.lat}
-                          onChange={(e) => {
-                            const newPois = pointsOfInterest.map((p) =>
-                              p.id === poi.id
-                                ? { ...p, position: { ...p.position, lat: parseFloat(e.target.value) || p.position.lat } }
-                                : p
-                            );
-                            setPointsOfInterest(newPois);
-                          }}
-                          className="w-full rounded border border-slate-300 px-2 py-1 text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-slate-500">Longitude</label>
-                        <input
-                          type="number"
-                          step="0.000001"
-                          value={poi.position.lng}
-                          onChange={(e) => {
-                            const newPois = pointsOfInterest.map((p) =>
-                              p.id === poi.id
-                                ? { ...p, position: { ...p.position, lng: parseFloat(e.target.value) || p.position.lng } }
-                                : p
-                            );
-                            setPointsOfInterest(newPois);
-                          }}
-                          className="w-full rounded border border-slate-300 px-2 py-1 text-xs"
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-2 grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => {
-                          const newPois = pointsOfInterest.map((p) =>
-                            p.id === poi.id
-                              ? { ...p, position: childLocation }
-                              : p
-                          );
-                          setPointsOfInterest(newPois);
-                        }}
-                        className="rounded bg-blue-500 px-2 py-1 text-xs font-medium text-white hover:bg-blue-600"
-                      >
-                        Position enfant
-                      </button>
-                      <button
-                        onClick={() => {
-                          const newPois = pointsOfInterest.map((p) =>
-                            p.id === poi.id
-                              ? { ...p, position: generateRandomLocation(childLocation, 20, 50) }
-                              : p
-                          );
-                          setPointsOfInterest(newPois);
-                        }}
-                        className="rounded bg-slate-200 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-300"
-                      >
-                        Aléatoire proche
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Footer avec bouton de confirmation */}
-            <div className="mt-4 border-t border-slate-200 pt-3">
-              <button
-                onClick={() => setShowPoiConfig(false)}
-                className="w-full rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700 transition-colors"
-              >
-                ✓ Enregistrer et Fermer
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Alerte Zone de Sécurité - Déclenchée après 1 minute hors zone */}
       <AnimatePresence>
