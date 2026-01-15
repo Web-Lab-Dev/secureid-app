@@ -1,0 +1,275 @@
+// ============================================
+// FIRESTORE SECURITY RULES - SAFE ZONES
+// ============================================
+//
+// Règles de sécurité pour la collection safeZones
+// À intégrer dans firestore.rules principal
+//
+// Structure: profiles/{profileId}/safeZones/{zoneId}
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ================================================
+    // FONCTIONS HELPER
+    // ================================================
+
+    // Vérifier si l'utilisateur est authentifié
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Récupérer l'ID utilisateur authentifié
+    function userId() {
+      return request.auth.uid;
+    }
+
+    // Vérifier si l'utilisateur est le parent du profil
+    function isParentOfProfile(profileId) {
+      return isSignedIn() &&
+             exists(/databases/$(database)/documents/profiles/$(profileId)) &&
+             get(/databases/$(database)/documents/profiles/$(profileId)).data.parentId == userId();
+    }
+
+    // Vérifier que les données de la zone sont valides
+    function isValidSafeZone() {
+      let data = request.resource.data;
+
+      return data.keys().hasAll(['name', 'icon', 'center', 'radius', 'color', 'enabled', 'alertDelay', 'profileId', 'createdAt', 'updatedAt']) &&
+             data.name is string &&
+             data.name.size() >= 2 &&
+             data.name.size() <= 50 &&
+             data.icon is string &&
+             data.icon.size() > 0 &&
+             data.center is map &&
+             data.center.keys().hasAll(['lat', 'lng']) &&
+             data.center.lat is number &&
+             data.center.lat >= -90 &&
+             data.center.lat <= 90 &&
+             data.center.lng is number &&
+             data.center.lng >= -180 &&
+             data.center.lng <= 180 &&
+             data.radius is number &&
+             data.radius >= 100 &&
+             data.radius <= 5000 &&
+             data.color is string &&
+             data.color.matches('^#[0-9A-Fa-f]{6}$') &&
+             data.enabled is bool &&
+             data.alertDelay is number &&
+             data.alertDelay >= 1 &&
+             data.alertDelay <= 60 &&
+             data.profileId is string &&
+             data.profileId == profileId &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    // Vérifier que la mise à jour est valide (updatedAt modifié)
+    function isValidUpdate() {
+      let data = request.resource.data;
+      let existingData = resource.data;
+
+      // updatedAt doit être modifié
+      return data.updatedAt is timestamp &&
+             data.updatedAt > existingData.updatedAt &&
+             // createdAt ne doit pas changer
+             data.createdAt == existingData.createdAt &&
+             // profileId ne doit pas changer
+             data.profileId == existingData.profileId;
+    }
+
+    // ================================================
+    // RÈGLES SAFE ZONES
+    // ================================================
+
+    match /profiles/{profileId}/safeZones/{zoneId} {
+
+      // LECTURE (GET, LIST)
+      // Autorisé si l'utilisateur est le parent du profil
+      allow read: if isParentOfProfile(profileId);
+
+      // CRÉATION (CREATE)
+      // Autorisé si:
+      // - L'utilisateur est le parent du profil
+      // - Les données sont valides
+      // - createdAt et updatedAt sont égaux (nouveau document)
+      allow create: if isParentOfProfile(profileId) &&
+                       isValidSafeZone() &&
+                       request.resource.data.createdAt == request.resource.data.updatedAt;
+
+      // MISE À JOUR (UPDATE)
+      // Autorisé si:
+      // - L'utilisateur est le parent du profil
+      // - Les données sont valides
+      // - La mise à jour est valide (timestamps corrects)
+      allow update: if isParentOfProfile(profileId) &&
+                       isValidSafeZone() &&
+                       isValidUpdate();
+
+      // SUPPRESSION (DELETE)
+      // Autorisé si l'utilisateur est le parent du profil
+      allow delete: if isParentOfProfile(profileId);
+    }
+
+    // ================================================
+    // REQUÊTES COLLECTION GROUP (optionnel)
+    // ================================================
+
+    // Si vous utilisez collectionGroup('safeZones')
+    match /{path=**}/safeZones/{zoneId} {
+      // Lecture autorisée si l'utilisateur est parent du profil parent
+      allow read: if isSignedIn() &&
+                     exists(/databases/$(database)/documents/profiles/$(resource.data.profileId)) &&
+                     get(/databases/$(database)/documents/profiles/$(resource.data.profileId)).data.parentId == userId();
+    }
+  }
+}
+
+// ================================================
+// EXEMPLES D'UTILISATION
+// ================================================
+
+// ✅ AUTORISÉ:
+// - Parent lit les zones de son enfant
+// - Parent crée une nouvelle zone pour son enfant
+// - Parent modifie une zone existante de son enfant
+// - Parent supprime une zone de son enfant
+// - Parent toggle enabled/disabled d'une zone
+
+// ❌ REFUSÉ:
+// - Utilisateur non authentifié lit les zones
+// - Utilisateur A lit les zones de l'enfant de l'utilisateur B
+// - Parent crée zone avec nom < 2 caractères
+// - Parent crée zone avec radius > 5000m
+// - Parent crée zone avec alertDelay > 60 minutes
+// - Parent modifie profileId d'une zone existante
+// - Parent modifie createdAt d'une zone existante
+
+// ================================================
+// TESTS RECOMMANDÉS
+// ================================================
+
+/*
+// Test 1: Lecture autorisée pour parent
+let parentId = "user123";
+let profileId = "profile456";
+let zoneId = "zone789";
+
+// Setup: Profil existe avec parentId = user123
+// Result: ✅ Parent peut lire la zone
+
+// Test 2: Lecture refusée pour non-parent
+let otherUserId = "user999";
+// Result: ❌ Utilisateur 999 ne peut pas lire la zone du profil 456
+
+// Test 3: Création avec données valides
+let validZone = {
+  name: "École Primaire",
+  icon: "🏫",
+  center: { lat: 12.3714, lng: -1.5197 },
+  radius: 500,
+  color: "#22c55e",
+  enabled: true,
+  alertDelay: 5,
+  profileId: "profile456",
+  createdAt: timestamp.now(),
+  updatedAt: timestamp.now()
+};
+// Result: ✅ Création réussie
+
+// Test 4: Création avec radius invalide
+let invalidZone = { ...validZone, radius: 10000 };
+// Result: ❌ Refusé (radius > 5000)
+
+// Test 5: Mise à jour valid
+let updateData = {
+  ...validZone,
+  name: "École Nouvelle",
+  updatedAt: timestamp.now() + 1000
+};
+// Result: ✅ Mise à jour réussie
+
+// Test 6: Tentative modification profileId
+let invalidUpdate = {
+  ...validZone,
+  profileId: "profile999",
+  updatedAt: timestamp.now() + 1000
+};
+// Result: ❌ Refusé (profileId ne peut pas changer)
+*/
+
+// ================================================
+// INTÉGRATION DANS firestore.rules PRINCIPAL
+// ================================================
+
+/*
+Pour intégrer ces règles dans votre fichier firestore.rules principal:
+
+1. Ouvrir firestore.rules à la racine du projet
+2. Copier les fonctions helper en haut
+3. Copier les règles safeZones dans le bloc "match /databases/{database}/documents"
+4. Déployer avec: firebase deploy --only firestore:rules
+5. Tester dans Firebase Console > Firestore > Rules
+
+Exemple fichier final:
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Fonctions helper (copier depuis ci-dessus)
+    function isSignedIn() { ... }
+    function isParentOfProfile(profileId) { ... }
+    function isValidSafeZone() { ... }
+    function isValidUpdate() { ... }
+
+    // Règles profiles (existantes)
+    match /profiles/{profileId} {
+      // Vos règles existantes
+    }
+
+    // Règles safeZones (nouvelles - copier depuis ci-dessus)
+    match /profiles/{profileId}/safeZones/{zoneId} {
+      allow read: if isParentOfProfile(profileId);
+      allow create: if ...
+      allow update: if ...
+      allow delete: if ...
+    }
+
+    // Autres collections...
+  }
+}
+*/
+
+// ================================================
+// INDEX COMPOSITES RECOMMANDÉS
+// ================================================
+
+/*
+Firebase créera automatiquement les index simples.
+Aucun index composite n'est nécessaire pour les requêtes actuelles:
+
+- getSafeZones: query par profileId + orderBy createdAt
+  → Index automatique créé par Firebase
+
+Si vous ajoutez des requêtes complexes plus tard:
+
+firestore.indexes.json:
+{
+  "indexes": [
+    {
+      "collectionGroup": "safeZones",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "profileId", "order": "ASCENDING" },
+        { "fieldPath": "enabled", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ]
+}
+
+Déployer: firebase deploy --only firestore:indexes
+*/
