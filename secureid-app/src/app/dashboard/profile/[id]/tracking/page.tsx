@@ -67,6 +67,7 @@ export default async function TrackingPage({ params }: TrackingPageProps) {
 
         {/* Composant Client avec Toggle GPS */}
         <TrackingClient
+          profileId={id}
           childName={profile?.fullName}
           childPhotoUrl={profile?.photoUrl || undefined}
         />

@@ -3,21 +3,35 @@
 import { useState } from 'react';
 import { GpsSimulationCard } from '@/components/dashboard/GpsSimulationCard';
 import { HealthIndicators } from '@/components/dashboard/HealthIndicators';
-import { MapPinOff, MapPin } from 'lucide-react';
+import { MapPinOff, MapPin, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 interface TrackingClientProps {
+  profileId: string;
   childName?: string;
   childPhotoUrl?: string;
 }
 
-export function TrackingClient({ childName, childPhotoUrl }: TrackingClientProps) {
+export function TrackingClient({ profileId, childName, childPhotoUrl }: TrackingClientProps) {
   const [gpsEnabled, setGpsEnabled] = useState(true);
 
   return (
     <>
-      {/* Bouton Toggle GPS */}
-      <div className="mb-6 flex justify-end">
+      {/* Boutons Toggle GPS + Configuration Zones */}
+      <div className="mb-6 flex items-center justify-between gap-4">
+        {/* Bouton Configuration Zones de Sécurité */}
+        <Link href={`/dashboard/profile/${profileId}/safe-zones`}>
+          <motion.button
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-all hover:bg-blue-700"
+            whileTap={{ scale: 0.95 }}
+          >
+            <Settings className="h-5 w-5" />
+            <span>Configurer les Zones de Sécurité</span>
+          </motion.button>
+        </Link>
+
+        {/* Bouton Toggle GPS */}
         <motion.button
           onClick={() => setGpsEnabled(!gpsEnabled)}
           className={`flex items-center gap-2 rounded-lg px-4 py-2 font-medium transition-all ${
@@ -46,6 +60,7 @@ export function TrackingClient({ childName, childPhotoUrl }: TrackingClientProps
         <>
           {/* Composant GPS Simulé */}
           <GpsSimulationCard
+            profileId={profileId}
             childName={childName}
             childPhotoUrl={childPhotoUrl}
           />
