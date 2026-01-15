@@ -16,6 +16,7 @@ import { sendGeofenceExitNotification } from '@/actions/notification-actions';
 import { getSafeZones } from '@/actions/safe-zone-actions';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { OUAGADOUGOU_LOCATIONS, DEFAULT_PARENT_LOCATION } from '@/lib/mock-locations';
+import { DemoControls } from './DemoControls';
 
 /**
  * PHASE 15 - GPS SIMULATION CARD (GOOGLE MAPS INTEGRATION)
@@ -33,6 +34,7 @@ interface GpsSimulationCardProps {
   childName?: string;
   childPhotoUrl?: string;
   profileId?: string; // Pour charger les zones de sécurité
+  enableDemoControls?: boolean; // Activer les contrôles de démo pour tests
 }
 
 // Position par défaut (Ouagadougou) si géolocalisation refusée
@@ -41,7 +43,8 @@ const DEFAULT_LOCATION: LatLng = DEFAULT_PARENT_LOCATION;
 export function GpsSimulationCard({
   childName = "Votre enfant",
   childPhotoUrl,
-  profileId
+  profileId,
+  enableDemoControls = false
 }: GpsSimulationCardProps) {
   const { user } = useAuthContext();
   const [parentLocation, setParentLocation] = useState<LatLng>(DEFAULT_LOCATION);
@@ -437,6 +440,13 @@ export function GpsSimulationCard({
     }
   };
 
+  // Fonction pour déplacer manuellement l'enfant (Mode Démo)
+  const handleMoveChild = (newLocation: LatLng) => {
+    setChildLocation(newLocation);
+    setDistance(calculateDistance(parentLocation, newLocation));
+    logger.info('Demo: Child moved manually', { newLocation });
+  };
+
   if (!isLoaded) {
     return (
       <div className="relative h-[500px] w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 shadow-2xl">
@@ -724,6 +734,16 @@ export function GpsSimulationCard({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Contrôles de démo pour tests présentation */}
+      {enableDemoControls && (
+        <DemoControls
+          onMoveChild={handleMoveChild}
+          safeZoneCenter={safeZones.length > 0 ? safeZones[0].center : undefined}
+          safeZoneRadius={safeZones.length > 0 ? safeZones[0].radius : 500}
+          currentChildLocation={childLocation}
+        />
+      )}
 
     </div>
   );
