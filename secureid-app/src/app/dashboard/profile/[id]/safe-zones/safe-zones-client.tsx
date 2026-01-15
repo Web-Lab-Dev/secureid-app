@@ -8,7 +8,7 @@ import type { ProfileDocument } from '@/types/profile';
 import type { SafeZoneDocument } from '@/types/safe-zone';
 import { SafeZoneList } from '@/components/dashboard/SafeZoneList';
 import { SafeZoneDialog } from '@/components/dashboard/SafeZoneDialog';
-import { getSafeZones } from '@/actions/safe-zone-actions';
+import { getSafeZonesClient } from '@/lib/safe-zones-client';
 import { darkModeMapStyles } from '@/lib/map-styles';
 import { logger } from '@/lib/logger';
 import { DEFAULT_PARENT_LOCATION } from '@/lib/mock-locations';
@@ -55,7 +55,7 @@ export function SafeZonesClient({ profile }: SafeZonesClientProps) {
   const loadZones = async () => {
     try {
       setLoading(true);
-      const fetchedZones = await getSafeZones(profile.id);
+      const fetchedZones = await getSafeZonesClient(profile.id);
       setZones(fetchedZones);
 
       // Sélectionner la première zone par défaut
