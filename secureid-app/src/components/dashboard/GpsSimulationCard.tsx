@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer, OverlayView } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer, OverlayView, Circle } from '@react-google-maps/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Target, Navigation, Zap, Shield, Route, Home, School, Heart, X, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
@@ -9,8 +9,10 @@ import { generateRandomLocation, calculateDistance, calculateETA, formatDistance
 import { darkModeMapStyles } from '@/lib/map-styles';
 import { logger } from '@/lib/logger';
 import type { PointOfInterest, TrajectoryPoint } from '@/lib/types/gps';
+import type { SafeZoneDocument } from '@/types/safe-zone';
 import { DEFAULT_SAFE_ZONE, DEFAULT_TRAJECTORY, POI_COLORS, POI_ICONS, generatePoiSvg, encodeSvgToDataUrl } from '@/lib/constants/gps';
 import { sendGeofenceExitNotification } from '@/actions/notification-actions';
+import { getSafeZones } from '@/actions/safe-zone-actions';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { OUAGADOUGOU_LOCATIONS, DEFAULT_PARENT_LOCATION } from '@/lib/mock-locations';
 
@@ -29,6 +31,7 @@ import { OUAGADOUGOU_LOCATIONS, DEFAULT_PARENT_LOCATION } from '@/lib/mock-locat
 interface GpsSimulationCardProps {
   childName?: string;
   childPhotoUrl?: string;
+  profileId?: string; // Pour charger les zones de sécurité
 }
 
 // Position par défaut (Ouagadougou) si géolocalisation refusée
@@ -36,7 +39,8 @@ const DEFAULT_LOCATION: LatLng = DEFAULT_PARENT_LOCATION;
 
 export function GpsSimulationCard({
   childName = "Votre enfant",
-  childPhotoUrl
+  childPhotoUrl,
+  profileId
 }: GpsSimulationCardProps) {
   const { user } = useAuthContext();
   const [parentLocation, setParentLocation] = useState<LatLng>(DEFAULT_LOCATION);
@@ -47,9 +51,9 @@ export function GpsSimulationCard({
   const [showTraffic, setShowTraffic] = useState<boolean>(true);
   const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('roadmap');
 
-  // NOUVELLES FEATURES - Geofencing, POI, Trajectory
-  const [safeZoneCircle, setSafeZoneCircle] = useState<google.maps.Circle | null>(null);
-  const [isChildInSafeZone, setIsChildInSafeZone] = useState<boolean>(true);
+  // NOUVELLES FEATURES - Geofencing Multi-Zones, POI, Trajectory
+  const [safeZones, setSafeZones] = useState<SafeZoneDocument[]>([]);
+  const [activeZones, setActiveZones] = useState<SafeZoneDocument[]>([]); // Zones où enfant est présent
   const [trajectoryHistory, setTrajectoryHistory] = useState<TrajectoryPoint[]>([]);
   const [trajectoryPolyline, setTrajectoryPolyline] = useState<google.maps.Polyline | null>(null);
   const [showTrajectory, setShowTrajectory] = useState<boolean>(false);
@@ -59,6 +63,7 @@ export function GpsSimulationCard({
   // Alerte zone de sécurité
   const [outOfZoneTimer, setOutOfZoneTimer] = useState<NodeJS.Timeout | null>(null);
   const [showSecurityAlert, setShowSecurityAlert] = useState<boolean>(false);
+  const [alertedZone, setAlertedZone] = useState<SafeZoneDocument | null>(null);
 
   // Charger Google Maps
   const { isLoaded, loadError } = useJsApiLoader({
@@ -131,6 +136,20 @@ export function GpsSimulationCard({
     }
   }, []);
 
+  // Charger les zones de sécurité depuis Firestore
+  useEffect(() => {
+    if (profileId) {
+      getSafeZones(profileId)
+        .then((zones) => {
+          setSafeZones(zones);
+          logger.info('Safe zones loaded', { count: zones.length, profileId });
+        })
+        .catch((error) => {
+          logger.error('Error loading safe zones', { error, profileId });
+        });
+    }
+  }, [profileId]);
+
   // Debug détaillé pour la photo enfant (console.log direct pour debug production)
   useEffect(() => {
     // console.log('🖼️ Photo enfant - Debug détaillé', {
@@ -191,72 +210,63 @@ export function GpsSimulationCard({
 
   // ========== NOUVELLES FEATURES GPS ==========
 
-  // 1️⃣ CRÉER ZONE DE SÉCURITÉ (Cercle vert)
+  // 1️⃣ VÉRIFIER ZONES ACTIVES (Multi-zones geofencing)
   useEffect(() => {
-    if (!mapRef) return;
-
-    // Supprimer l'ancien cercle s'il existe
-    if (safeZoneCircle) {
-      safeZoneCircle.setMap(null);
-    }
-
-    // Créer nouveau cercle autour de la position parent
-    const circle = new google.maps.Circle({
-      map: mapRef,
-      center: parentLocation,
-      radius: DEFAULT_SAFE_ZONE.radius,
-      strokeColor: DEFAULT_SAFE_ZONE.strokeColor,
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: DEFAULT_SAFE_ZONE.color,
-      fillOpacity: 0.15,
+    // Vérifier dans quelles zones l'enfant se trouve
+    const zonesWhereChildIs = safeZones.filter((zone) => {
+      if (!zone.enabled) return false;
+      const dist = calculateDistance(childLocation, zone.center);
+      return dist <= zone.radius;
     });
 
-    setSafeZoneCircle(circle);
+    setActiveZones(zonesWhereChildIs);
 
-    return () => {
-      circle.setMap(null);
-    };
-  }, [mapRef, parentLocation]);
+    // Si enfant hors de TOUTES les zones
+    const isOutOfAllZones = safeZones.length > 0 && zonesWhereChildIs.length === 0;
+    const wasInAtLeastOneZone = activeZones.length > 0;
 
-  // 2️⃣ VÉRIFIER SI ENFANT DANS ZONE (Geofencing alert avec timer 1mn)
-  useEffect(() => {
-    const dist = calculateDistance(parentLocation, childLocation);
-    const inZone = dist <= DEFAULT_SAFE_ZONE.radius;
-    const wasInZone = isChildInSafeZone;
+    // Si l'enfant SORT de toutes les zones (transition sûre → hors zone)
+    if (wasInAtLeastOneZone && isOutOfAllZones) {
+      // Utiliser le délai de la première zone (ou minimum des délais)
+      const minDelay = Math.min(...safeZones.map(z => z.alertDelay));
+      const delayMs = minDelay * 60 * 1000; // Minutes → millisecondes
 
-    setIsChildInSafeZone(inZone);
-
-    // Si l'enfant SORT de la zone (transition sûre → hors zone)
-    if (wasInZone && !inZone) {
-      // Démarrer le timer de 1 minute (60 secondes)
+      // Démarrer le timer
       const timer = setTimeout(async () => {
+        const firstZone = safeZones[0]; // Zone de référence pour l'alerte
         setShowSecurityAlert(true);
+        setAlertedZone(firstZone);
 
         // Envoyer notification push au parent
         if (user?.uid) {
           try {
-            await sendGeofenceExitNotification(user.uid, childName, 60);
-            logger.info('Geofence exit notification sent', { parentId: user.uid, childName });
+            await sendGeofenceExitNotification(user.uid, childName, minDelay);
+            logger.info('Geofence exit notification sent', {
+              parentId: user.uid,
+              childName,
+              zoneName: firstZone.name,
+              delayMinutes: minDelay
+            });
           } catch (error) {
             logger.error('Error sending geofence notification', { error, parentId: user.uid });
           }
         }
-      }, 60000); // 60 secondes = 1 minute
+      }, delayMs);
 
       setOutOfZoneTimer(timer);
+      logger.info('Child exited all safe zones, timer started', { delayMinutes: minDelay });
     }
 
-    // Si l'enfant RENTRE dans la zone
-    if (!wasInZone && inZone) {
+    // Si l'enfant RENTRE dans au moins une zone
+    if (isOutOfAllZones === false && outOfZoneTimer) {
       // Annuler le timer et réinitialiser
-      if (outOfZoneTimer) {
-        clearTimeout(outOfZoneTimer);
-        setOutOfZoneTimer(null);
-      }
+      clearTimeout(outOfZoneTimer);
+      setOutOfZoneTimer(null);
       setShowSecurityAlert(false);
+      setAlertedZone(null);
+      logger.info('Child re-entered safe zone, timer cancelled');
     }
-  }, [parentLocation, childLocation, isChildInSafeZone, outOfZoneTimer]);
+  }, [childLocation, safeZones]);
 
   // Cleanup du timer au démontage
   useEffect(() => {
@@ -468,6 +478,23 @@ export function GpsSimulationCard({
         {/* Traffic Layer pour plus de réalisme */}
         {showTraffic && <TrafficLayer />}
 
+        {/* Zones de Sécurité - Affichage multi-zones */}
+        {safeZones.filter(zone => zone.enabled).map((zone) => (
+          <Circle
+            key={zone.id}
+            center={zone.center}
+            radius={zone.radius}
+            options={{
+              fillColor: zone.color,
+              fillOpacity: 0.15,
+              strokeColor: zone.color,
+              strokeOpacity: 0.8,
+              strokeWeight: 2,
+              clickable: false,
+            }}
+          />
+        ))}
+
         {/* Marqueur parent (dashboard) */}
         <Marker
           position={parentLocation}
@@ -553,19 +580,21 @@ export function GpsSimulationCard({
           <span className="text-xs font-bold uppercase tracking-wide text-white">Live</span>
         </div>
 
-        {/* Badge Geofencing (Zone de Sécurité) */}
+        {/* Badge Geofencing (Zone de Sécurité) - Multi-zones */}
         <motion.div
           className={`flex items-center gap-2 rounded-full px-3 py-2 backdrop-blur-md ${
-            isChildInSafeZone
+            activeZones.length > 0
               ? 'bg-green-500/80'
               : 'bg-orange-500/80 animate-pulse'
           }`}
-          animate={!isChildInSafeZone ? { scale: [1, 1.05, 1] } : {}}
+          animate={activeZones.length === 0 ? { scale: [1, 1.05, 1] } : {}}
           transition={{ duration: 1, repeat: Infinity }}
         >
           <Shield className="h-3.5 w-3.5 text-white" />
           <span className="text-xs font-semibold text-white">
-            {isChildInSafeZone ? 'En zone sûre' : 'Hors zone'}
+            {activeZones.length > 0
+              ? `Dans ${activeZones.length} zone${activeZones.length > 1 ? 's' : ''}`
+              : 'Hors de toutes les zones'}
           </span>
         </motion.div>
       </motion.div>
