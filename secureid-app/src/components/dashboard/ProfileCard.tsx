@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { User, FileHeart, GraduationCap, Edit3, AlertCircle, History, MapPin, Heart, Shield } from 'lucide-react';
+import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { getBraceletBadgeVariant, getBraceletStatusLabel } from '@/lib/bracelet-helpers';
 import { Card } from '@/components/ui/Card';
@@ -17,6 +18,7 @@ import { PhotoModal } from '@/components/ui/PhotoModal';
 
 /**
  * PHASE 9 - PROFILE CARD (Refactored)
+ * PHASE 11 - Memoization pour éviter re-renders inutiles
  *
  * Carte d'affichage pour un profil enfant dans le dashboard
  * Features:
@@ -27,6 +29,7 @@ import { PhotoModal } from '@/components/ui/PhotoModal';
  *   1. Modifier le Profil (edit public info + photo)
  *   2. Gérer Dossier Médical (confidential docs)
  *   3. Portail Scolaire (school pickup management)
+ * - Memoization pour optimiser performance grilles
  */
 
 interface ProfileCardProps {
@@ -39,7 +42,7 @@ interface ProfileCardProps {
   onViewScans?: () => void;
 }
 
-export function ProfileCard({
+export const ProfileCard = memo(function ProfileCard({
   profile,
   bracelet,
   onStatusChange,
@@ -56,6 +59,12 @@ export function ProfileCard({
   const handleToggleLost = async () => {
     if (!bracelet || !user) return;
 
+    const toastId = toast.loading(
+      localStatus === 'LOST'
+        ? 'Réactivation du bracelet...'
+        : 'Déclaration de perte...'
+    );
+
     setIsTogglingStatus(true);
 
     try {
@@ -71,8 +80,14 @@ export function ProfileCard({
       if (!result.success) {
         // Revert en cas d'erreur
         setLocalStatus(localStatus);
-        alert(result.error || 'Erreur lors de la mise à jour');
+        toast.error(result.error || 'Erreur lors de la mise à jour', { id: toastId });
       } else {
+        toast.success(
+          newStatus === 'ACTIVE'
+            ? 'Bracelet réactivé avec succès'
+            : 'Bracelet déclaré perdu',
+          { id: toastId }
+        );
         // Notifier le parent pour rafraîchir
         onStatusChange?.();
       }
@@ -80,7 +95,7 @@ export function ProfileCard({
       // Revert en cas d'erreur
       setLocalStatus(localStatus);
       logger.error('Error toggling bracelet status', { error, braceletId: bracelet?.id });
-      alert('Une erreur est survenue');
+      toast.error('Une erreur est survenue', { id: toastId });
     } finally {
       setIsTogglingStatus(false);
     }
@@ -100,6 +115,7 @@ export function ProfileCard({
               onClick={() => profile.photoUrl && setIsPhotoModalOpen(true)}
               className={`relative h-28 w-28 overflow-hidden rounded-full border-2 transition-transform hover:scale-105 active:scale-95 ${localStatus === 'ACTIVE' ? 'border-brand-orange animate-pulse shadow-lg shadow-brand-orange/50' : 'border-slate-700'}`}
               disabled={!profile.photoUrl}
+              aria-label={profile.photoUrl ? `Voir la photo de ${profile.fullName} en grand` : `Pas de photo pour ${profile.fullName}`}
             >
               {profile.photoUrl ? (
                 <Image
@@ -108,6 +124,9 @@ export function ProfileCard({
                   width={112}
                   height={112}
                   className="h-full w-full object-cover"
+                  sizes="112px"
+                  priority={false}
+                  quality={90}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-slate-800">
@@ -120,6 +139,7 @@ export function ProfileCard({
             <button
               onClick={onEditProfile}
               className="text-left transition-opacity hover:opacity-80"
+              aria-label={`Modifier le profil de ${profile.fullName}`}
             >
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-semibold text-white">{profile.fullName}</h3>
@@ -152,6 +172,9 @@ export function ProfileCard({
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-orange focus:ring-offset-2 focus:ring-offset-slate-900 ${
                 localStatus === 'LOST' ? 'bg-orange-500' : 'bg-slate-700'
               } ${isTogglingStatus ? 'opacity-50 cursor-not-allowed' : ''}`}
+              aria-label={localStatus === 'LOST' ? 'Réactiver le bracelet' : 'Déclarer le bracelet perdu'}
+              aria-checked={localStatus === 'LOST'}
+              role="switch"
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -211,4 +234,4 @@ export function ProfileCard({
       )}
     </Card>
   );
-}
+});

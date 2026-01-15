@@ -125,6 +125,30 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Focus-visible styles pour accessibilité clavier */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-orange;
+  }
+
+  /* Focus visible pour switch/toggle */
+  [role="switch"]:focus-visible {
+    @apply ring-2 ring-brand-orange ring-offset-2 ring-offset-slate-900;
+  }
+
+  /* Focus visible pour images/boutons sans bordure */
+  .focus-ring-brand:focus-visible {
+    @apply ring-2 ring-brand-orange ring-offset-2 ring-offset-slate-900;
+  }
+
+  /* Amélioration du contraste pour focus */
+  :focus-visible {
+    @apply transition-all duration-200;
+  }
 }
 
 /* PHASE 6 - Custom Animations */

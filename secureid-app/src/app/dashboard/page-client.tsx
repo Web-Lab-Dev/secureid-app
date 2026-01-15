@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { Plus, Loader2, Users, MessageCircle, Globe, Bell, BellOff } from 'lucide-react';
@@ -8,21 +8,25 @@ import { useProfiles } from '@/hooks/useProfiles';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import { ProfileCard } from '@/components/dashboard/ProfileCard';
-import { EditProfileDialog } from '@/components/dashboard/EditProfileDialog';
-import { MedicalDocsDialog } from '@/components/dashboard/MedicalDocsDialog';
-import { SchoolDialog } from '@/components/dashboard/SchoolDialog';
-import { ScanHistoryDialog } from '@/components/dashboard/ScanHistoryDialog';
+import { ProfileCardSkeleton } from '@/components/dashboard/ProfileCardSkeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { getBraceletsByProfileIds } from '@/actions/bracelet-actions';
 import type { BraceletDocument } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
 
+// PHASE 11 - Lazy Loading des Dialogs (optimisation bundle)
+const EditProfileDialog = lazy(() => import('@/components/dashboard/EditProfileDialog').then(m => ({ default: m.EditProfileDialog })));
+const MedicalDocsDialog = lazy(() => import('@/components/dashboard/MedicalDocsDialog').then(m => ({ default: m.MedicalDocsDialog })));
+const SchoolDialog = lazy(() => import('@/components/dashboard/SchoolDialog').then(m => ({ default: m.SchoolDialog })));
+const ScanHistoryDialog = lazy(() => import('@/components/dashboard/ScanHistoryDialog').then(m => ({ default: m.ScanHistoryDialog })));
+
 /**
  * PHASE 9 - DASHBOARD CLIENT COMPONENT (Refactored)
+ * PHASE 11 - Lazy loading dialogs + optimisations bundle
  *
  * Affiche la grille des profils enfants avec leurs bracelets
- * - 3 dialogs modaux pour gérer profil, dossier médical, et école
+ * - 4 dialogs modaux lazy-loaded pour réduire bundle initial
  * - Meilleure organisation de l'information
  * - UX améliorée avec dialogs au lieu de navigation
  */
@@ -131,10 +135,21 @@ export function DashboardPageClient() {
 
   if (loading || loadingBracelets) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="mx-auto h-12 w-12 animate-spin text-brand-orange" />
-          <p className="mt-4 text-slate-400">Chargement de vos profils...</p>
+      <div className="py-8">
+        {/* Header skeleton */}
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <div className="h-9 w-48 bg-slate-800/50 rounded animate-pulse mb-2" />
+            <div className="h-5 w-32 bg-slate-800/50 rounded animate-pulse" />
+          </div>
+          <div className="h-10 w-56 bg-slate-800/50 rounded-lg animate-pulse" />
+        </div>
+
+        {/* Skeletons grid */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ProfileCardSkeleton />
+          <ProfileCardSkeleton />
+          <ProfileCardSkeleton />
         </div>
       </div>
     );
@@ -245,38 +260,46 @@ export function DashboardPageClient() {
       {/* PWA Install Banner (PHASE 7) */}
       <InstallBanner />
 
-      {/* Dialogs Modaux */}
+      {/* Dialogs Modaux - Lazy Loaded avec Suspense */}
       {editProfileDialog.profile && (
-        <EditProfileDialog
-          isOpen={editProfileDialog.isOpen}
-          onClose={() => setEditProfileDialog({ isOpen: false, profile: null })}
-          profile={editProfileDialog.profile}
-          onUpdate={handleProfileUpdate}
-        />
+        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-brand-orange" /></div>}>
+          <EditProfileDialog
+            isOpen={editProfileDialog.isOpen}
+            onClose={() => setEditProfileDialog({ isOpen: false, profile: null })}
+            profile={editProfileDialog.profile}
+            onUpdate={handleProfileUpdate}
+          />
+        </Suspense>
       )}
 
       {medicalDocsDialog.profile && (
-        <MedicalDocsDialog
-          isOpen={medicalDocsDialog.isOpen}
-          onClose={() => setMedicalDocsDialog({ isOpen: false, profile: null })}
-          profile={medicalDocsDialog.profile}
-        />
+        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-brand-orange" /></div>}>
+          <MedicalDocsDialog
+            isOpen={medicalDocsDialog.isOpen}
+            onClose={() => setMedicalDocsDialog({ isOpen: false, profile: null })}
+            profile={medicalDocsDialog.profile}
+          />
+        </Suspense>
       )}
 
       {schoolDialog.profile && (
-        <SchoolDialog
-          isOpen={schoolDialog.isOpen}
-          onClose={() => setSchoolDialog({ isOpen: false, profile: null })}
-          profile={schoolDialog.profile}
-        />
+        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-brand-orange" /></div>}>
+          <SchoolDialog
+            isOpen={schoolDialog.isOpen}
+            onClose={() => setSchoolDialog({ isOpen: false, profile: null })}
+            profile={schoolDialog.profile}
+          />
+        </Suspense>
       )}
 
       {scanHistoryDialog.profile && (
-        <ScanHistoryDialog
-          isOpen={scanHistoryDialog.isOpen}
-          onClose={() => setScanHistoryDialog({ isOpen: false, profile: null })}
-          profile={scanHistoryDialog.profile}
-        />
+        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-brand-orange" /></div>}>
+          <ScanHistoryDialog
+            isOpen={scanHistoryDialog.isOpen}
+            onClose={() => setScanHistoryDialog({ isOpen: false, profile: null })}
+            profile={scanHistoryDialog.profile}
+          />
+        </Suspense>
       )}
 
       {/* Service Client Section */}
