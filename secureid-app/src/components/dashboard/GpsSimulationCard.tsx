@@ -5,6 +5,7 @@ import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer, OverlayView,
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Target, Navigation, Zap, Shield, Route, Home, School, Heart, X, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
+import useSound from 'use-sound';
 import { generateRandomLocation, calculateDistance, calculateETA, formatDistance, type LatLng } from '@/lib/geo-utils';
 import { darkModeMapStyles } from '@/lib/map-styles';
 import { logger } from '@/lib/logger';
@@ -64,6 +65,13 @@ export function GpsSimulationCard({
   const [outOfZoneTimer, setOutOfZoneTimer] = useState<NodeJS.Timeout | null>(null);
   const [showSecurityAlert, setShowSecurityAlert] = useState<boolean>(false);
   const [alertedZone, setAlertedZone] = useState<SafeZoneDocument | null>(null);
+
+  // Son d'alerte avec use-sound
+  // NOTE: Ajouter le fichier /public/sounds/alert.mp3 (son d'alerte sécurité)
+  const [playAlert] = useSound('/sounds/alert.mp3', {
+    volume: 0.7,
+    interrupt: true, // Interrompt le son précédent si déjà en cours
+  });
 
   // Charger Google Maps
   const { isLoaded, loadError } = useJsApiLoader({
@@ -236,6 +244,14 @@ export function GpsSimulationCard({
         const firstZone = safeZones[0]; // Zone de référence pour l'alerte
         setShowSecurityAlert(true);
         setAlertedZone(firstZone);
+
+        // 🔊 Jouer le son d'alerte
+        try {
+          playAlert();
+          logger.info('Alert sound played');
+        } catch (error) {
+          logger.warn('Failed to play alert sound', { error });
+        }
 
         // Envoyer notification push au parent
         if (user?.uid) {
