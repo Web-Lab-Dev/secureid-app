@@ -145,9 +145,11 @@ export const ProfileCard = memo(function ProfileCard({
                 <h3 className="text-lg font-semibold text-white">{profile.fullName}</h3>
                 <Edit3 className="h-3 w-3 text-slate-400" />
               </div>
-              <p className="text-xs text-slate-400 font-mono">
-                {bracelet?.id || 'Aucun bracelet'}
-              </p>
+              {bracelet && (
+                <p className="text-xs text-slate-400 font-mono">
+                  {bracelet.id}
+                </p>
+              )}
             </button>
           </div>
 

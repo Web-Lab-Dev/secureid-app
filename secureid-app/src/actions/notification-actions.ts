@@ -48,8 +48,10 @@ export async function sendNotificationToParent(
     const fcmToken = userData?.fcmToken;
 
     if (!fcmToken) {
-      logger.warn('No FCM token for user', { parentId });
-      return { success: false, error: 'Notifications non activées pour cet utilisateur' };
+      logger.info('No FCM token for user (notifications not enabled)', { parentId });
+      // Retourner success=true car ce n'est pas une erreur bloquante
+      // Les notifications ne sont simplement pas configurées
+      return { success: true, error: 'Notifications not enabled (no FCM token)' };
     }
 
     // Construire le message FCM
