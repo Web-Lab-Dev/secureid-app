@@ -71,8 +71,8 @@ export function GpsSimulationCard({
   const [alertedZone, setAlertedZone] = useState<SafeZoneDocument | null>(null);
 
   // Son d'alerte avec use-sound
-  // NOTE: Ajouter le fichier /public/sounds/alert.mp3 (son d'alerte sécurité)
-  const [playAlert] = useSound('/sounds/alert.mp3', {
+  // NOTE: Fichier audio OGG (format compatible tous navigateurs)
+  const [playAlert] = useSound('/sounds/alert.ogg', {
     volume: 0.7,
     interrupt: true, // Interrompt le son précédent si déjà en cours
   });
