@@ -19,22 +19,23 @@ export function TrackingClient({ profileId, childName, childPhotoUrl }: Tracking
   return (
     <>
       {/* Boutons Toggle GPS + Configuration Zones */}
-      <div className="mb-6 flex items-center justify-between gap-4">
+      <div className="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Bouton Configuration Zones de Sécurité */}
-        <Link href={`/dashboard/profile/${profileId}/safe-zones`}>
+        <Link href={`/dashboard/profile/${profileId}/safe-zones`} className="w-full sm:w-auto">
           <motion.button
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-all hover:bg-blue-700"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 sm:px-4 py-2 text-sm sm:text-base font-medium text-white transition-all hover:bg-blue-700"
             whileTap={{ scale: 0.95 }}
           >
-            <Settings className="h-5 w-5" />
-            <span>Configurer les Zones de Sécurité</span>
+            <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">Configurer les Zones de Sécurité</span>
+            <span className="sm:hidden">Zones de Sécurité</span>
           </motion.button>
         </Link>
 
         {/* Bouton Toggle GPS */}
         <motion.button
           onClick={() => setGpsEnabled(!gpsEnabled)}
-          className={`flex items-center gap-2 rounded-lg px-4 py-2 font-medium transition-all ${
+          className={`flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base font-medium transition-all ${
             gpsEnabled
               ? 'bg-green-600 text-white hover:bg-green-700'
               : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
@@ -43,13 +44,15 @@ export function TrackingClient({ profileId, childName, childPhotoUrl }: Tracking
         >
           {gpsEnabled ? (
             <>
-              <MapPin className="h-5 w-5" />
-              <span>Géolocalisation activée</span>
+              <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="hidden sm:inline">Géolocalisation activée</span>
+              <span className="sm:hidden">GPS activé</span>
             </>
           ) : (
             <>
-              <MapPinOff className="h-5 w-5" />
-              <span>Géolocalisation désactivée</span>
+              <MapPinOff className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="hidden sm:inline">Géolocalisation désactivée</span>
+              <span className="sm:hidden">GPS désactivé</span>
             </>
           )}
         </motion.button>
@@ -63,6 +66,7 @@ export function TrackingClient({ profileId, childName, childPhotoUrl }: Tracking
             profileId={profileId}
             childName={childName}
             childPhotoUrl={childPhotoUrl}
+            enableDemoControls={true}
           />
 
           {/* Indicateurs de santé */}

@@ -215,15 +215,7 @@ export const ProfileCard = memo(function ProfileCard({
             Portail Scolaire
           </Button>
 
-          {/* Bouton 5: Zones de Sécurité GPS */}
-          <Link href={`/dashboard/profile/${profile.id}/safe-zones`} className="w-full">
-            <Button variant="secondary" size="sm" fullWidth className="bg-green-600 hover:bg-green-500 text-white">
-              <MapPin className="h-4 w-4" />
-              Zones de Sécurité
-            </Button>
-          </Link>
-
-          {/* Bouton 6: Historique des Scans */}
+          {/* Bouton 5: Historique des Scans */}
           <Button onClick={onViewScans} variant="secondary" size="sm" fullWidth className="bg-slate-600 hover:bg-slate-500">
             <History className="h-4 w-4" />
             Historique des Scans
