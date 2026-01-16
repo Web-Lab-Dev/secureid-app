@@ -171,6 +171,7 @@ export function SafeZonesClient({ profile }: SafeZonesClientProps) {
               onSelectZone={handleZoneSelect}
               onEditZone={handleEditZone}
               onZoneDeleted={handleZoneDeleted}
+              profileId={profile.id}
             />
           )}
         </div>

@@ -21,6 +21,7 @@ interface SafeZoneListProps {
   onSelectZone: (zone: SafeZoneDocument) => void;
   onEditZone: (zone: SafeZoneDocument) => void;
   onZoneDeleted: () => void;
+  profileId: string; // Nécessaire pour les actions delete/toggle
 }
 
 export function SafeZoneList({
@@ -29,6 +30,7 @@ export function SafeZoneList({
   onSelectZone,
   onEditZone,
   onZoneDeleted,
+  profileId,
 }: SafeZoneListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -43,7 +45,7 @@ export function SafeZoneList({
     const toastId = toast.loading('Suppression de la zone...');
 
     try {
-      const result = await deleteSafeZone(zone.id);
+      const result = await deleteSafeZone(zone.id, profileId);
 
       if (!result.success) {
         toast.error(result.error || 'Erreur lors de la suppression', { id: toastId });
@@ -64,7 +66,7 @@ export function SafeZoneList({
     e.stopPropagation();
 
     try {
-      const result = await toggleSafeZone(zone.id, !zone.enabled);
+      const result = await toggleSafeZone(zone.id, profileId, !zone.enabled);
 
       if (!result.success) {
         toast.error(result.error || 'Erreur lors de la mise à jour');

@@ -167,20 +167,11 @@ export async function updateSafeZone(
  * DELETE SAFE ZONE - Supprimer une zone
  */
 export async function deleteSafeZone(
-  zoneId: string
+  zoneId: string,
+  profileId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Récupérer le document pour avoir le profileId
-    const zoneDoc = await adminDb.collectionGroup('safeZones').where('__name__', '==', zoneId).get();
-
-    if (zoneDoc.empty) {
-      return { success: false, error: 'Zone introuvable' };
-    }
-
-    const zone = zoneDoc.docs[0];
-    const profileId = zone.data().profileId;
-
-    // Supprimer
+    // Supprimer directement avec profileId
     await adminDb
       .collection('profiles')
       .doc(profileId)
@@ -205,20 +196,11 @@ export async function deleteSafeZone(
  */
 export async function toggleSafeZone(
   zoneId: string,
+  profileId: string,
   enabled: boolean
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Récupérer le document pour avoir le profileId
-    const zoneDoc = await adminDb.collectionGroup('safeZones').where('__name__', '==', zoneId).get();
-
-    if (zoneDoc.empty) {
-      return { success: false, error: 'Zone introuvable' };
-    }
-
-    const zone = zoneDoc.docs[0];
-    const profileId = zone.data().profileId;
-
-    // Toggle
+    // Toggle directement avec profileId
     await adminDb
       .collection('profiles')
       .doc(profileId)

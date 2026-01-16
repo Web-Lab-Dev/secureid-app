@@ -13,7 +13,7 @@ import type { PointOfInterest, TrajectoryPoint } from '@/lib/types/gps';
 import type { SafeZoneDocument } from '@/types/safe-zone';
 import { DEFAULT_SAFE_ZONE, DEFAULT_TRAJECTORY, POI_COLORS, POI_ICONS, generatePoiSvg, encodeSvgToDataUrl } from '@/lib/constants/gps';
 import { sendGeofenceExitNotification } from '@/actions/notification-actions';
-import { getSafeZones } from '@/actions/safe-zone-actions';
+import { getSafeZonesClient } from '@/lib/safe-zones-client';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { OUAGADOUGOU_LOCATIONS, DEFAULT_PARENT_LOCATION } from '@/lib/mock-locations';
 import { DemoControls } from './DemoControls';
@@ -151,7 +151,7 @@ export function GpsSimulationCard({
   // Charger les zones de sécurité depuis Firestore
   useEffect(() => {
     if (profileId) {
-      getSafeZones(profileId)
+      getSafeZonesClient(profileId)
         .then((zones) => {
           setSafeZones(zones);
           logger.info('Safe zones loaded', { count: zones.length, profileId });
