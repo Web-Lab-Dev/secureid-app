@@ -9,10 +9,8 @@ const nextConfig: NextConfig = {
   // Mode strict React activé pour détecter les problèmes en développement
   reactStrictMode: true,
 
-  // Activer l'instrumentation pour validation env vars au démarrage
-  experimental: {
-    instrumentationHook: true,
-  },
+  // Note: instrumentation.ts est maintenant activé par défaut dans Next.js 16+
+  // L'option experimental.instrumentationHook n'est plus nécessaire
 
   // Compression automatique des réponses
   compress: true,
