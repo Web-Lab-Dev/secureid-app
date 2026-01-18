@@ -336,13 +336,13 @@ export function MedicalForm({
           {/* PIN */}
           <div>
             <label htmlFor="doctorPin" className="block text-sm font-medium text-gray-300 mb-2">
-              Code PIN (4 chiffres) *
+              Code PIN (6 chiffres) *
             </label>
             <input
               id="doctorPin"
               type="password"
               inputMode="numeric"
-              maxLength={4}
+              maxLength={6}
               {...register('doctorPin')}
               className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white text-center text-2xl tracking-widest placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
               placeholder="••••"
@@ -361,7 +361,7 @@ export function MedicalForm({
               id="confirmDoctorPin"
               type="password"
               inputMode="numeric"
-              maxLength={4}
+              maxLength={6}
               {...register('confirmDoctorPin')}
               className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white text-center text-2xl tracking-widest placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-transparent"
               placeholder="••••"

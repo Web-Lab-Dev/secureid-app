@@ -13,7 +13,7 @@ const BCRYPT_ROUNDS = 10;
 
 /**
  * Hashe un code PIN avec bcrypt
- * @param pin - Code PIN à 4 chiffres (ex: "1234")
+ * @param pin - Code PIN à 6 chiffres (ex: "123456")
  * @returns Hash bcrypt du PIN
  * @throws Error si le PIN est invalide
  */
@@ -64,11 +64,11 @@ export function isBcryptHash(hash: string): boolean {
 }
 
 /**
- * Génère un code PIN aléatoire sécurisé (4 chiffres)
+ * Génère un code PIN aléatoire sécurisé (6 chiffres)
  * Utile pour les réinitialisations ou génération automatique
- * @returns PIN aléatoire (ex: "7238")
+ * @returns PIN aléatoire (ex: "723856")
  */
 export function generateRandomPin(): string {
-  const pin = Math.floor(1000 + Math.random() * 9000).toString();
+  const pin = Math.floor(100000 + Math.random() * 900000).toString();
   return pin;
 }

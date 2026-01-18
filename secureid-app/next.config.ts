@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
   // Mode strict React activé pour détecter les problèmes en développement
   reactStrictMode: true,
 
+  // Activer l'instrumentation pour validation env vars au démarrage
+  experimental: {
+    instrumentationHook: true,
+  },
+
   // Compression automatique des réponses
   compress: true,
 

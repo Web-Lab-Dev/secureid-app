@@ -9,9 +9,14 @@
  * - Service account credentials en variables d'environnement
  * - Jamais exposer les credentials côté client
  * - Toujours valider userId === parentId dans les actions
+ *
+ * OPTIMISATION:
+ * - Imports granulaires pour réduire le bundle size (tree-shaking)
  */
 
 import * as admin from 'firebase-admin';
+// Note: firebase-admin ne supporte pas bien le tree-shaking avec imports granulaires
+// car le package n'est utilisé que côté serveur (pas de bundle client)
 
 // Déterminer si on est en mode build
 const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';

@@ -42,12 +42,24 @@ export async function POST(request: NextRequest) {
       deliveryNotes,
     } = validation.data;
 
-    // Configuration du transporteur SMTP (EXACTEMENT comme partenariat)
+    // Validation des variables d'environnement SMTP
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      logger.error('SMTP credentials not configured', {
+        hasUser: !!process.env.SMTP_USER,
+        hasPass: !!process.env.SMTP_PASS,
+      });
+      return NextResponse.json(
+        { error: 'Service de messagerie non configuré' },
+        { status: 500 }
+      );
+    }
+
+    // Configuration du transporteur SMTP
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: process.env.SMTP_USER || 'tko364796@gmail.com',
-        pass: process.env.SMTP_PASS || '',
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
       },
     });
 
@@ -97,10 +109,10 @@ ${deliveryNotes ? `Notes livraison : ${deliveryNotes}` : 'Aucune note particuli�
 Email envoyé automatiquement depuis SecureID
     `.trim();
 
-    // Envoi de l'email (EXACTEMENT comme partenariat)
+    // Envoi de l'email
     const info = await transporter.sendMail({
-      from: `"SecureID Commandes" <${process.env.SMTP_USER || 'tko364796@gmail.com'}>`,
-      to: 'tko364796@gmail.com',
+      from: `"SecureID Commandes" <${process.env.SMTP_USER}>`,
+      to: process.env.SMTP_USER, // Email de réception des commandes
       subject: `🛒 Nouvelle Commande SecureID - ${orderId} (${quantity} bracelet${quantity > 1 ? 's' : ''})`,
       text: emailContent,
       html: `<pre style="font-family: monospace; white-space: pre-wrap;">${emailContent}</pre>`,

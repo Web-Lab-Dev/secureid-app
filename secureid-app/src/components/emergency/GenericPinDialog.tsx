@@ -130,11 +130,11 @@ export function GenericPinDialog({
                       id="pin"
                       value={pin}
                       onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 6);
                         setPin(value);
                         setError('');
                       }}
-                      maxLength={4}
+                      maxLength={6}
                       placeholder="••••"
                       className="w-full rounded-lg border border-slate-300 px-4 py-3 text-center text-2xl font-bold tracking-widest focus:border-brand-orange focus:outline-none focus:ring-2 focus:ring-brand-orange/20"
                       autoFocus

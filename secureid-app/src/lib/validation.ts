@@ -42,11 +42,12 @@ export const emailSchema = z
   .max(100, 'L\'email est trop long');
 
 /**
- * Validation du code PIN médical (4 chiffres)
+ * Validation du code PIN médical (6 chiffres)
+ * Augmenté de 4 à 6 chiffres pour améliorer la sécurité (1M combinaisons vs 10K)
  */
 export const pinSchema = z
   .string()
-  .regex(/^[0-9]{4}$/, 'Le code PIN doit contenir exactement 4 chiffres');
+  .regex(/^[0-9]{6}$/, 'Le code PIN doit contenir exactement 6 chiffres');
 
 /**
  * Validation du mot de passe

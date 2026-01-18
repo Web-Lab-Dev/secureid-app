@@ -30,7 +30,7 @@ export function PinDialog({ isOpen, onClose, profileId }: PinDialogProps) {
   const [validatedPin, setValidatedPin] = useState<string | null>(null);
 
   const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
     setPin(value);
     setError(null);
   };
@@ -94,7 +94,7 @@ export function PinDialog({ isOpen, onClose, profileId }: PinDialogProps) {
                 inputMode="numeric"
                 value={pin}
                 onChange={handlePinChange}
-                maxLength={4}
+                maxLength={6}
                 autoFocus
                 className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-center font-mono text-2xl tracking-widest text-white focus:border-blue-500 focus:outline-none"
                 placeholder="••••"

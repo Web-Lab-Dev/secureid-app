@@ -6,17 +6,24 @@
  */
 
 import { db } from '@/lib/firebase';
-import { collection, query, orderBy, getDocs, Timestamp as FirestoreTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs, Timestamp as FirestoreTimestamp } from 'firebase/firestore';
 import type { SafeZoneDocument } from '@/types/safe-zone';
 import { logger } from '@/lib/logger';
 
+// Limite par défaut pour la pagination
+const DEFAULT_LIMIT = 50;
+
 /**
- * Charger toutes les zones de sécurité d'un profil (Client-side)
+ * Charger les zones de sécurité d'un profil (Client-side)
+ * Limite à 50 zones par défaut pour optimiser les performances
  */
-export async function getSafeZonesClient(profileId: string): Promise<SafeZoneDocument[]> {
+export async function getSafeZonesClient(
+  profileId: string,
+  maxResults: number = DEFAULT_LIMIT
+): Promise<SafeZoneDocument[]> {
   try {
     const zonesRef = collection(db, 'profiles', profileId, 'safeZones');
-    const q = query(zonesRef, orderBy('createdAt', 'desc'));
+    const q = query(zonesRef, orderBy('createdAt', 'desc'), limit(maxResults));
     const snapshot = await getDocs(q);
 
     const zones: SafeZoneDocument[] = snapshot.docs.map(doc => {

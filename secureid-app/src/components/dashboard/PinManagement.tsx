@@ -89,15 +89,15 @@ export function PinManagement({ profile }: PinManagementProps) {
 
         <div>
           <label className="mb-2 block text-sm font-medium text-white">
-            Nouveau code PIN (4 chiffres)
+            Nouveau code PIN (6 chiffres)
           </label>
           <input
             type="password"
             value={newPin}
-            onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-            maxLength={4}
+            onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            maxLength={6}
             className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-white font-mono text-center text-2xl tracking-widest focus:border-brand-orange focus:outline-none"
-            placeholder="••••"
+            placeholder="••••••"
           />
         </div>
 
@@ -108,10 +108,10 @@ export function PinManagement({ profile }: PinManagementProps) {
           <input
             type="password"
             value={confirmPin}
-            onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
-            maxLength={4}
+            onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            maxLength={6}
             className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-white font-mono text-center text-2xl tracking-widest focus:border-brand-orange focus:outline-none"
-            placeholder="••••"
+            placeholder="••••••"
           />
         </div>
 

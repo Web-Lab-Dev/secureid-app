@@ -16,9 +16,9 @@ import { z } from 'zod';
 const PHONE_REGEX = /^(\+?226)?[567]\d{7}$/;
 
 /**
- * Regex pour PIN médecin (4 chiffres exactement)
+ * Regex pour PIN médecin (6 chiffres exactement)
  */
-const PIN_REGEX = /^\d{4}$/;
+const PIN_REGEX = /^\d{6}$/;
 
 /**
  * Schema de validation pour numéro de téléphone
@@ -38,11 +38,11 @@ export const passwordSchema = z
   .max(100, 'Le mot de passe est trop long');
 
 /**
- * Schema de validation pour PIN médecin
+ * Schema de validation pour PIN médecin (6 chiffres pour améliorer la sécurité)
  */
 export const doctorPinSchema = z
   .string()
-  .length(4, 'Le PIN doit contenir exactement 4 chiffres')
+  .length(6, 'Le PIN doit contenir exactement 6 chiffres')
   .regex(PIN_REGEX, 'Le PIN doit contenir uniquement des chiffres');
 
 /**

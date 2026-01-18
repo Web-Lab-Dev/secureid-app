@@ -58,7 +58,7 @@ export async function getAuthorizedPickups(data: {
       .doc(data.profileId)
       .collection('pickups');
 
-    const snapshot = await pickupsRef.get();
+    const snapshot = await pickupsRef.limit(50).get(); // Optimisation: max 50 récupérateurs
 
     if (snapshot.empty) {
       return { success: true, pickups: [] };

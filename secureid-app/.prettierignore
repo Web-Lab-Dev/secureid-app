@@ -1,0 +1,37 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.next
+out
+build
+dist
+
+# Logs
+*.log
+
+# Environment files
+.env*
+
+# Cache
+.cache
+*.tsbuildinfo
+
+# Public assets (peuvent avoir un formatage spécifique)
+public/**/*.json
+public/**/*.js
+
+# Fichiers générés
+firebase-messaging-sw.js
+
+# Package manager
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# IDE
+.vscode
+.idea
+
+# Output
+output

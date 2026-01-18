@@ -45,8 +45,18 @@ next-env.d.ts
 service-account.json
 scripts/service-account.json
 scripts/.env.provisioning
+**/service-account*.json
+**/*-firebase-adminsdk-*.json
 
 # output du provisioning
 output/*
 !output/.gitkeep
 VERCEL-PRIVATE-KEY.txt
+
+# Fichiers sensibles supplémentaires
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets.json
+firebase-config.json

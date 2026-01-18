@@ -46,6 +46,7 @@ export async function getSafeZones(profileId: string): Promise<SafeZoneDocument[
       .doc(profileId)
       .collection('safeZones')
       .orderBy('createdAt', 'desc')
+      .limit(50) // Optimisation: limiter à 50 zones max
       .get();
 
     const zones = snapshot.docs
