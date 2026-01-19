@@ -26,8 +26,8 @@ import { sendBraceletLostNotification, sendBraceletFoundNotification } from './n
  * @see {@link https://firebase.google.com/docs/firestore/manage-data/transactions Transactions Firestore}
  */
 
-// Schéma de validation pour les IDs de bracelet (format BF-XXX)
-const braceletIdSchema = z.string().regex(/^[A-Z]{2,3}-\d{3,4}$/, 'Format d\'ID bracelet invalide');
+// Schéma de validation pour les IDs de bracelet (format BF-XXX, TEST-001, etc.)
+const braceletIdSchema = z.string().regex(/^[A-Z]{2,5}-\d{3,4}$/, 'Format d\'ID bracelet invalide');
 
 // Schéma de validation pour les tokens secrets (64 caractères hexadécimaux)
 const secretTokenSchema = z.string().length(64, 'Le token doit contenir exactement 64 caractères').regex(/^[a-f0-9]{64}$/, 'Le token doit être en format hexadécimal');
