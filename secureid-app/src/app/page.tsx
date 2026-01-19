@@ -755,6 +755,26 @@ export default function LandingPage() {
       <PartnershipModal isOpen={isPartnerModalOpen} onClose={() => setIsPartnerModalOpen(false)} />
     <div className="overflow-x-hidden bg-[#FAFAF9]">
       <Header braceletParams={braceletParams} />
+
+      {/* Bandeau confirmation bracelet détecté (après scan QR) */}
+      {braceletParams?.welcome && braceletParams?.id && (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-green-900/95 backdrop-blur-sm border-b border-green-500/30 py-3 shadow-lg">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center gap-3 justify-center">
+              <Shield className="w-5 h-5 text-green-400 flex-shrink-0" />
+              <div className="text-center sm:text-left">
+                <p className="text-green-400 font-semibold text-sm sm:text-base">
+                  Bracelet détecté : <span className="font-mono">{braceletParams.id}</span>
+                </p>
+                <p className="text-gray-300 text-xs sm:text-sm">
+                  Cliquez sur "Activer votre bracelet" ci-dessous pour commencer
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="pt-16"> {/* Padding pour compenser le header fixe */}
         <HeroSection braceletParams={braceletParams} />
         <TrustBar />
