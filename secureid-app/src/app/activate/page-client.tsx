@@ -220,7 +220,7 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
             </div>
           )}
 
-          <div className={`min-h-screen flex items-center justify-center p-4 ${mounted ? 'pt-16' : ''}`}>
+          <div className="min-h-screen flex items-center justify-center p-4 pt-20">
             <Suspense fallback={
               <div className="flex items-center justify-center">
                 <Loader2 className="w-12 h-12 text-brand-orange animate-spin" />
