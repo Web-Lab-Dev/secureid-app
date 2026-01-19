@@ -39,6 +39,12 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
   const [error, setError] = useState<string | null>(null);
   const [validatingToken, setValidatingToken] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Éviter hydration mismatch : n'afficher le bandeau qu'après montage client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Valider le token au chargement
   useEffect(() => {
@@ -195,24 +201,26 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
     if (currentStep === 'select-profile') {
       return (
         <div className="min-h-screen bg-brand-black text-white">
-          {/* Bandeau bracelet détecté */}
-          <div className="fixed top-0 left-0 right-0 z-50 bg-green-900/95 backdrop-blur-sm border-b border-green-500/30 py-3 shadow-lg">
-            <div className="container mx-auto px-4">
-              <div className="flex items-center gap-3 justify-center">
-                <Shield className="w-5 h-5 text-green-400 flex-shrink-0" />
-                <div className="text-center sm:text-left">
-                  <p className="text-green-400 font-semibold text-sm sm:text-base">
-                    Bracelet détecté : <span className="font-mono">{braceletId}</span>
-                  </p>
-                  <p className="text-gray-300 text-xs sm:text-sm">
-                    Choisissez un profil sans bracelet ou créez un nouveau profil
-                  </p>
+          {/* Bandeau bracelet détecté - Affiché uniquement après hydration pour éviter mismatch */}
+          {mounted && (
+            <div className="fixed top-0 left-0 right-0 z-50 bg-green-900/95 backdrop-blur-sm border-b border-green-500/30 py-3 shadow-lg">
+              <div className="container mx-auto px-4">
+                <div className="flex items-center gap-3 justify-center">
+                  <Shield className="w-5 h-5 text-green-400 flex-shrink-0" />
+                  <div className="text-center sm:text-left">
+                    <p className="text-green-400 font-semibold text-sm sm:text-base">
+                      Bracelet détecté : <span className="font-mono">{braceletId}</span>
+                    </p>
+                    <p className="text-gray-300 text-xs sm:text-sm">
+                      Choisissez un profil sans bracelet ou créez un nouveau profil
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
-          <div className="pt-16 min-h-screen flex items-center justify-center p-4">
+          <div className={`min-h-screen flex items-center justify-center p-4 ${mounted ? 'pt-16' : ''}`}>
             <Suspense fallback={
               <div className="flex items-center justify-center">
                 <Loader2 className="w-12 h-12 text-brand-orange animate-spin" />

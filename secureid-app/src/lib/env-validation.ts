@@ -44,8 +44,8 @@ const ENV_VARS: EnvVarConfig[] = [
   },
   {
     name: 'NEXT_PUBLIC_FIREBASE_VAPID_KEY',
-    required: true,
-    description: 'Firebase VAPID Key (pour push notifications)',
+    required: false,
+    description: 'Firebase VAPID Key (pour push notifications - optionnel)',
   },
 
   // Firebase Admin SDK (Private - Server only)
