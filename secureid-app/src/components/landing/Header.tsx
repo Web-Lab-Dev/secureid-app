@@ -19,9 +19,6 @@ export default function Header({ braceletParams }: HeaderProps) {
   };
 
   const getButtonText = () => {
-    if (braceletParams?.id && braceletParams?.token) {
-      return 'Activer mon bracelet';
-    }
     return 'Se connecter';
   };
 

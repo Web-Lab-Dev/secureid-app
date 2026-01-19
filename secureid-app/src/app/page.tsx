@@ -767,7 +767,7 @@ export default function LandingPage() {
                   Bracelet détecté : <span className="font-mono">{braceletParams.id}</span>
                 </p>
                 <p className="text-gray-300 text-xs sm:text-sm">
-                  Cliquez sur "Activer votre bracelet" ci-dessous pour commencer
+                  Cliquez sur "Activer sa protection" ci-dessous pour commencer
                 </p>
               </div>
             </div>

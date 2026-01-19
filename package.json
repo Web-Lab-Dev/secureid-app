@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-security": "^3.0.1",
+    "prettier": "^3.8.0"
+  }
+}
