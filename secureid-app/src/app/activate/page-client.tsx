@@ -194,25 +194,37 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
     // ÉTAPE: Sélection profil
     if (currentStep === 'select-profile') {
       return (
-        <div className="min-h-screen bg-brand-black text-white flex items-center justify-center p-4">
-          {/* Info bracelet en haut */}
-          <div className="fixed top-4 right-4 bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-xs">
-            <p className="text-gray-400">
-              Bracelet: <span className="text-brand-orange font-mono">{braceletId}</span>
-            </p>
+        <div className="min-h-screen bg-brand-black text-white">
+          {/* Bandeau bracelet détecté */}
+          <div className="fixed top-0 left-0 right-0 z-50 bg-green-900/95 backdrop-blur-sm border-b border-green-500/30 py-3 shadow-lg">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center gap-3 justify-center">
+                <Shield className="w-5 h-5 text-green-400 flex-shrink-0" />
+                <div className="text-center sm:text-left">
+                  <p className="text-green-400 font-semibold text-sm sm:text-base">
+                    Bracelet détecté : <span className="font-mono">{braceletId}</span>
+                  </p>
+                  <p className="text-gray-300 text-xs sm:text-sm">
+                    Choisissez un profil sans bracelet ou créez un nouveau profil
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <Suspense fallback={
-            <div className="flex items-center justify-center">
-              <Loader2 className="w-12 h-12 text-brand-orange animate-spin" />
-            </div>
-          }>
-            <ProfileSelector
-              parentName={userData?.displayName}
-              onNewProfile={handleNewProfile}
-              onSelectProfile={handleSelectProfile}
-            />
-          </Suspense>
+          <div className="pt-16 min-h-screen flex items-center justify-center p-4">
+            <Suspense fallback={
+              <div className="flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-brand-orange animate-spin" />
+              </div>
+            }>
+              <ProfileSelector
+                parentName={userData?.displayName}
+                onNewProfile={handleNewProfile}
+                onSelectProfile={handleSelectProfile}
+              />
+            </Suspense>
+          </div>
         </div>
       );
     }
