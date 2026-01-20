@@ -736,18 +736,25 @@ function TestimonialsCarousel() {
 export default function LandingPage() {
   // État modal partenaire
   const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Récupérer les paramètres URL pour scan INACTIVE
-  const braceletParams = useMemo(() => {
-    // Côté client uniquement
-    if (typeof window === 'undefined') return {};
+  // Récupérer les paramètres URL pour scan INACTIVE - FIX HYDRATION MISMATCH
+  // Utiliser useState au lieu de useMemo pour éviter différence serveur/client
+  const [braceletParams, setBraceletParams] = useState<{ id?: string; token?: string; welcome?: boolean }>({});
 
+  useEffect(() => {
+    // Marquer comme monté pour éviter hydration mismatch du bandeau
+    setMounted(true);
+
+    // Lire les paramètres URL côté client uniquement après hydration
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     const token = params.get('token');
     const welcome = params.get('welcome') === 'true';
 
-    return id && token ? { id, token, welcome } : {};
+    if (id && token) {
+      setBraceletParams({ id, token, welcome });
+    }
   }, []);
 
   return (
@@ -757,7 +764,8 @@ export default function LandingPage() {
       <Header braceletParams={braceletParams} />
 
       {/* Bandeau confirmation bracelet détecté (après scan QR) */}
-      {braceletParams?.welcome && braceletParams?.id && (
+      {/* Afficher uniquement après hydration pour éviter mismatch */}
+      {mounted && braceletParams?.welcome && braceletParams?.id && (
         <div className="fixed top-16 left-0 right-0 z-40 bg-green-900/95 backdrop-blur-sm border-b border-green-500/30 py-3 shadow-lg">
           <div className="container mx-auto px-4">
             <div className="flex items-center gap-3 justify-center">

@@ -82,16 +82,27 @@ export function useAuthContext() {
 
   // En SSR, retourner un contexte vide au lieu de throw
   // Le composant client va se re-rendre côté client avec le bon contexte
+  // FIX: Messages d'erreur plus clairs pour éviter confusion
   if (typeof window === 'undefined') {
     return {
       user: null,
       userData: null,
       loading: true,
       error: null,
-      signUp: async () => { throw new Error('SSR') },
-      signIn: async () => { throw new Error('SSR') },
-      signOut: async () => {},
-      refreshUserData: async () => {},
+      signUp: async () => {
+        console.warn('[AuthContext] Authentication called during server-side rendering');
+        throw new Error('Authentication not available during server-side rendering');
+      },
+      signIn: async () => {
+        console.warn('[AuthContext] Authentication called during server-side rendering');
+        throw new Error('Authentication not available during server-side rendering');
+      },
+      signOut: async () => {
+        console.warn('[AuthContext] Sign out called during SSR - ignoring');
+      },
+      refreshUserData: async () => {
+        console.warn('[AuthContext] Refresh user data called during SSR - ignoring');
+      },
     } as AuthContextType;
   }
 
