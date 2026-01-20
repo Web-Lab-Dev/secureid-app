@@ -204,7 +204,7 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
     // ÉTAPE: Sélection profil
     if (step === 'select-profile') {
       return (
-        <div className="min-h-screen bg-brand-black text-white">
+        <div className="min-h-screen bg-brand-black text-white overflow-x-hidden">
           {/* Bandeau bracelet détecté - Affiché uniquement après hydration pour éviter mismatch */}
           {mounted && (
             <div className="fixed top-0 left-0 right-0 z-50 bg-green-900/95 backdrop-blur-sm border-b border-green-500/30 py-3 shadow-lg">
@@ -224,7 +224,7 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
             </div>
           )}
 
-          <div className="min-h-screen flex items-start justify-center p-4 pt-24 pb-8">
+          <div className="min-h-screen flex items-start justify-center p-4 pt-24 pb-8 w-full max-w-full">
             <Suspense fallback={
               <div className="flex items-center justify-center">
                 <Loader2 className="w-12 h-12 text-brand-orange animate-spin" />
