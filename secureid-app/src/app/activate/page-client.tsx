@@ -74,6 +74,11 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
   // Évite les boucles infinies de re-render causées par setStep dans useEffect
   const currentStep = user && step === 'auth' ? 'select-profile' : step;
 
+  // Version indicator pour debug - à supprimer après validation
+  useEffect(() => {
+    console.log('✅ Version FIX déployée - commit 9d1c306');
+  }, []);
+
   // Callbacks mémorisés pour éviter les re-renders inutiles
   const handleNewProfile = useCallback(() => {
     setActivationMode('new');
@@ -201,6 +206,11 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
     if (currentStep === 'select-profile') {
       return (
         <div className="min-h-screen bg-brand-black text-white overflow-x-hidden">
+          {/* Debug indicator - visible sur mobile */}
+          <div className="fixed bottom-4 right-4 z-50 bg-blue-600 text-white text-xs px-3 py-1 rounded-full opacity-50">
+            v9d1c306
+          </div>
+
           {/* Bandeau bracelet détecté - Affiché uniquement après hydration pour éviter mismatch */}
           {mounted && (
             <div className="fixed top-0 left-0 right-0 z-50 bg-green-900/95 backdrop-blur-sm border-b border-green-500/30 py-3 shadow-lg">
