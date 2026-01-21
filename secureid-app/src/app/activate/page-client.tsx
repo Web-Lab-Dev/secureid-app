@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Shield, Loader2 } from 'lucide-react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import type { ProfileDocument } from '@/types/profile';
@@ -8,12 +8,12 @@ import type { MedicalFormData } from '@/schemas/activation';
 import { createProfile } from '@/actions/profile-actions';
 import { linkBraceletToProfile, transferBracelet, validateBraceletToken } from '@/actions/bracelet-actions';
 
-// Lazy loading des composants lourds
-const SignupForm = lazy(() => import('@/components/auth/SignupForm').then(mod => ({ default: mod.SignupForm })));
-const LoginForm = lazy(() => import('@/components/auth/LoginForm').then(mod => ({ default: mod.LoginForm })));
-const ProfileSelector = lazy(() => import('@/components/activation/ProfileSelector').then(mod => ({ default: mod.ProfileSelector })));
-const MedicalForm = lazy(() => import('@/components/activation/MedicalForm').then(mod => ({ default: mod.MedicalForm })));
-const ActivationSuccess = lazy(() => import('@/components/activation/ActivationSuccess').then(mod => ({ default: mod.ActivationSuccess })));
+// Import direct (pas de lazy loading) pour debug
+import { SignupForm } from '@/components/auth/SignupForm';
+import { LoginForm } from '@/components/auth/LoginForm';
+import { ProfileSelector } from '@/components/activation/ProfileSelector';
+import { MedicalForm } from '@/components/activation/MedicalForm';
+import { ActivationSuccess } from '@/components/activation/ActivationSuccess';
 
 /**
  * PHASE 3C - PAGE D'ACTIVATION (CLIENT COMPONENT)
@@ -231,17 +231,11 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
           )}
 
           <div className="min-h-screen flex items-start justify-center p-4 pt-24 pb-8 w-full max-w-full">
-            <Suspense fallback={
-              <div className="flex items-center justify-center">
-                <Loader2 className="w-12 h-12 text-brand-orange animate-spin" />
-              </div>
-            }>
-              <ProfileSelector
-                parentName={userData?.displayName}
-                onNewProfile={handleNewProfile}
-                onSelectProfile={handleSelectProfile}
-              />
-            </Suspense>
+            <ProfileSelector
+              parentName={userData?.displayName}
+              onNewProfile={handleNewProfile}
+              onSelectProfile={handleSelectProfile}
+            />
           </div>
         </div>
       );
@@ -275,17 +269,11 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
             )}
 
             {/* Formulaire médical */}
-            <Suspense fallback={
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-12 h-12 text-brand-orange animate-spin" />
-              </div>
-            }>
-              <MedicalForm
-                profileId={`temp_${Date.now()}`}
-                onSubmit={handleCreateProfile}
-                submitButtonText="Créer le profil et activer le bracelet"
-              />
-            </Suspense>
+            <MedicalForm
+              profileId={`temp_${Date.now()}`}
+              onSubmit={handleCreateProfile}
+              submitButtonText="Créer le profil et activer le bracelet"
+            />
           </div>
         </div>
       );
@@ -366,17 +354,11 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
     // ÉTAPE: Succès
     if (currentStep === 'success') {
       return (
-        <Suspense fallback={
-          <div className="min-h-screen bg-brand-black flex items-center justify-center">
-            <Loader2 className="w-12 h-12 text-brand-orange animate-spin" />
-          </div>
-        }>
-          <ActivationSuccess
-            childName={createdProfileName}
-            braceletId={braceletId}
-            mode={activationMode}
-          />
-        </Suspense>
+        <ActivationSuccess
+          childName={createdProfileName}
+          braceletId={braceletId}
+          mode={activationMode}
+        />
       );
     }
 
@@ -403,27 +385,21 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
 
         {/* Formulaires */}
         <div className="bg-slate-900 rounded-lg border border-slate-800 p-6 md:p-8">
-          <Suspense fallback={
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 text-brand-orange animate-spin" />
-            </div>
-          }>
-            {showLogin ? (
-              <LoginForm
-                onSuccess={() => {
-                  // L'utilisateur est maintenant connecté, le composant va se re-render
-                }}
-                onSwitchToSignup={() => setShowLogin(false)}
-              />
-            ) : (
-              <SignupForm
-                onSuccess={() => {
-                  // L'utilisateur est maintenant connecté, le composant va se re-render
-                }}
-                onSwitchToLogin={() => setShowLogin(true)}
-              />
-            )}
-          </Suspense>
+          {showLogin ? (
+            <LoginForm
+              onSuccess={() => {
+                // L'utilisateur est maintenant connecté, le composant va se re-render
+              }}
+              onSwitchToSignup={() => setShowLogin(false)}
+            />
+          ) : (
+            <SignupForm
+              onSuccess={() => {
+                // L'utilisateur est maintenant connecté, le composant va se re-render
+              }}
+              onSwitchToLogin={() => setShowLogin(true)}
+            />
+          )}
         </div>
 
         {/* Footer */}
