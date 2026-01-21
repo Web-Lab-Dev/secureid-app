@@ -59,7 +59,7 @@ export const ProfileSelector = React.memo(function ProfileSelector({
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto px-0">
       {/* Header */}
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-white mb-2">
