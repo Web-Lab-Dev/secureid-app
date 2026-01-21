@@ -70,13 +70,9 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
     validateToken();
   }, [braceletId, token]);
 
-  // FIX RACE CONDITION: Synchroniser step avec user state via useEffect
-  // Au lieu de dériver currentStep (causait des incohérences)
-  useEffect(() => {
-    if (user && step === 'auth') {
-      setStep('select-profile');
-    }
-  }, [user, step]);
+  // Dériver l'étape actuelle de l'état user sans useEffect
+  // Évite les boucles infinies de re-render causées par setStep dans useEffect
+  const currentStep = user && step === 'auth' ? 'select-profile' : step;
 
   // Callbacks mémorisés pour éviter les re-renders inutiles
   const handleNewProfile = useCallback(() => {
@@ -202,7 +198,7 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
   // Si l'utilisateur est connecté, gérer les étapes d'activation
   if (user) {
     // ÉTAPE: Sélection profil
-    if (step === 'select-profile') {
+    if (currentStep === 'select-profile') {
       return (
         <div className="min-h-screen bg-brand-black text-white overflow-x-hidden">
           {/* Bandeau bracelet détecté - Affiché uniquement après hydration pour éviter mismatch */}
@@ -242,7 +238,7 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
     }
 
     // ÉTAPE: Nouveau profil (Phase 3D)
-    if (step === 'new-profile') {
+    if (currentStep === 'new-profile') {
       return (
         <div className="min-h-screen bg-brand-black text-white flex items-center justify-center p-4">
           {/* Info bracelet en haut */}
@@ -286,7 +282,7 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
     }
 
     // ÉTAPE: Transfert profil existant (Phase 3E)
-    if (step === 'transfer-profile' && selectedProfile) {
+    if (currentStep === 'transfer-profile' && selectedProfile) {
       return (
         <div className="min-h-screen bg-brand-black text-white flex items-center justify-center p-4">
           <div className="max-w-2xl w-full">
@@ -358,7 +354,7 @@ export function ActivatePageClient({ braceletId, token }: ActivatePageClientProp
     }
 
     // ÉTAPE: Succès
-    if (step === 'success') {
+    if (currentStep === 'success') {
       return (
         <Suspense fallback={
           <div className="min-h-screen bg-brand-black flex items-center justify-center">
