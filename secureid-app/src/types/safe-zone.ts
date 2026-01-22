@@ -48,20 +48,5 @@ export const SAFE_ZONE_COLORS = {
   cyan: '#06b6d4',
 } as const;
 
-// Icônes recommandées
-export const SAFE_ZONE_ICONS = [
-  '🏠', // Maison
-  '🏫', // École
-  '🏥', // Hôpital
-  '⛪', // Église
-  '🏪', // Magasin
-  '⚽', // Terrain sport
-  '🎭', // Centre culturel
-  '🏊', // Piscine
-  '🎮', // Salle de jeux
-  '🍔', // Restaurant
-] as const;
-
 // Type helper pour validation
 export type SafeZoneColor = keyof typeof SAFE_ZONE_COLORS;
-export type SafeZoneIcon = typeof SAFE_ZONE_ICONS[number];
