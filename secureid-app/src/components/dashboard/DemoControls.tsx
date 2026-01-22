@@ -143,16 +143,6 @@ export function DemoControls({
         </motion.button>
       </div>
 
-      <div className="mt-4 border-t border-slate-800 pt-3 text-xs text-slate-400">
-        <p className="font-medium text-slate-300 mb-1">💡 Scénario de test:</p>
-        <ol className="list-decimal list-inside space-y-1">
-          <li>Cliquez "Sortir de la zone"</li>
-          <li>Attendez le délai configuré (1-60 min)</li>
-          <li>L'alerte visuelle + sonore se déclenche</li>
-          <li>Notification push envoyée au parent</li>
-          <li>Cliquez "Rentrer" pour annuler</li>
-        </ol>
-      </div>
     </motion.div>
   );
 }

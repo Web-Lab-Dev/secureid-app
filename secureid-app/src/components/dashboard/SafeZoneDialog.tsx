@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, MapPin, Target, Loader2 } from 'lucide-react';
+import { X, MapPin, Target, Loader2, Link2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SafeZoneDocument, SafeZoneFormData } from '@/types/safe-zone';
-import { SAFE_ZONE_COLORS, SAFE_ZONE_ICONS } from '@/types/safe-zone';
+import { SAFE_ZONE_COLORS } from '@/types/safe-zone';
 import { createSafeZone, updateSafeZone } from '@/actions/safe-zone-actions';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
@@ -30,7 +30,7 @@ interface SafeZoneDialogProps {
 // Schéma de validation Zod
 const SafeZoneSchema = z.object({
   name: z.string().min(2, 'Minimum 2 caractères').max(50, 'Maximum 50 caractères'),
-  icon: z.string().min(1, 'Icône requise'),
+  icon: z.string().min(1),
   center: z.object({
     lat: z.number().min(-90).max(90),
     lng: z.number().min(-180).max(180),
@@ -39,6 +39,40 @@ const SafeZoneSchema = z.object({
   color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Couleur invalide'),
   alertDelay: z.number().min(1, 'Minimum 1 minute').max(60, 'Maximum 60 minutes'),
 });
+
+// Fonction pour extraire les coordonnées d'un lien Google Maps
+function parseGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
+  try {
+    // Format: https://maps.google.com/?q=12.3714,-1.5197
+    // ou: https://www.google.com/maps/place/.../@12.3714,-1.5197,17z
+    // ou: https://goo.gl/maps/...
+
+    // Pattern 1: @lat,lng
+    const atPattern = /@(-?\d+\.?\d*),(-?\d+\.?\d*)/;
+    const atMatch = url.match(atPattern);
+    if (atMatch) {
+      return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) };
+    }
+
+    // Pattern 2: ?q=lat,lng ou &q=lat,lng
+    const qPattern = /[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/;
+    const qMatch = url.match(qPattern);
+    if (qMatch) {
+      return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) };
+    }
+
+    // Pattern 3: /place/lat,lng ou destination=lat,lng
+    const placePattern = /(?:place|destination)[=/](-?\d+\.?\d*),(-?\d+\.?\d*)/;
+    const placeMatch = url.match(placePattern);
+    if (placeMatch) {
+      return { lat: parseFloat(placeMatch[1]), lng: parseFloat(placeMatch[2]) };
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 export function SafeZoneDialog({
   isOpen,
@@ -209,29 +243,6 @@ export function SafeZoneDialog({
                 )}
               </div>
 
-              {/* Icône */}
-              <div>
-                <label className="block text-sm font-medium text-white mb-2">
-                  Icône *
-                </label>
-                <div className="grid grid-cols-10 gap-2">
-                  {SAFE_ZONE_ICONS.map((icon) => (
-                    <button
-                      key={icon}
-                      type="button"
-                      onClick={() => setValue('icon', icon)}
-                      className={`flex h-12 w-12 items-center justify-center rounded-lg text-2xl transition-all ${
-                        watchedValues.icon === icon
-                          ? 'bg-brand-orange scale-110 shadow-lg'
-                          : 'bg-slate-800 hover:bg-slate-700'
-                      }`}
-                    >
-                      {icon}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Centre zone */}
               <div>
                 <label className="block text-sm font-medium text-white mb-2">
@@ -258,15 +269,45 @@ export function SafeZoneDialog({
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleUseCurrentLocation}
-                  disabled={!currentLocation}
-                  className="flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 disabled:opacity-50"
-                >
-                  <Target className="h-4 w-4" />
-                  Utiliser ma position actuelle
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleUseCurrentLocation}
+                    disabled={!currentLocation}
+                    className="flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 disabled:opacity-50"
+                  >
+                    <Target className="h-4 w-4" />
+                    Ma position
+                  </button>
+                </div>
+
+                {/* Input lien Google Maps */}
+                <div className="mt-3">
+                  <label className="block text-xs text-slate-400 mb-1">
+                    Ou coller un lien Google Maps
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="https://maps.google.com/..."
+                      className="flex-1 rounded-lg bg-slate-800 border border-slate-700 px-4 py-2 text-white text-sm placeholder:text-slate-500 focus:border-brand-orange focus:outline-none"
+                      onChange={(e) => {
+                        const coords = parseGoogleMapsUrl(e.target.value);
+                        if (coords) {
+                          setValue('center', coords);
+                          toast.success('Coordonnées extraites du lien');
+                          e.target.value = '';
+                        }
+                      }}
+                    />
+                    <div className="flex items-center justify-center rounded-lg bg-slate-800 px-3 text-slate-400">
+                      <Link2 className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Collez un lien Google Maps pour extraire automatiquement les coordonnées
+                  </p>
+                </div>
 
                 {errors.center && (
                   <p className="mt-1 text-sm text-red-400">Coordonnées invalides</p>
