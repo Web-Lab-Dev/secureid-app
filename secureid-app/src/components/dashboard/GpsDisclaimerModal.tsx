@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react';
  * Avertissement professionnel pour la fonctionnalité GPS
  * - S'affiche en haut de la page comme un banner
  * - Disparaît automatiquement après 30s
- * - Message qui couvre légalement
+ * - Message professionnel indiquant que seul le GPS est en développement
  */
 
 export function GpsDisclaimerModal() {
@@ -91,14 +91,14 @@ export function GpsDisclaimerModal() {
                   {/* Content */}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold text-white">Mode Démonstration</h4>
+                      <h4 className="font-semibold text-white">Fonctionnalité en Développement</h4>
                       <span className="rounded-full bg-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-300">
                         Bêta
                       </span>
                     </div>
                     <p className="text-sm leading-snug text-slate-300">
-                      Interface de démonstration — <span className="font-medium text-red-400">Toutes les données (GPS, santé) sont simulées.</span>
-                      <span className="text-slate-400"> Fonctionnalités réelles bientôt disponibles.</span>
+                      La <span className="font-medium text-orange-400">position de l'enfant en temps réel</span> est actuellement en cours de finalisation.
+                      <span className="text-slate-400"> Toutes les autres fonctionnalités sont pleinement opérationnelles.</span>
                     </p>
                   </div>
                 </div>

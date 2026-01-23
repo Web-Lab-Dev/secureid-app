@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Thermometer, Activity, Battery } from 'lucide-react';
+import { Heart, Thermometer, Activity } from 'lucide-react';
 
 /**
  * PHASE 15 - HEALTH INDICATORS
@@ -11,7 +11,6 @@ import { Heart, Thermometer, Activity, Battery } from 'lucide-react';
  * - Rythme cardiaque
  * - Température corporelle
  * - Activité (pas)
- * - Batterie du bracelet
  * - Données simulées avec variations réalistes
  */
 
@@ -23,7 +22,6 @@ export function HealthIndicators({ childName = "Votre enfant" }: HealthIndicator
   const [heartRate, setHeartRate] = useState<number>(72);
   const [temperature, setTemperature] = useState<number>(36.8);
   const [steps, setSteps] = useState<number>(3247);
-  const [battery, setBattery] = useState<number>(78);
 
   // Simuler variations des indicateurs de santé
   useEffect(() => {
@@ -36,9 +34,6 @@ export function HealthIndicators({ childName = "Votre enfant" }: HealthIndicator
 
       // Pas: augmentation progressive
       setSteps((prev) => prev + Math.floor(Math.random() * 5));
-
-      // Batterie: diminution lente
-      setBattery((prev) => Math.max(1, prev - (Math.random() < 0.1 ? 1 : 0)));
     }, 3000); // Mise à jour toutes les 3 secondes
 
     return () => clearInterval(interval);
@@ -51,7 +46,7 @@ export function HealthIndicators({ childName = "Votre enfant" }: HealthIndicator
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, type: "spring" }}
     >
-      <div className="grid grid-cols-2 gap-4 px-6 py-4 sm:grid-cols-4">
+      <div className="grid grid-cols-3 gap-4 px-6 py-4">
         {/* Rythme cardiaque */}
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-500/20">
@@ -87,19 +82,6 @@ export function HealthIndicators({ childName = "Votre enfant" }: HealthIndicator
             <p className="text-xs text-slate-400">Activité</p>
             <p className="text-lg font-bold text-white">
               {steps.toLocaleString()} <span className="text-xs font-normal text-slate-400">pas</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Batterie */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/20">
-            <Battery className="h-5 w-5 text-blue-400" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs text-slate-400">Batterie</p>
-            <p className="text-lg font-bold text-white">
-              {battery} <span className="text-xs font-normal text-slate-400">%</span>
             </p>
           </div>
         </div>
