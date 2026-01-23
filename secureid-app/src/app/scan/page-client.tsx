@@ -1,16 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { BrowserQRCodeReader } from '@zxing/browser';
-import { ArrowLeft, Camera, AlertCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Camera, AlertCircle, Loader2, Zap } from 'lucide-react';
 import { logger } from '@/lib/logger';
 
 /**
- * PAGE CLIENT DE SCAN DE QR CODE
+ * PAGE CLIENT DE SCAN DE QR CODE - VERSION OPTIMISÉE
  *
- * Ouvre la caméra pour scanner un bracelet QR code
- * et redirige vers la page d'activation.
+ * PERFORMANCE: Utilise l'API native BarcodeDetector (Chrome/Edge 83+) pour un scan instantané.
+ * Fallback sur @zxing/browser pour les navigateurs non supportés.
  *
  * FLUX OPTIMISÉ (depuis dashboard):
  * - QR code contient: /s/{braceletId}?token=xxx
@@ -19,123 +18,190 @@ import { logger } from '@/lib/logger';
  * - Évite le détour par la landing page pour les utilisateurs connectés
  */
 
+// Type pour l'API native BarcodeDetector (pas encore dans TypeScript standard)
+declare global {
+  interface Window {
+    BarcodeDetector?: new (options?: { formats: string[] }) => {
+      detect: (source: ImageBitmapSource) => Promise<Array<{ rawValue: string; format: string }>>;
+    };
+  }
+}
+
 export function ScanPageClient() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const codeReaderRef = useRef<BrowserQRCodeReader | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const scanningRef = useRef(false);
+  const animationFrameRef = useRef<number | null>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [scannerType, setScannerType] = useState<'native' | 'zxing' | null>(null);
+
+  // Traiter le résultat du scan
+  const handleScanResult = useCallback((scannedText: string) => {
+    try {
+      const url = new URL(scannedText);
+
+      // Vérifier si c'est une URL SecureID valide
+      if (url.pathname.startsWith('/s/') || url.pathname.startsWith('/activate')) {
+        logger.info('QR code scanned successfully', { url: scannedText });
+
+        // FLUX OPTIMISÉ: Extraire braceletId et token pour rediriger vers /activate
+        if (url.pathname.startsWith('/s/')) {
+          const braceletId = url.pathname.replace('/s/', '');
+          const token = url.searchParams.get('token') || url.searchParams.get('t');
+
+          if (braceletId && token) {
+            router.push(`/activate?id=${braceletId}&token=${token}`);
+            return true;
+          }
+        }
+
+        // Fallback: Si déjà une URL /activate ou format non reconnu
+        router.push(url.pathname + url.search);
+        return true;
+      } else {
+        setError('Ce QR code ne correspond pas à un bracelet SecureID');
+        return false;
+      }
+    } catch {
+      setError('QR code invalide');
+      return false;
+    }
+  }, [router]);
+
+  // Arrêter le scan proprement
+  const stopScanning = useCallback(() => {
+    scanningRef.current = false;
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }, []);
 
   useEffect(() => {
-    const codeReader = new BrowserQRCodeReader();
-    codeReaderRef.current = codeReader;
+    if (!scanning) return;
+
+    let mounted = true;
 
     const startScanning = async () => {
       try {
-        // Obtenir les devices vidéo disponibles (méthode statique)
-        const videoInputDevices = await BrowserQRCodeReader.listVideoInputDevices();
+        // Contraintes vidéo optimisées pour QR (résolution basse = scan rapide)
+        const constraints: MediaStreamConstraints = {
+          video: {
+            facingMode: 'environment', // Caméra arrière sur mobile
+            width: { ideal: 640 },     // Résolution basse suffisante pour QR
+            height: { ideal: 480 },
+            frameRate: { ideal: 30 }
+          }
+        };
 
-        if (videoInputDevices.length === 0) {
-          setError('Aucune caméra détectée sur cet appareil');
-          setLoading(false);
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+        if (!mounted) {
+          stream.getTracks().forEach(track => track.stop());
           return;
         }
 
-        // Utiliser la caméra arrière si disponible (mobile)
-        const backCamera = videoInputDevices.find((device: MediaDeviceInfo) =>
-          device.label.toLowerCase().includes('back') ||
-          device.label.toLowerCase().includes('arrière')
-        );
-        const selectedDeviceId = backCamera ? backCamera.deviceId : videoInputDevices[0].deviceId;
+        streamRef.current = stream;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+        }
 
         setLoading(false);
 
-        // Démarrer le scan
-        await codeReader.decodeFromVideoDevice(
-          selectedDeviceId,
-          videoRef.current!,
-          (result, error) => {
-            // Ignorer les erreurs de type "not found" (scan en cours, pas encore de QR détecté)
-            if (error && error.name !== 'NotFoundException') {
-              logger.warn('QR scan error', { error: error.message });
-              return;
-            }
+        // STRATÉGIE 1: API native BarcodeDetector (100x plus rapide)
+        if ('BarcodeDetector' in window && window.BarcodeDetector) {
+          setScannerType('native');
+          logger.info('Using native BarcodeDetector API');
 
-            if (result) {
-              try {
-                const scannedText = result.getText();
-                const url = new URL(scannedText);
+          const barcodeDetector = new window.BarcodeDetector({ formats: ['qr_code'] });
+          scanningRef.current = true;
 
-                // Vérifier si c'est une URL SecureID valide
-                if (url.pathname.startsWith('/s/') || url.pathname.startsWith('/activate')) {
-                  logger.info('QR code scanned successfully', { url: scannedText });
+          const scanFrame = async () => {
+            if (!scanningRef.current || !videoRef.current || !mounted) return;
 
-                  // Arrêter le scan
-                  stopScanning();
-                  setScanning(false);
+            try {
+              const barcodes = await barcodeDetector.detect(videoRef.current);
 
-                  // FLUX OPTIMISÉ: Extraire braceletId et token pour rediriger vers /activate
-                  // Évite le détour par la landing page pour les users connectés (dashboard)
-                  if (url.pathname.startsWith('/s/')) {
-                    // Format: /s/{braceletId}?token=xxx
-                    const braceletId = url.pathname.replace('/s/', '');
-                    const token = url.searchParams.get('token') || url.searchParams.get('t');
-
-                    if (braceletId && token) {
-                      // Rediriger directement vers /activate avec les paramètres
-                      router.push(`/activate?id=${braceletId}&token=${token}`);
-                      return;
-                    }
-                  }
-
-                  // Fallback: Si déjà une URL /activate ou format non reconnu
-                  router.push(url.pathname + url.search);
-                } else {
-                  setError('Ce QR code ne correspond pas à un bracelet SecureID');
-                  stopScanning();
-                  setScanning(false);
-                }
-              } catch (urlError) {
-                setError('QR code invalide');
-                logger.error('Invalid QR code', { error: urlError });
+              if (barcodes.length > 0) {
+                const result = barcodes[0].rawValue;
                 stopScanning();
                 setScanning(false);
+                handleScanResult(result);
+                return;
+              }
+            } catch (err) {
+              // Ignorer les erreurs de détection (frame non prête, etc.)
+            }
+
+            // Scanner toutes les 100ms (10 fps de scan, suffisant pour QR)
+            if (scanningRef.current && mounted) {
+              animationFrameRef.current = requestAnimationFrame(() => {
+                setTimeout(scanFrame, 100);
+              });
+            }
+          };
+
+          scanFrame();
+        } else {
+          // STRATÉGIE 2: Fallback @zxing/browser (si BarcodeDetector non supporté)
+          setScannerType('zxing');
+          logger.info('Falling back to @zxing/browser');
+
+          const { BrowserQRCodeReader } = await import('@zxing/browser');
+          const codeReader = new BrowserQRCodeReader();
+
+          scanningRef.current = true;
+
+          await codeReader.decodeFromVideoDevice(
+            undefined, // Utiliser le stream existant
+            videoRef.current!,
+            (result, error) => {
+              if (!mounted || !scanningRef.current) return;
+
+              if (error && error.name !== 'NotFoundException') {
+                logger.warn('QR scan error', { error: error.message });
+                return;
+              }
+
+              if (result) {
+                stopScanning();
+                setScanning(false);
+                handleScanResult(result.getText());
               }
             }
-          }
-        );
-      } catch (err: any) {
+          );
+        }
+      } catch (err: unknown) {
+        if (!mounted) return;
         logger.error('Camera error', { error: err });
         setError('Impossible d\'accéder à la caméra. Vérifiez les permissions.');
         setLoading(false);
       }
     };
 
-    if (scanning) {
-      startScanning();
-    }
+    startScanning();
 
-    // Cleanup
     return () => {
+      mounted = false;
       stopScanning();
     };
-  }, [scanning, router]);
-
-  const stopScanning = () => {
-    if (codeReaderRef.current) {
-      try {
-        // Arrêter tous les streams vidéo
-        const stream = videoRef.current?.srcObject as MediaStream;
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-        }
-        videoRef.current!.srcObject = null;
-      } catch (err) {
-        logger.error('Error stopping scanner', { error: err });
-      }
-    }
-  };
+  }, [scanning, handleScanResult, stopScanning]);
 
   const handleRetry = () => {
     setError(null);
@@ -188,8 +254,35 @@ export function ScanPageClient() {
                   </div>
                 </div>
               )}
+
+              {/* Indicateur mode rapide (API native) */}
+              {!loading && scannerType === 'native' && (
+                <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-full bg-green-500/90 px-3 py-1 text-xs font-medium text-white">
+                  <Zap className="h-3 w-3" />
+                  Mode rapide
+                </div>
+              )}
+
+              {/* Zone de visée */}
+              {!loading && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="relative h-48 w-48">
+                    {/* Coins du cadre */}
+                    <div className="absolute top-0 left-0 h-6 w-6 border-l-4 border-t-4 border-white rounded-tl-lg" />
+                    <div className="absolute top-0 right-0 h-6 w-6 border-r-4 border-t-4 border-white rounded-tr-lg" />
+                    <div className="absolute bottom-0 left-0 h-6 w-6 border-l-4 border-b-4 border-white rounded-bl-lg" />
+                    <div className="absolute bottom-0 right-0 h-6 w-6 border-r-4 border-b-4 border-white rounded-br-lg" />
+                    {/* Ligne de scan animée */}
+                    <div className="absolute left-2 right-2 h-0.5 bg-brand-orange/80 animate-scan-line" />
+                  </div>
+                </div>
+              )}
+
               <video
                 ref={videoRef}
+                autoPlay
+                playsInline
+                muted
                 className="w-full"
                 style={{ maxHeight: '500px', objectFit: 'cover' }}
               />

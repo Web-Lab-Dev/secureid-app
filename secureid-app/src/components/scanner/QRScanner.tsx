@@ -1,10 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { BrowserMultiFormatReader } from '@zxing/library';
-import { X, Camera } from 'lucide-react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { X, Camera, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logger } from '@/lib/logger';
+
+// Type pour l'API native BarcodeDetector
+declare global {
+  interface Window {
+    BarcodeDetector?: new (options?: { formats: string[] }) => {
+      detect: (source: ImageBitmapSource) => Promise<Array<{ rawValue: string; format: string }>>;
+    };
+  }
+}
 
 interface QRScannerProps {
   isOpen: boolean;
@@ -14,49 +22,114 @@ interface QRScannerProps {
 
 export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const scanningRef = useRef(false);
+  const animationFrameRef = useRef<number | null>(null);
+
   const [error, setError] = useState<string>('');
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const readerRef = useRef<BrowserMultiFormatReader | null>(null);
+  const [scannerType, setScannerType] = useState<'native' | 'zxing' | null>(null);
+
+  // Arrêter le scan proprement
+  const stopScanner = useCallback(() => {
+    scanningRef.current = false;
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    // Variable pour détecter si le composant est toujours monté
     let mounted = true;
-    let currentStream: MediaStream | null = null;
-
-    const reader = new BrowserMultiFormatReader();
-    readerRef.current = reader;
 
     const startScanner = async () => {
       try {
-        // Demander permission caméra
+        // Contraintes vidéo optimisées pour QR (résolution basse = scan rapide)
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' } // Caméra arrière sur mobile
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            frameRate: { ideal: 30 }
+          }
         });
 
-        // Vérifier si le composant est toujours monté
         if (!mounted) {
-          // Si démonté pendant la requête async, stopper le stream immédiatement
           stream.getTracks().forEach(track => track.stop());
           return;
         }
 
-        currentStream = stream;
+        streamRef.current = stream;
         setHasPermission(true);
 
-        if (videoRef.current && mounted) {
+        if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+        }
 
-          // Démarrer la lecture QR
+        // STRATÉGIE 1: API native BarcodeDetector (100x plus rapide)
+        if ('BarcodeDetector' in window && window.BarcodeDetector) {
+          setScannerType('native');
+          logger.info('QRScanner: Using native BarcodeDetector API');
+
+          const barcodeDetector = new window.BarcodeDetector({ formats: ['qr_code'] });
+          scanningRef.current = true;
+
+          const scanFrame = async () => {
+            if (!scanningRef.current || !videoRef.current || !mounted) return;
+
+            try {
+              const barcodes = await barcodeDetector.detect(videoRef.current);
+
+              if (barcodes.length > 0) {
+                const result = barcodes[0].rawValue;
+                stopScanner();
+                onScan(result);
+                onClose();
+                return;
+              }
+            } catch {
+              // Ignorer les erreurs de détection
+            }
+
+            if (scanningRef.current && mounted) {
+              animationFrameRef.current = requestAnimationFrame(() => {
+                setTimeout(scanFrame, 100);
+              });
+            }
+          };
+
+          scanFrame();
+        } else {
+          // STRATÉGIE 2: Fallback @zxing/library
+          setScannerType('zxing');
+          logger.info('QRScanner: Falling back to @zxing/library');
+
+          const { BrowserMultiFormatReader } = await import('@zxing/library');
+          const reader = new BrowserMultiFormatReader();
+          scanningRef.current = true;
+
           reader.decodeFromVideoDevice(
             null,
-            videoRef.current,
-            (result, error) => {
-              if (result && mounted) {
+            videoRef.current!,
+            (result) => {
+              if (result && mounted && scanningRef.current) {
                 const text = result.getText();
-                onScan(text);
                 stopScanner();
+                reader.reset();
+                onScan(text);
                 onClose();
               }
             }
@@ -71,32 +144,13 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
       }
     };
 
-    const stopScanner = () => {
-      if (readerRef.current) {
-        readerRef.current.reset();
-      }
-
-      // Stopper le stream actuel
-      if (currentStream) {
-        currentStream.getTracks().forEach(track => track.stop());
-        currentStream = null;
-      }
-
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
-        videoRef.current.srcObject = null;
-      }
-    };
-
     startScanner();
 
-    // Cleanup
     return () => {
       mounted = false;
       stopScanner();
     };
-  }, [isOpen, onScan, onClose]);
+  }, [isOpen, onScan, onClose, stopScanner]);
 
   if (!isOpen) return null;
 
@@ -120,6 +174,14 @@ export function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
 
           {/* Zone scanner */}
           <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-black">
+            {/* Indicateur mode rapide (API native) */}
+            {hasPermission && scannerType === 'native' && (
+              <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5 rounded-full bg-green-500/90 px-3 py-1 text-xs font-medium text-white">
+                <Zap className="h-3 w-3" />
+                Mode rapide
+              </div>
+            )}
+
             {hasPermission === false && (
               <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
                 <Camera className="h-16 w-16 text-red-400 mb-4" />
