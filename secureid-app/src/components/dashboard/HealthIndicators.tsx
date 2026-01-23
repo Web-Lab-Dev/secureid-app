@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Thermometer, Activity } from 'lucide-react';
+import { Heart, Thermometer } from 'lucide-react';
 
 /**
  * PHASE 15 - HEALTH INDICATORS
@@ -10,7 +10,6 @@ import { Heart, Thermometer, Activity } from 'lucide-react';
  * Barre d'indicateurs de santé pour le tracking GPS
  * - Rythme cardiaque
  * - Température corporelle
- * - Activité (pas)
  * - Données simulées avec variations réalistes
  */
 
@@ -21,7 +20,6 @@ interface HealthIndicatorsProps {
 export function HealthIndicators({ childName = "Votre enfant" }: HealthIndicatorsProps) {
   const [heartRate, setHeartRate] = useState<number>(72);
   const [temperature, setTemperature] = useState<number>(36.8);
-  const [steps, setSteps] = useState<number>(3247);
 
   // Simuler variations des indicateurs de santé
   useEffect(() => {
@@ -31,9 +29,6 @@ export function HealthIndicators({ childName = "Votre enfant" }: HealthIndicator
 
       // Température: 36.6-37.0°C (variation légère)
       setTemperature(36.6 + Math.random() * 0.4);
-
-      // Pas: augmentation progressive
-      setSteps((prev) => prev + Math.floor(Math.random() * 5));
     }, 3000); // Mise à jour toutes les 3 secondes
 
     return () => clearInterval(interval);
@@ -46,7 +41,7 @@ export function HealthIndicators({ childName = "Votre enfant" }: HealthIndicator
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, type: "spring" }}
     >
-      <div className="grid grid-cols-3 gap-4 px-6 py-4">
+      <div className="grid grid-cols-2 gap-4 px-6 py-4">
         {/* Rythme cardiaque */}
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-500/20">
@@ -69,19 +64,6 @@ export function HealthIndicators({ childName = "Votre enfant" }: HealthIndicator
             <p className="text-xs text-slate-400">Température</p>
             <p className="text-lg font-bold text-white">
               {temperature.toFixed(1)} <span className="text-xs font-normal text-slate-400">°C</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Activité (pas) */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-500/20">
-            <Activity className="h-5 w-5 text-green-400" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs text-slate-400">Activité</p>
-            <p className="text-lg font-bold text-white">
-              {steps.toLocaleString()} <span className="text-xs font-normal text-slate-400">pas</span>
             </p>
           </div>
         </div>
