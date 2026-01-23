@@ -30,7 +30,8 @@ import { sendBraceletLostNotification, sendBraceletFoundNotification } from './n
 const braceletIdSchema = z.string().regex(/^[A-Z]{2,5}-\d{3,4}$/, 'Format d\'ID bracelet invalide');
 
 // Schéma de validation pour les tokens secrets (64 caractères hexadécimaux)
-const secretTokenSchema = z.string().length(64, 'Le token doit contenir exactement 64 caractères').regex(/^[a-f0-9]{64}$/, 'Le token doit être en format hexadécimal');
+// Note: Accepte majuscules et minuscules pour compatibilité copier-coller
+const secretTokenSchema = z.string().length(64, 'Le token doit contenir exactement 64 caractères').regex(/^[a-fA-F0-9]{64}$/, 'Le token doit être en format hexadécimal');
 
 interface ValidateBraceletTokenInput {
   braceletId: string;
@@ -101,7 +102,8 @@ export async function validateBraceletToken(
     const bracelet = braceletSnap.data() as BraceletDocument;
 
     // Vérification du token secret (clé de sécurité principale)
-    if (bracelet.secretToken !== token) {
+    // Comparaison case-insensitive pour compatibilité
+    if (bracelet.secretToken.toLowerCase() !== token.toLowerCase()) {
       return {
         valid: false,
         error: 'Token invalide',

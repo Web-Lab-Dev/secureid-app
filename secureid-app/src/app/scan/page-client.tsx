@@ -10,7 +10,13 @@ import { logger } from '@/lib/logger';
  * PAGE CLIENT DE SCAN DE QR CODE
  *
  * Ouvre la caméra pour scanner un bracelet QR code
- * et redirige vers la page d'activation appropriée
+ * et redirige vers la page d'activation.
+ *
+ * FLUX OPTIMISÉ (depuis dashboard):
+ * - QR code contient: /s/{braceletId}?token=xxx
+ * - On extrait braceletId et token
+ * - On redirige directement vers /activate?id={braceletId}&token={token}
+ * - Évite le détour par la landing page pour les utilisateurs connectés
  */
 
 export function ScanPageClient() {
@@ -49,20 +55,41 @@ export function ScanPageClient() {
         await codeReader.decodeFromVideoDevice(
           selectedDeviceId,
           videoRef.current!,
-          (result) => {
+          (result, error) => {
+            // Ignorer les erreurs de type "not found" (scan en cours, pas encore de QR détecté)
+            if (error && error.name !== 'NotFoundException') {
+              logger.warn('QR scan error', { error: error.message });
+              return;
+            }
+
             if (result) {
               try {
-                const url = new URL(result.getText());
+                const scannedText = result.getText();
+                const url = new URL(scannedText);
 
                 // Vérifier si c'est une URL SecureID valide
                 if (url.pathname.startsWith('/s/') || url.pathname.startsWith('/activate')) {
-                  logger.info('QR code scanned successfully', { url: result.getText() });
+                  logger.info('QR code scanned successfully', { url: scannedText });
 
                   // Arrêter le scan
                   stopScanning();
                   setScanning(false);
 
-                  // Rediriger vers l'URL scannée
+                  // FLUX OPTIMISÉ: Extraire braceletId et token pour rediriger vers /activate
+                  // Évite le détour par la landing page pour les users connectés (dashboard)
+                  if (url.pathname.startsWith('/s/')) {
+                    // Format: /s/{braceletId}?token=xxx
+                    const braceletId = url.pathname.replace('/s/', '');
+                    const token = url.searchParams.get('token') || url.searchParams.get('t');
+
+                    if (braceletId && token) {
+                      // Rediriger directement vers /activate avec les paramètres
+                      router.push(`/activate?id=${braceletId}&token=${token}`);
+                      return;
+                    }
+                  }
+
+                  // Fallback: Si déjà une URL /activate ou format non reconnu
                   router.push(url.pathname + url.search);
                 } else {
                   setError('Ce QR code ne correspond pas à un bracelet SecureID');

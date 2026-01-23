@@ -80,8 +80,10 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
   // - Le QR code contient l'URL avec le token
   // - Le token est aussi stocké dans Firestore lors de la fabrication
   // - Si les deux ne correspondent pas → QR code falsifié
+  // Note: Comparaison case-insensitive car les tokens sont générés en lowercase
+  // mais peuvent être transformés en uppercase via copier-coller ou URL encoding
   const storedToken = braceletData.secretToken;
-  const isTokenValid = token && token === storedToken;
+  const isTokenValid = token && token.toLowerCase() === storedToken.toLowerCase();
 
   if (!isTokenValid) {
     return <ErrorPage type="counterfeit" slug={slug} token={token} />;
