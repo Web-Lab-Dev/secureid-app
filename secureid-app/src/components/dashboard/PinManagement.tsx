@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Eye, EyeOff, Edit2, Check, X, Loader2 } from 'lucide-react';
 import { updateProfile } from '@/actions/profile-actions';
+import { useAuthContext } from '@/contexts/AuthContext';
 import type { ProfileDocument } from '@/types/profile';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ interface PinManagementProps {
 }
 
 export function PinManagement({ profile }: PinManagementProps) {
+  const { user } = useAuthContext();
   const [showPin, setShowPin] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [newPin, setNewPin] = useState('');
@@ -46,8 +48,13 @@ export function PinManagement({ profile }: PinManagementProps) {
     setIsSubmitting(true);
 
     try {
+      if (!user) {
+        throw new Error('Utilisateur non authentifié');
+      }
+
       const result = await updateProfile({
         profileId: profile.id,
+        userId: user.uid, // 🔒 SECURITY: Passer userId pour vérification ownership
         updates: {
           doctorPin: newPin,
         },

@@ -51,10 +51,11 @@ export const pinSchema = z
 
 /**
  * Validation du mot de passe
+ * NOTE: Aligné avec src/schemas/activation.ts (min 8 caractères)
  */
 export const passwordSchema = z
   .string()
-  .min(6, 'Le mot de passe doit contenir au moins 6 caractères')
+  .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
   .max(100, 'Le mot de passe est trop long');
 
 /**
@@ -68,6 +69,7 @@ export const fullNameSchema = z
 
 /**
  * Validation du groupe sanguin
+ * NOTE: Aligné avec src/schemas/activation.ts (UNKNOWN en anglais)
  */
 export const bloodTypeSchema = z.enum([
   'A+',
@@ -78,7 +80,7 @@ export const bloodTypeSchema = z.enum([
   'AB-',
   'O+',
   'O-',
-  'Inconnu',
+  'UNKNOWN',
 ]);
 
 /**
@@ -178,10 +180,25 @@ export function validatePin(
 
 /**
  * Helper pour sanitiser une chaîne (prévenir XSS)
+ *
+ * SECURITY: Encode les caractères dangereux au lieu de les supprimer
+ * pour préserver le sens du texte tout en neutralisant les attaques.
+ *
+ * Pour une protection complète côté client, utiliser DOMPurify.
  */
 export function sanitizeString(input: string): string {
   return input
-    .replace(/[<>]/g, '') // Retirer < et >
+    // Encode les caractères HTML dangereux
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    // Neutraliser les URLs javascript: et data:
+    .replace(/javascript:/gi, 'blocked:')
+    .replace(/data:/gi, 'blocked:')
+    // Neutraliser les event handlers inline
+    .replace(/on\w+\s*=/gi, 'blocked=')
     .trim();
 }
 

@@ -158,6 +158,7 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
 
       const result = await updateProfile({
         profileId: profile.id,
+        userId: user.uid, // 🔒 SECURITY: Passer userId pour vérification ownership
         updates: {
           fullName: data.fullName,
           dateOfBirth: dateOfBirthDate,

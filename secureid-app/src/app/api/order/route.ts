@@ -147,10 +147,11 @@ Email envoyé automatiquement depuis SecureID
       hasBody: !!request.body,
     });
 
+    // 🔒 SECURITY: Ne pas exposer les détails d'erreur internes
+    // Les détails sont loggés côté serveur via logApiError ci-dessus
     return NextResponse.json(
       {
-        error: "Erreur lors de l'envoi de l'email",
-        details: error instanceof Error ? error.message : 'Erreur inconnue',
+        error: "Erreur lors de l'envoi de l'email. Veuillez réessayer plus tard.",
       },
       { status: 500 }
     );

@@ -140,6 +140,8 @@ export async function createProfile(
 interface UpdateProfileInput {
   /** ID du profil à mettre à jour */
   profileId: string;
+  /** ID de l'utilisateur (pour vérifier les permissions) */
+  userId: string;
   /** Données à mettre à jour (partielles) */
   updates: {
     fullName?: string;
@@ -170,7 +172,34 @@ export async function updateProfile(
   input: UpdateProfileInput
 ): Promise<UpdateProfileResult> {
   try {
-    const { profileId, updates } = input;
+    const { profileId, userId, updates } = input;
+
+    // 🔒 SECURITY: Vérifier que l'utilisateur possède ce profil
+    if (!userId || typeof userId !== 'string') {
+      return {
+        success: false,
+        error: 'Utilisateur non authentifié',
+      };
+    }
+
+    const profileRef = adminDb.collection('profiles').doc(profileId);
+    const profileSnap = await profileRef.get();
+
+    if (!profileSnap.exists) {
+      return {
+        success: false,
+        error: 'Profil introuvable',
+      };
+    }
+
+    const profileData = profileSnap.data();
+    if (profileData?.parentId !== userId) {
+      logger.warn('Unauthorized profile update attempt', { profileId, userId });
+      return {
+        success: false,
+        error: 'Vous n\'êtes pas autorisé à modifier ce profil',
+      };
+    }
 
     const updateData: Record<string, unknown> = {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -269,6 +298,8 @@ export async function updateProfile(
 interface ArchiveProfileInput {
   /** ID du profil à archiver */
   profileId: string;
+  /** ID de l'utilisateur (pour vérifier les permissions) */
+  userId: string;
 }
 
 interface ArchiveProfileResult {
@@ -286,9 +317,36 @@ export async function archiveProfile(
   input: ArchiveProfileInput
 ): Promise<ArchiveProfileResult> {
   try {
-    const { profileId } = input;
+    const { profileId, userId } = input;
 
-    await adminDb.collection('profiles').doc(profileId).update({
+    // 🔒 SECURITY: Vérifier que l'utilisateur possède ce profil
+    if (!userId || typeof userId !== 'string') {
+      return {
+        success: false,
+        error: 'Utilisateur non authentifié',
+      };
+    }
+
+    const profileRef = adminDb.collection('profiles').doc(profileId);
+    const profileSnap = await profileRef.get();
+
+    if (!profileSnap.exists) {
+      return {
+        success: false,
+        error: 'Profil introuvable',
+      };
+    }
+
+    const profileData = profileSnap.data();
+    if (profileData?.parentId !== userId) {
+      logger.warn('Unauthorized profile archive attempt', { profileId, userId });
+      return {
+        success: false,
+        error: 'Vous n\'êtes pas autorisé à archiver ce profil',
+      };
+    }
+
+    await profileRef.update({
       status: 'ARCHIVED',
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });

@@ -5,6 +5,7 @@ import { Edit3, Trash2, MapPin, Shield, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { SafeZoneDocument } from '@/types/safe-zone';
 import { deleteSafeZone, toggleSafeZone } from '@/actions/safe-zone-actions';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
@@ -32,10 +33,16 @@ export function SafeZoneList({
   onZoneDeleted,
   profileId,
 }: SafeZoneListProps) {
+  const { user } = useAuthContext();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleDelete = async (zone: SafeZoneDocument, e: React.MouseEvent) => {
     e.stopPropagation();
+
+    if (!user) {
+      toast.error('Utilisateur non authentifié');
+      return;
+    }
 
     if (!confirm(`Supprimer la zone "${zone.name}" ?\n\nCette action est irréversible.`)) {
       return;
@@ -45,7 +52,8 @@ export function SafeZoneList({
     const toastId = toast.loading('Suppression de la zone...');
 
     try {
-      const result = await deleteSafeZone(zone.id, profileId);
+      // 🔒 SECURITY: Passer userId pour vérification ownership
+      const result = await deleteSafeZone(zone.id, profileId, user.uid);
 
       if (!result.success) {
         toast.error(result.error || 'Erreur lors de la suppression', { id: toastId });
@@ -65,8 +73,14 @@ export function SafeZoneList({
   const handleToggle = async (zone: SafeZoneDocument, e: React.MouseEvent) => {
     e.stopPropagation();
 
+    if (!user) {
+      toast.error('Utilisateur non authentifié');
+      return;
+    }
+
     try {
-      const result = await toggleSafeZone(zone.id, profileId, !zone.enabled);
+      // 🔒 SECURITY: Passer userId pour vérification ownership
+      const result = await toggleSafeZone(zone.id, profileId, user.uid, !zone.enabled);
 
       if (!result.success) {
         toast.error(result.error || 'Erreur lors de la mise à jour');

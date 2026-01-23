@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { SafeZoneDocument, SafeZoneFormData } from '@/types/safe-zone';
 import { SAFE_ZONE_COLORS } from '@/types/safe-zone';
 import { createSafeZone, updateSafeZone } from '@/actions/safe-zone-actions';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 
@@ -81,6 +82,7 @@ export function SafeZoneDialog({
   zone,
   onSaved,
 }: SafeZoneDialogProps) {
+  const { user } = useAuthContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -147,6 +149,11 @@ export function SafeZoneDialog({
   const watchedValues = watch();
 
   const onSubmit = async (data: SafeZoneFormData) => {
+    if (!user) {
+      toast.error('Utilisateur non authentifié');
+      return;
+    }
+
     setIsSubmitting(true);
     const toastId = toast.loading(zone ? 'Mise à jour...' : 'Création...');
 
@@ -154,11 +161,11 @@ export function SafeZoneDialog({
       let result;
 
       if (zone) {
-        // Édition
-        result = await updateSafeZone(zone.id, profileId, data);
+        // Édition - 🔒 SECURITY: Passer userId pour vérification ownership
+        result = await updateSafeZone(zone.id, profileId, user.uid, data);
       } else {
-        // Création
-        result = await createSafeZone(profileId, data);
+        // Création - 🔒 SECURITY: Passer userId pour vérification ownership
+        result = await createSafeZone(profileId, user.uid, data);
       }
 
       if (!result.success) {

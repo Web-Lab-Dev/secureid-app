@@ -37,10 +37,39 @@ function convertSafeZone(doc: FirebaseFirestore.DocumentSnapshot): SafeZoneDocum
 }
 
 /**
+ * Helper pour vérifier l'ownership d'un profil
+ */
+async function verifyProfileOwnership(profileId: string, userId: string): Promise<{ valid: boolean; error?: string }> {
+  if (!userId || typeof userId !== 'string') {
+    return { valid: false, error: 'Utilisateur non authentifié' };
+  }
+
+  const profileDoc = await adminDb.collection('profiles').doc(profileId).get();
+  if (!profileDoc.exists) {
+    return { valid: false, error: 'Profil introuvable' };
+  }
+
+  const profileData = profileDoc.data();
+  if (profileData?.parentId !== userId) {
+    logger.warn('Unauthorized safe zone access attempt', { profileId, userId });
+    return { valid: false, error: 'Vous n\'êtes pas autorisé à accéder à ce profil' };
+  }
+
+  return { valid: true };
+}
+
+/**
  * GET SAFE ZONES - Récupérer toutes les zones d'un profil
  */
-export async function getSafeZones(profileId: string): Promise<SafeZoneDocument[]> {
+export async function getSafeZones(profileId: string, userId: string): Promise<SafeZoneDocument[]> {
   try {
+    // 🔒 SECURITY: Vérifier que l'utilisateur possède ce profil
+    const ownership = await verifyProfileOwnership(profileId, userId);
+    if (!ownership.valid) {
+      logger.warn('getSafeZones unauthorized', { profileId, userId, error: ownership.error });
+      return [];
+    }
+
     const snapshot = await adminDb
       .collection('profiles')
       .doc(profileId)
@@ -66,9 +95,16 @@ export async function getSafeZones(profileId: string): Promise<SafeZoneDocument[
  */
 export async function createSafeZone(
   profileId: string,
+  userId: string,
   data: SafeZoneInput
 ): Promise<{ success: boolean; zoneId?: string; error?: string }> {
   try {
+    // 🔒 SECURITY: Vérifier que l'utilisateur possède ce profil
+    const ownership = await verifyProfileOwnership(profileId, userId);
+    if (!ownership.valid) {
+      return { success: false, error: ownership.error };
+    }
+
     // Validation basique
     if (!data.name || data.name.length < 2 || data.name.length > 50) {
       return { success: false, error: 'Nom invalide (2-50 caractères)' };
@@ -80,12 +116,6 @@ export async function createSafeZone(
 
     if (data.alertDelay < 1 || data.alertDelay > 60) {
       return { success: false, error: 'Délai alerte invalide (1-60 minutes)' };
-    }
-
-    // Vérifier que le profil existe
-    const profileDoc = await adminDb.collection('profiles').doc(profileId).get();
-    if (!profileDoc.exists) {
-      return { success: false, error: 'Profil introuvable' };
     }
 
     // Créer la zone
@@ -125,9 +155,16 @@ export async function createSafeZone(
 export async function updateSafeZone(
   zoneId: string,
   profileId: string,
+  userId: string,
   data: Partial<SafeZoneInput>
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // 🔒 SECURITY: Vérifier que l'utilisateur possède ce profil
+    const ownership = await verifyProfileOwnership(profileId, userId);
+    if (!ownership.valid) {
+      return { success: false, error: ownership.error };
+    }
+
     // Validation si champs fournis
     if (data.name && (data.name.length < 2 || data.name.length > 50)) {
       return { success: false, error: 'Nom invalide (2-50 caractères)' };
@@ -169,9 +206,16 @@ export async function updateSafeZone(
  */
 export async function deleteSafeZone(
   zoneId: string,
-  profileId: string
+  profileId: string,
+  userId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // 🔒 SECURITY: Vérifier que l'utilisateur possède ce profil
+    const ownership = await verifyProfileOwnership(profileId, userId);
+    if (!ownership.valid) {
+      return { success: false, error: ownership.error };
+    }
+
     // Supprimer directement avec profileId
     await adminDb
       .collection('profiles')
@@ -198,9 +242,16 @@ export async function deleteSafeZone(
 export async function toggleSafeZone(
   zoneId: string,
   profileId: string,
+  userId: string,
   enabled: boolean
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // 🔒 SECURITY: Vérifier que l'utilisateur possède ce profil
+    const ownership = await verifyProfileOwnership(profileId, userId);
+    if (!ownership.valid) {
+      return { success: false, error: ownership.error };
+    }
+
     // Toggle directement avec profileId
     await adminDb
       .collection('profiles')

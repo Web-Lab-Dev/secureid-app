@@ -89,6 +89,7 @@ export function MedicalFormEdit({ profile, onUpdate }: MedicalFormEditProps) {
 
       const result = await updateProfile({
         profileId: profile.id,
+        userId: user.uid, // 🔒 SECURITY: Passer userId pour vérification ownership
         updates: {
           fullName: data.fullName,
           bloodType: data.bloodType,

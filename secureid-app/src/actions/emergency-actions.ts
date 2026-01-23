@@ -103,7 +103,7 @@ export async function verifyDoctorPin(input: VerifyPinInput): Promise<VerifyPinR
       };
     }
 
-    // Comparer les PINs avec bcrypt ou comparaison directe (migration progressive)
+    // Comparer les PINs avec bcrypt ou comparaison constant-time (migration progressive)
     let isPinValid = false;
 
     if (isBcryptHash(storedPin)) {
@@ -111,7 +111,17 @@ export async function verifyDoctorPin(input: VerifyPinInput): Promise<VerifyPinR
       isPinValid = await verifyPin(pin, storedPin);
     } else {
       // Ancien système: PIN en clair (pour migration)
-      isPinValid = storedPin === pin;
+      // 🔒 SECURITY: Utiliser comparaison constant-time pour éviter timing attacks
+      const crypto = await import('crypto');
+      const storedBuffer = Buffer.from(storedPin, 'utf8');
+      const inputBuffer = Buffer.from(pin, 'utf8');
+
+      // timingSafeEqual requiert des buffers de même longueur
+      if (storedBuffer.length === inputBuffer.length) {
+        isPinValid = crypto.timingSafeEqual(storedBuffer, inputBuffer);
+      } else {
+        isPinValid = false;
+      }
 
       // Migration automatique: hasher le PIN si la vérification réussit
       if (isPinValid) {

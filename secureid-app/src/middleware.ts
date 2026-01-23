@@ -7,8 +7,17 @@ import type { NextRequest } from 'next/server';
  * Protection contre le spam et les attaques DDoS sur les routes API
  * Limite: 5 requêtes par minute par IP
  *
- * IMPORTANT: Ce rate limiting est en mémoire (simple mais efficace pour Vercel Edge)
- * Pour production à grande échelle, considérer Upstash Redis
+ * ⚠️ LIMITATIONS CONNUES:
+ * - Rate limiting en mémoire volatile (reset à chaque redéploiement)
+ * - Chaque région Vercel Edge a sa propre mémoire (non partagée)
+ * - setInterval peut ne pas fonctionner correctement dans Edge Runtime
+ *
+ * 📋 TODO PRODUCTION: Migrer vers Upstash Redis pour:
+ * - Persistance entre déploiements
+ * - Partage entre régions Edge
+ * - Rate limiting distribué fiable
+ *
+ * @see https://upstash.com/docs/redis/sdks/ratelimit-ts/overview
  */
 
 interface RateLimitEntry {
@@ -24,7 +33,10 @@ const rateLimitMap = new Map<string, RateLimitEntry>();
 const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 5; // 5 requêtes max
 
-// Cleanup automatique toutes les 5 minutes pour éviter fuite mémoire
+// ⚠️ WARNING: setInterval dans Edge Runtime peut ne pas s'exécuter de façon fiable
+// car les contextes d'exécution sont de courte durée.
+// En pratique, le cleanup se fait naturellement car la Map est réinitialisée
+// à chaque cold start. Garder ce code comme fallback pour les instances longue durée.
 setInterval(() => {
   const now = Date.now();
   for (const [ip, entry] of rateLimitMap.entries()) {
