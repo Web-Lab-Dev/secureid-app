@@ -12,13 +12,15 @@ const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
   weight: ["400", "700"],
   display: "swap", // Optimisation: swap pour éviter FOIT
+  preload: true,
 });
 
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
-  weight: ["300", "400", "600", "700"],
+  weight: ["400", "600"], // Réduit de 4 à 2 poids pour performance (-30KB)
   display: "swap", // Optimisation: swap pour éviter FOIT
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -171,6 +173,10 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
+        {/* Preconnect pour Google Fonts - Améliore FCP */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}

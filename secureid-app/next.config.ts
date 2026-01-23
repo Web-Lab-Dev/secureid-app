@@ -40,6 +40,8 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Configuration des qualités d'image
+    qualities: [75, 90], // Support quality 90 pour hero image
     // Domaines autorisés pour les images externes
     remotePatterns: [
       {
@@ -53,6 +55,16 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+  },
+
+  // Optimisations de compilation
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+
+  // Optimisations expérimentales
+  experimental: {
+    optimizeCss: true,
   },
 
   // Headers de sécurité renforcés

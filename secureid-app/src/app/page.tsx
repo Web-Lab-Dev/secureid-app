@@ -87,8 +87,8 @@ export default function LandingPage() {
         <HeroSection braceletParams={braceletParams} />
         <TrustBar />
 
-      {/* Lazy loading des sections non-critiques avec Suspense */}
-      <Suspense fallback={<div className="h-screen w-full bg-white" />}>
+      {/* Lazy loading des sections non-critiques avec Suspense - Fallbacks optimisés pour CLS */}
+      <Suspense fallback={<div className="min-h-96 w-full bg-white" />}>
         <ProblemSolutionSection />
 
         {/* PHASE 13 - SHOWCASE 1: DASHBOARD PARENT (Carrousel Auto-Défilant) */}
@@ -100,38 +100,38 @@ export default function LandingPage() {
       </Suspense>
 
       {/* NOUVELLE SECTION: Témoignages TikTok Parents - Choc émotionnel */}
-      <Suspense fallback={<div className="h-screen w-full bg-slate-900" />}>
+      <Suspense fallback={<div className="min-h-96 w-full bg-slate-900" />}>
         <ParentTestimonialsTikTokSection />
       </Suspense>
 
       {/* NOUVELLE SECTION: Geofencing GPS - Solution proactive */}
-      <Suspense fallback={<div className="h-screen w-full bg-gradient-to-br from-indigo-50 to-blue-50" />}>
+      <Suspense fallback={<div className="min-h-96 w-full bg-gradient-to-br from-indigo-50 to-blue-50" />}>
         <GeofencingSection />
       </Suspense>
 
-      <Suspense fallback={<div className="h-screen w-full bg-slate-900" />}>
+      <Suspense fallback={<div className="min-h-96 w-full bg-slate-900" />}>
         <SecoursiteSection />
       </Suspense>
 
       {/* INSERTION C: DÉMO PRODUIT "L'ARMURE INVISIBLE" */}
-      <Suspense fallback={<div className="h-screen w-full bg-stone-900" />}>
+      <Suspense fallback={<div className="min-h-96 w-full bg-stone-900" />}>
         <ProductDemoSection />
       </Suspense>
 
       {/* SECTION 4: TÉMOIGNAGES - PHASE 12 CARROUSEL */}
-      <Suspense fallback={<div className="h-96 w-full bg-white" />}>
+      <Suspense fallback={<div className="min-h-96 w-full bg-white" />}>
         <TestimonialsCarousel />
       </Suspense>
 
-      <Suspense fallback={<div className="h-[600px] w-full bg-black" />}>
+      <Suspense fallback={<div className="min-h-96 w-full bg-black" />}>
         <CTASection />
       </Suspense>
 
-      <Suspense fallback={<div className="h-64 w-full bg-white" />}>
+      <Suspense fallback={<div className="min-h-64 w-full bg-white" />}>
         <PartnershipSection onOpenModal={() => setIsPartnerModalOpen(true)} />
       </Suspense>
 
-      <Suspense fallback={<div className="h-96 w-full bg-[#FAFAF9]" />}>
+      <Suspense fallback={<div className="min-h-64 w-full bg-[#FAFAF9]" />}>
         <Footer />
       </Suspense>
 

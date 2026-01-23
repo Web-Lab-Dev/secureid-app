@@ -43,48 +43,23 @@ export default function HeroSection({ braceletParams }: HeroSectionProps) {
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/50" />
         </div>
 
-        {/* Titre animé mot par mot */}
+        {/* Titre optimisé pour LCP - Animations simplifiées */}
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
-          <motion.h1
-            className="font-playfair text-4xl font-bold leading-tight text-white drop-shadow-2xl sm:text-5xl md:text-6xl lg:text-7xl"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            <motion.span
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="block"
-            >
+          <h1 className="font-playfair text-4xl font-bold leading-tight text-white drop-shadow-2xl sm:text-5xl md:text-6xl lg:text-7xl animate-in fade-in duration-500">
+            <span className="block">
               Parce qu'il est
-            </motion.span>
-            <motion.span
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-              className="block bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent"
-            >
+            </span>
+            <span className="block bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent">
               votre monde.
-            </motion.span>
-          </motion.h1>
+            </span>
+          </h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.1 }}
-            className="mt-6 max-w-2xl font-outfit text-lg text-white/95 drop-shadow-lg sm:text-xl"
-          >
+          <p className="mt-6 max-w-2xl font-outfit text-lg text-white/95 drop-shadow-lg sm:text-xl animate-in fade-in duration-500 delay-150">
             Un lien invisible qui veille sur lui quand vos yeux ne le peuvent pas.
-          </motion.p>
+          </p>
 
           {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.4 }}
-            className="mt-10 flex flex-wrap items-center gap-4"
-          >
+          <div className="mt-10 flex flex-wrap items-center gap-4 animate-in fade-in duration-500 delay-300">
             {/* Bouton Principal - Activer */}
             <Button variant="gradient" size="lg" rounded="full" asChild>
               <Link href={getActivateUrl()}>
@@ -98,15 +73,12 @@ export default function HeroSection({ braceletParams }: HeroSectionProps) {
               <ShoppingCart className="h-5 w-5" aria-hidden="true" />
               Commander un bracelet
             </Button>
-          </motion.div>
+          </div>
         </div>
 
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2, duration: 1 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        {/* Scroll indicator - Lazy loaded avec motion */}
+        <div
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-in fade-in duration-1000 delay-700"
           aria-label="Faites défiler vers le bas pour découvrir SecureID"
           role="img"
         >
@@ -122,7 +94,7 @@ export default function HeroSection({ braceletParams }: HeroSectionProps) {
               className="mx-auto mt-1 h-2 w-1 rounded-full bg-orange-400"
             />
           </motion.div>
-        </motion.div>
+        </div>
       </section>
 
       {/* Transition SVG Wave */}
