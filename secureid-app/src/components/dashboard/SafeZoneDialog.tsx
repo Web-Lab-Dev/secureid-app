@@ -11,6 +11,7 @@ import { SAFE_ZONE_COLORS } from '@/types/safe-zone';
 import { createSafeZone, updateSafeZone } from '@/actions/safe-zone-actions';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { logger } from '@/lib/logger';
+import { parseGoogleMapsUrl } from '@/lib/url-helpers';
 import { toast } from 'sonner';
 
 /**
@@ -40,40 +41,6 @@ const SafeZoneSchema = z.object({
   color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Couleur invalide'),
   alertDelay: z.number().min(1, 'Minimum 1 minute').max(60, 'Maximum 60 minutes'),
 });
-
-// Fonction pour extraire les coordonnées d'un lien Google Maps
-function parseGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
-  try {
-    // Format: https://maps.google.com/?q=12.3714,-1.5197
-    // ou: https://www.google.com/maps/place/.../@12.3714,-1.5197,17z
-    // ou: https://goo.gl/maps/...
-
-    // Pattern 1: @lat,lng
-    const atPattern = /@(-?\d+\.?\d*),(-?\d+\.?\d*)/;
-    const atMatch = url.match(atPattern);
-    if (atMatch) {
-      return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) };
-    }
-
-    // Pattern 2: ?q=lat,lng ou &q=lat,lng
-    const qPattern = /[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/;
-    const qMatch = url.match(qPattern);
-    if (qMatch) {
-      return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) };
-    }
-
-    // Pattern 3: /place/lat,lng ou destination=lat,lng
-    const placePattern = /(?:place|destination)[=/](-?\d+\.?\d*),(-?\d+\.?\d*)/;
-    const placeMatch = url.match(placePattern);
-    if (placeMatch) {
-      return { lat: parseFloat(placeMatch[1]), lng: parseFloat(placeMatch[2]) };
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 export function SafeZoneDialog({
   isOpen,

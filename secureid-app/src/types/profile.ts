@@ -124,22 +124,6 @@ export type ProfileData = Partial<ProfileDocument> & {
 };
 
 /**
- * Données pour création d'un nouveau profil (formulaire)
- */
-export interface CreateProfileData {
-  fullName: string;
-  dateOfBirth?: Date;
-  photoFile?: File;
-  bloodType: BloodType;
-  allergies: string[];
-  conditions: string[];
-  medications: string[];
-  medicalNotes?: string;
-  doctorPin: string;
-  emergencyContacts: Omit<EmergencyContact, 'priority'>[];
-}
-
-/**
  * PHASE 8 - TYPES SCHOOL PICKUP
  *
  * Types pour la gestion des sorties d'école

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm, useFieldArray, type FieldErrors } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Trash2, Loader2 } from 'lucide-react';
 import { medicalFormSchema, type MedicalFormData } from '@/schemas/activation';

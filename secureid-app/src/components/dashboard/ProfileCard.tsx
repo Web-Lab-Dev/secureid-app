@@ -3,7 +3,7 @@
 import { useState, memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { User, FileHeart, GraduationCap, Edit3, AlertCircle, History, MapPin, Heart, Shield } from 'lucide-react';
+import { User, GraduationCap, Edit3, AlertCircle, History, MapPin, Heart, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { getBraceletBadgeVariant, getBraceletStatusLabel } from '@/lib/bracelet-helpers';

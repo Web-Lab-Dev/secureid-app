@@ -8,6 +8,7 @@ import { addPickup } from '@/actions/school-actions';
 import type { PickupType } from '@/types/profile';
 import { storage } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { usePhotoUpload } from '@/hooks/usePhotoUpload';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -29,60 +30,37 @@ export function AddPickupDialog({ isOpen, onClose, profileId }: AddPickupDialogP
   const [relation, setRelation] = useState('');
   const [type, setType] = useState<PickupType>('PERMANENT');
   const [expiresAt, setExpiresAt] = useState('');
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // Hook pour la gestion de la photo (max 5MB pour pickup)
+  const { photoFile, photoPreview, error: photoError, handlePhotoChange, resetPhoto } = usePhotoUpload({ maxSizeMB: 5 });
 
-    // Vérifier le type
-    if (!file.type.startsWith('image/')) {
-      setError('Le fichier doit être une image');
-      return;
-    }
-
-    // Vérifier la taille (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('L\'image ne doit pas dépasser 5 MB');
-      return;
-    }
-
-    setPhotoFile(file);
-    setError('');
-
-    // Créer la preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhotoPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
+  // Combiner les erreurs pour l'affichage
+  const error = formError || photoError;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setFormError('');
 
     // Validation
     if (!name.trim()) {
-      setError('Le nom est requis');
+      setFormError('Le nom est requis');
       return;
     }
 
     if (!relation.trim()) {
-      setError('La relation est requise');
+      setFormError('La relation est requise');
       return;
     }
 
     if (!photoFile) {
-      setError('La photo est obligatoire');
+      setFormError('La photo est obligatoire');
       return;
     }
 
     if (type === 'TEMPORARY' && !expiresAt) {
-      setError('La date d\'expiration est requise pour un pass temporaire');
+      setFormError('La date d\'expiration est requise pour un pass temporaire');
       return;
     }
 
@@ -108,11 +86,11 @@ export function AddPickupDialog({ isOpen, onClose, profileId }: AddPickupDialogP
         // Reset et fermer
         handleClose();
       } else {
-        setError(result.message || 'Erreur lors de l\'ajout');
+        setFormError(result.message || 'Erreur lors de l\'ajout');
       }
     } catch (err) {
       logger.error('Error adding pickup:', err);
-      setError('Une erreur est survenue');
+      setFormError('Une erreur est survenue');
     } finally {
       setLoading(false);
     }
@@ -123,9 +101,8 @@ export function AddPickupDialog({ isOpen, onClose, profileId }: AddPickupDialogP
     setRelation('');
     setType('PERMANENT');
     setExpiresAt('');
-    setPhotoFile(null);
-    setPhotoPreview(null);
-    setError('');
+    resetPhoto();
+    setFormError('');
     onClose();
   };
 
@@ -178,10 +155,7 @@ export function AddPickupDialog({ isOpen, onClose, profileId }: AddPickupDialogP
                   />
                   <button
                     type="button"
-                    onClick={() => {
-                      setPhotoFile(null);
-                      setPhotoPreview(null);
-                    }}
+                    onClick={resetPhoto}
                     className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100"
                   >
                     <span className="text-sm font-semibold text-white">Changer</span>

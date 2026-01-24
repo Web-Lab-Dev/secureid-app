@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getActivateUrl } from '@/lib/url-helpers';
 
 export default function CTASection() {
   return (
@@ -39,7 +40,7 @@ export default function CTASection() {
             Rejoignez les centaines de familles burkinabé qui ont choisi la tranquillité.
           </p>
           <Button variant="gradient" size="lg" rounded="full" asChild>
-            <Link href="/login">
+            <Link href={getActivateUrl()}>
               <Shield className="h-5 w-5" aria-hidden="true" />
               Activer sa protection maintenant
             </Link>

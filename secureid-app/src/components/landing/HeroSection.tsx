@@ -4,30 +4,22 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Shield, ShoppingCart } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { OrderModal } from './OrderModal';
 import { Button } from '@/components/ui/button';
+import { getActivateUrl, type BraceletParams } from '@/lib/url-helpers';
 
 interface HeroSectionProps {
-  braceletParams?: { id?: string; token?: string; welcome?: boolean };
+  braceletParams?: BraceletParams;
 }
 
 export default function HeroSection({ braceletParams }: HeroSectionProps) {
-  const heroRef = useRef<HTMLDivElement>(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-
-  // Construire l'URL avec les paramètres du bracelet si disponibles
-  const getActivateUrl = () => {
-    if (braceletParams?.id && braceletParams?.token) {
-      return `/activate?id=${braceletParams.id}&token=${braceletParams.token}`;
-    }
-    return '/login';
-  };
 
   return (
     <>
       {/* SECTION 1: HERO ÉMOTIONNEL */}
-      <section ref={heroRef} className="relative h-screen overflow-hidden">
+      <section className="relative h-screen overflow-hidden">
         {/* Image de fond FIXE (parallax) */}
         <div className="fixed inset-0 h-screen w-full">
           <Image
@@ -62,7 +54,7 @@ export default function HeroSection({ braceletParams }: HeroSectionProps) {
           <div className="mt-10 flex flex-wrap items-center gap-4 animate-in fade-in duration-500 delay-300">
             {/* Bouton Principal - Activer */}
             <Button variant="gradient" size="lg" rounded="full" asChild>
-              <Link href={getActivateUrl()}>
+              <Link href={getActivateUrl(braceletParams)}>
                 <Shield className="h-5 w-5" aria-hidden="true" />
                 Activer sa protection
               </Link>

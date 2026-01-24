@@ -10,6 +10,7 @@ import Image from 'next/image';
 import { updateProfile } from '@/actions/profile-actions';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { uploadProfilePhoto } from '@/lib/storage-helpers';
+import { usePhotoUpload } from '@/hooks/usePhotoUpload';
 import type { ProfileDocument } from '@/types/profile';
 import { phoneSchema } from '@/schemas/activation';
 import { Button } from '@/components/ui/button';
@@ -48,10 +49,11 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Hook pour la gestion de la photo (max 10MB)
+  const { photoFile, photoPreview, error: photoError, handlePhotoChange } = usePhotoUpload({ maxSizeMB: 10 });
 
   // Convertir Timestamp Firebase en string YYYY-MM-DD pour l'input date
   const formatDateForInput = (timestamp: unknown): string => {
@@ -84,30 +86,6 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
       emergencyContactRelation: profile.emergencyContacts[0]?.relationship || 'PARENT',
     },
   });
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      setError('Le fichier doit être une image');
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      setError('L\'image ne doit pas dépasser 10 MB');
-      return;
-    }
-
-    setPhotoFile(file);
-    setError('');
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhotoPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
 
   const onSubmit = async (data: EditProfileData) => {
     if (!user) return;

@@ -180,10 +180,6 @@ export function DashboardNav() {
     return 'Localisation non disponible';
   };
 
-  const getDeviceIcon = (deviceType?: string): string => {
-    return '📱'; // Icône par défaut
-  };
-
   const getDeviceLabel = (scan: ScanWithProfile): string => {
     // Extraire info basique du user agent
     if (scan.userAgent.includes('Mobile')) return 'Mobile';
@@ -321,7 +317,7 @@ export function DashboardNav() {
 
                       {/* Appareil */}
                       <div className="mt-2 flex items-center gap-2 text-sm text-slate-500">
-                        <span className="text-base">{getDeviceIcon()}</span>
+                        <span className="text-base">📱</span>
                         <span>{getDeviceLabel(scan)}</span>
                       </div>
                     </div>

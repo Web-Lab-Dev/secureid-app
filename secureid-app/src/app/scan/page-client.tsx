@@ -159,28 +159,24 @@ export function ScanPageClient() {
 
           scanFrame();
         } else {
-          // STRATÉGIE 2: Fallback @zxing/browser (si BarcodeDetector non supporté)
+          // STRATÉGIE 2: Fallback @zxing/library (si BarcodeDetector non supporté)
           setScannerType('zxing');
-          logger.info('Falling back to @zxing/browser');
+          logger.info('Falling back to @zxing/library');
 
-          const { BrowserQRCodeReader } = await import('@zxing/browser');
-          const codeReader = new BrowserQRCodeReader();
+          const { BrowserMultiFormatReader } = await import('@zxing/library');
+          const codeReader = new BrowserMultiFormatReader();
 
           scanningRef.current = true;
 
-          await codeReader.decodeFromVideoDevice(
-            undefined, // Utiliser le stream existant
+          codeReader.decodeFromVideoDevice(
+            null, // Utiliser le stream existant
             videoRef.current!,
-            (result, error) => {
+            (result) => {
               if (!mounted || !scanningRef.current) return;
-
-              if (error && error.name !== 'NotFoundException') {
-                logger.warn('QR scan error', { error: error.message });
-                return;
-              }
 
               if (result) {
                 stopScanning();
+                codeReader.reset();
                 setScanning(false);
                 handleScanResult(result.getText());
               }

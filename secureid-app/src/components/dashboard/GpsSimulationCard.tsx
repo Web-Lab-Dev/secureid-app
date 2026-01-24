@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer, OverlayView, Circle } from '@react-google-maps/api';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Target, Navigation, Zap, Shield, Route, Home, School, Heart, X, AlertTriangle, Maximize, Minimize } from 'lucide-react';
-import Image from 'next/image';
-import useSound from 'use-sound';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { GoogleMap, useJsApiLoader, Marker, Polyline, TrafficLayer, Circle } from '@react-google-maps/api';
+import { MapPin } from 'lucide-react';
+import { GpsHud, GpsMapControls, GpsSecurityAlert, GpsChildMarker } from './gps';
 import { generateRandomLocation, calculateDistance, calculateETA, formatDistance, type LatLng } from '@/lib/geo-utils';
 import { darkModeMapStyles } from '@/lib/map-styles';
 import { logger } from '@/lib/logger';
@@ -70,12 +68,33 @@ export function GpsSimulationCard({
   const [showSecurityAlert, setShowSecurityAlert] = useState<boolean>(false);
   const [alertedZone, setAlertedZone] = useState<SafeZoneDocument | null>(null);
 
-  // Son d'alerte avec use-sound
+  // Son d'alerte - lazy-loaded pour réduire bundle initial
   // NOTE: Fichier audio OGG (format compatible tous navigateurs)
-  const [playAlert] = useSound('/sounds/alert.ogg', {
-    volume: 0.7,
-    interrupt: true, // Interrompt le son précédent si déjà en cours
-  });
+  const playAlertRef = useRef<(() => void) | null>(null);
+
+  // Fonction pour jouer le son d'alerte (charge use-sound à la demande)
+  const playAlert = useCallback(async () => {
+    // Lazy-load use-sound seulement quand nécessaire
+    if (!playAlertRef.current) {
+      try {
+        const useSound = (await import('use-sound')).default;
+        // Note: useSound est un hook, mais on l'utilise ici de manière sûre
+        // car on ne change pas l'ordre des hooks (c'est dans un callback)
+        const audio = new Audio('/sounds/alert.ogg');
+        audio.volume = 0.7;
+        playAlertRef.current = () => {
+          audio.currentTime = 0; // Permet de rejouer immédiatement
+          audio.play().catch(() => {
+            // Ignorer les erreurs de lecture (ex: politique autoplay)
+          });
+        };
+      } catch {
+        // Fallback silencieux si use-sound ne charge pas
+        playAlertRef.current = () => {};
+      }
+    }
+    playAlertRef.current();
+  }, []);
 
   // Charger Google Maps
   const { isLoaded, loadError } = useJsApiLoader({
@@ -249,9 +268,9 @@ export function GpsSimulationCard({
         setShowSecurityAlert(true);
         setAlertedZone(firstZone);
 
-        // 🔊 Jouer le son d'alerte
+        // 🔊 Jouer le son d'alerte (lazy-loaded)
         try {
-          playAlert();
+          await playAlert();
           logger.info('Alert sound played');
         } catch (error) {
           logger.warn('Failed to play alert sound', { error });
@@ -578,223 +597,36 @@ export function GpsSimulationCard({
           }}
         />
 
-        {/* Marqueur enfant avec photo - OverlayView */}
-        <OverlayView
+        {/* Marqueur enfant avec photo */}
+        <GpsChildMarker
           position={childLocation}
-          mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-        >
-          <div style={{ transform: 'translate(-50%, -100%)', position: 'absolute' }}>
-            <div className="relative flex flex-col items-center">
-              {/* Pulse radar animé */}
-              <motion.div
-                className="absolute left-1/2 top-8 -translate-x-1/2 -translate-y-1/2 h-16 w-16 rounded-full bg-blue-500"
-                animate={{
-                  scale: [1, 2, 1],
-                  opacity: [0.5, 0, 0.5],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeOut",
-                }}
-              />
-
-              {/* Photo circulaire avec bordure */}
-              <div className="relative h-16 w-16 rounded-full bg-white p-1 shadow-2xl ring-4 ring-blue-500 z-10">
-                {childPhotoUrl && childPhotoUrl.trim() !== '' ? (
-                  <div className="relative h-full w-full overflow-hidden rounded-full bg-slate-200">
-                    <Image
-                      src={childPhotoUrl}
-                      alt={childName}
-                      fill
-                      sizes="64px"
-                      className="object-cover"
-                      unoptimized
-                      onError={(e) => {
-                        if (process.env.NODE_ENV !== 'production') console.error('❌ Failed to load child photo', { url: childPhotoUrl });
-                        // Remplacer par le fallback si l'image échoue
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center rounded-full bg-blue-500">
-                    <MapPin className="h-8 w-8 text-white" />
-                  </div>
-                )}
-              </div>
-
-              {/* Pointe du pin */}
-              <div className="relative -mt-1 z-10">
-                <svg width="32" height="20" viewBox="0 0 32 20">
-                  <path d="M16 0 L0 20 L32 20 Z" fill="white" stroke="#3b82f6" strokeWidth="3"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-        </OverlayView>
+          childName={childName}
+          childPhotoUrl={childPhotoUrl}
+        />
       </GoogleMap>
 
-      {/* HUD: Badge LIVE (top left) */}
-      <motion.div
-        className="absolute left-4 top-4 z-10 flex flex-col gap-2"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        {/* Badge LIVE */}
-        <div className="flex items-center gap-2 rounded-full bg-black/70 px-3 py-2 backdrop-blur-md">
-          <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-green-400" />
-          <span className="text-xs font-bold uppercase tracking-wide text-white">Live</span>
-        </div>
-
-        {/* Badge Geofencing (Zone de Sécurité) - Multi-zones */}
-        <motion.div
-          className={`flex items-center gap-2 rounded-full px-3 py-2 backdrop-blur-md ${
-            activeZones.length > 0
-              ? 'bg-green-500/80'
-              : 'bg-orange-500/80 animate-pulse'
-          }`}
-          animate={activeZones.length === 0 ? { scale: [1, 1.05, 1] } : {}}
-          transition={{ duration: 1, repeat: Infinity }}
-        >
-          <Shield className="h-3.5 w-3.5 text-white" />
-          <span className="text-xs font-semibold text-white">
-            {activeZones.length > 0
-              ? `Dans ${activeZones.length} zone${activeZones.length > 1 ? 's' : ''}`
-              : 'Hors de toutes les zones'}
-          </span>
-        </motion.div>
-      </motion.div>
-
-
-      {/* Tooltip distance et temps - déplacé en haut à droite */}
-      <motion.div
-        className="absolute right-4 top-4 z-10"
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.5 }}
-      >
-        <div className="rounded-lg bg-white px-4 py-2 shadow-xl">
-          <div className="flex items-center gap-2">
-            <Navigation className="h-4 w-4 text-blue-600" />
-            <div>
-              <p className="text-sm font-bold text-slate-800">{formatDistance(distance)}</p>
-              <p className="text-xs text-slate-600">~{calculateETA(distance)}</p>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+      {/* HUD: Badge LIVE, Zone Status, Distance */}
+      <GpsHud distance={distance} activeZones={activeZones} />
 
       {/* Contrôles carte (bottom right) */}
-      <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
-        {/* Bouton Recentrer */}
-        <motion.button
-          onClick={handleRecenter}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, type: "spring" }}
-          whileTap={{ scale: 0.95 }}
-          title="Recentrer la carte"
-        >
-          <Target className="h-5 w-5 text-blue-600" />
-        </motion.button>
+      <GpsMapControls
+        showTraffic={showTraffic}
+        showTrajectory={showTrajectory}
+        isFullscreen={isFullscreen}
+        mapType={mapType}
+        onRecenter={handleRecenter}
+        onToggleTraffic={() => setShowTraffic(!showTraffic)}
+        onToggleMapType={toggleMapType}
+        onToggleTrajectory={() => setShowTrajectory(!showTrajectory)}
+        onToggleFullscreen={toggleFullscreen}
+      />
 
-        {/* Bouton Trafic */}
-        <motion.button
-          onClick={() => setShowTraffic(!showTraffic)}
-          className={`flex h-12 w-12 items-center justify-center rounded-full shadow-xl transition-all hover:scale-110 hover:shadow-2xl ${
-            showTraffic ? 'bg-green-500 text-white' : 'bg-white text-slate-600'
-          }`}
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.6, type: "spring" }}
-          whileTap={{ scale: 0.95 }}
-          title="Afficher le trafic"
-        >
-          <Zap className="h-5 w-5" />
-        </motion.button>
-
-        {/* Bouton Type de carte */}
-        <motion.button
-          onClick={toggleMapType}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-xl transition-all hover:scale-110 hover:shadow-2xl"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.7, type: "spring" }}
-          whileTap={{ scale: 0.95 }}
-          title={mapType === 'roadmap' ? 'Vue satellite' : 'Vue carte'}
-        >
-          <Navigation className="h-5 w-5 text-blue-600" />
-        </motion.button>
-
-        {/* Bouton Voir Parcours (Historique) */}
-        <motion.button
-          onClick={() => setShowTrajectory(!showTrajectory)}
-          className={`flex h-12 w-12 items-center justify-center rounded-full shadow-xl transition-all hover:scale-110 hover:shadow-2xl ${
-            showTrajectory ? 'bg-blue-500 text-white' : 'bg-white text-slate-600'
-          }`}
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.8, type: "spring" }}
-          whileTap={{ scale: 0.95 }}
-          title={showTrajectory ? 'Masquer le parcours' : 'Voir le parcours'}
-        >
-          <Route className="h-5 w-5" />
-        </motion.button>
-
-        {/* Bouton Plein Écran */}
-        <motion.button
-          onClick={toggleFullscreen}
-          className={`flex h-12 w-12 items-center justify-center rounded-full shadow-xl transition-all hover:scale-110 hover:shadow-2xl ${
-            isFullscreen ? 'bg-purple-500 text-white' : 'bg-white text-slate-600'
-          }`}
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.9, type: "spring" }}
-          whileTap={{ scale: 0.95 }}
-          title={isFullscreen ? 'Quitter le plein écran' : 'Mode plein écran'}
-        >
-          {isFullscreen ? (
-            <Minimize className="h-5 w-5" />
-          ) : (
-            <Maximize className="h-5 w-5" />
-          )}
-        </motion.button>
-
-      </div>
-
-      {/* Alerte Zone de Sécurité - Déclenchée après 1 minute hors zone */}
-      <AnimatePresence>
-        {showSecurityAlert && (
-          <motion.div
-            className="absolute left-1/2 top-4 z-30 -translate-x-1/2"
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            transition={{ type: "spring" }}
-          >
-            <div className="rounded-xl bg-red-600 px-6 py-4 shadow-2xl">
-              <div className="flex items-center gap-3">
-                <AlertTriangle className="h-6 w-6 text-white animate-pulse" />
-                <div>
-                  <p className="font-bold text-white">🚨 ALERTE SÉCURITÉ</p>
-                  <p className="text-sm text-white/90">
-                    {childName || 'Votre enfant'} est hors de la zone sécurisée depuis plus de 1 minute
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowSecurityAlert(false)}
-                  className="ml-2 rounded-full p-1 hover:bg-red-700 transition-colors"
-                >
-                  <X className="h-5 w-5 text-white" />
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Alerte Zone de Sécurité */}
+      <GpsSecurityAlert
+        show={showSecurityAlert}
+        childName={childName}
+        onDismiss={() => setShowSecurityAlert(false)}
+      />
 
       {/* Contrôles de démo pour tests présentation */}
       {enableDemoControls && (
