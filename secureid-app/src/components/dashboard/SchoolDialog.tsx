@@ -31,20 +31,20 @@ export function SchoolDialog({ isOpen, onClose, profile }: SchoolDialogProps) {
         onClick={onClose}
       />
 
-      {/* Modal */}
+      {/* Modal - Design Enfantin Bleu Ciel */}
       <div className="fixed inset-x-0 top-0 bottom-0 z-50 overflow-y-auto">
-        <div className="min-h-full bg-gradient-to-b from-indigo-950 to-slate-900 px-4 py-6">
+        <div className="min-h-full bg-gradient-to-b from-school-bg to-slate-900 px-4 py-6">
           {/* Header */}
           <div className="mx-auto mb-6 flex max-w-4xl items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/20">
-                <GraduationCap className="h-6 w-6 text-indigo-400" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-school-yellow/20 animate-float">
+                <GraduationCap className="h-7 w-7 text-school-yellow" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">
-                  Portail Scolaire 🎓
+                  Portail Scolaire 🏫
                 </h1>
-                <p className="mt-1 text-sm text-slate-400">
+                <p className="mt-1 text-sm text-school-sky">
                   {profile.fullName} • Gestion des sorties d'école
                 </p>
               </div>
@@ -65,8 +65,8 @@ export function SchoolDialog({ isOpen, onClose, profile }: SchoolDialogProps) {
           </div>
 
           {/* Footer info */}
-          <div className="mx-auto mt-6 max-w-4xl rounded-lg border border-indigo-500/30 bg-indigo-950/30 p-4 text-center">
-            <p className="text-sm text-indigo-300">
+          <div className="mx-auto mt-6 max-w-4xl rounded-2xl border-2 border-school-sky/30 bg-school-bg/30 p-4 text-center">
+            <p className="text-sm text-school-sky">
               🔐 Code PIN école requis pour accéder au portail de contrôle
             </p>
           </div>

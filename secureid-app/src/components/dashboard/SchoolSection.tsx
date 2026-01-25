@@ -105,15 +105,15 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
 
   return (
     <div className="space-y-6">
-      {/* Section PIN École */}
-      <div className="rounded-lg border border-indigo-500/30 bg-indigo-950/20 p-6">
+      {/* Section PIN École - Design Enfantin */}
+      <div className="rounded-2xl border-2 border-school-sky/30 bg-gradient-to-br from-school-bg/40 to-sky-950/30 p-6">
         <div className="mb-4 flex items-center gap-3">
-          <div className="rounded-full bg-indigo-500/20 p-3">
-            <Lock className="h-6 w-6 text-indigo-400" />
+          <div className="rounded-xl bg-school-yellow/20 p-3 animate-soft-bounce">
+            <Lock className="h-6 w-6 text-school-yellow" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-white">Code PIN École</h3>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-school-sky/80">
               Code à 4 chiffres pour le portail de contrôle des sorties
             </p>
           </div>
@@ -129,7 +129,7 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
               onClick={() => setIsEditingPin(true)}
               variant="link"
               size="sm"
-              className="text-indigo-400 hover:text-indigo-300"
+              className="text-school-sky hover:text-school-sky/80"
             >
               Modifier
             </Button>
@@ -148,7 +148,7 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
                 }
               }}
               placeholder="Entrez 4 chiffres"
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-center text-xl font-mono tracking-widest text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+              className="w-full rounded-xl border-2 border-school-sky/30 bg-slate-800/80 px-4 py-3 text-center text-xl font-mono tracking-widest text-white placeholder-slate-500 focus:border-school-sky focus:outline-none focus:ring-2 focus:ring-school-sky/50"
             />
             {pinError && <p className="text-sm text-red-400">{pinError}</p>}
             <div className="flex gap-3">
@@ -179,16 +179,16 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
         )}
       </div>
 
-      {/* Section Récupérateurs */}
-      <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-6">
+      {/* Section Récupérateurs - Design Enfantin */}
+      <div className="rounded-2xl border-2 border-school-green/20 bg-gradient-to-br from-slate-900/80 to-school-bg/20 p-6">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="rounded-full bg-indigo-500/20 p-3">
-              <GraduationCap className="h-6 w-6 text-indigo-400" />
+            <div className="rounded-xl bg-school-green/20 p-3 animate-float">
+              <GraduationCap className="h-6 w-6 text-school-green" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white">Anges Gardiens</h3>
-              <p className="text-sm text-slate-400">
+              <h3 className="text-lg font-semibold text-white">Anges Gardiens 👼</h3>
+              <p className="text-sm text-school-sky/70">
                 Personnes autorisées à récupérer {profile.fullName}
               </p>
             </div>
@@ -206,14 +206,14 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
         {/* Liste des récupérateurs */}
         {loading ? (
           <div className="py-12 text-center">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
-            <p className="mt-4 text-sm text-slate-400">Chargement...</p>
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-school-sky border-t-transparent" />
+            <p className="mt-4 text-sm text-school-sky/70">Chargement...</p>
           </div>
         ) : pickups.length === 0 ? (
-          <div className="rounded-lg border-2 border-dashed border-slate-700 py-12 text-center">
-            <User className="mx-auto h-12 w-12 text-slate-600" />
-            <p className="mt-4 text-slate-400">Aucun récupérateur configuré</p>
-            <p className="mt-2 text-sm text-slate-500">
+          <div className="rounded-2xl border-2 border-dashed border-school-sky/30 bg-school-bg/10 py-12 text-center">
+            <User className="mx-auto h-12 w-12 text-school-sky/50" />
+            <p className="mt-4 text-white/80">Aucun récupérateur configuré</p>
+            <p className="mt-2 text-sm text-school-sky/60">
               Ajoutez les personnes autorisées à récupérer l'enfant à l'école
             </p>
           </div>
@@ -225,7 +225,7 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
               return (
                 <div
                   key={pickup.id}
-                  className="group relative overflow-hidden rounded-lg border border-slate-700 bg-slate-800/50 p-4 transition-all hover:border-indigo-500/50"
+                  className="group relative overflow-hidden rounded-2xl border-2 border-school-sky/20 bg-gradient-to-br from-slate-800/80 to-school-bg/20 p-4 transition-all hover:border-school-sky/50 hover:shadow-lg hover:shadow-school-sky/10"
                 >
                   {/* Badge type */}
                   {badge && (
@@ -243,7 +243,7 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
 
                   {/* Photo */}
                   <div
-                    className="relative mx-auto mb-3 h-24 w-24 cursor-pointer overflow-hidden rounded-full border-2 border-indigo-400 transition-transform hover:scale-110"
+                    className="relative mx-auto mb-3 h-24 w-24 cursor-pointer overflow-hidden rounded-full border-3 border-school-sky/60 ring-4 ring-school-sky/20 transition-transform hover:scale-110"
                     onClick={() => setSelectedPhoto({ url: pickup.photoUrl, name: pickup.name })}
                     title="Cliquez pour agrandir"
                   >
@@ -258,7 +258,7 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
                   {/* Info */}
                   <div className="text-center">
                     <h4 className="font-semibold text-white">{pickup.name}</h4>
-                    <p className="text-sm text-indigo-300">{pickup.relation}</p>
+                    <p className="text-sm text-school-sky">{pickup.relation}</p>
 
                     {/* Type */}
                     {pickup.type === 'PERMANENT' && (

@@ -31,6 +31,12 @@ const buttonVariants = cva(
         danger: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500/50',
         indigo: 'bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-500/50',
 
+        // Portal variants - Design enfantin
+        school:
+          'bg-gradient-to-r from-school-sky to-school-sky-dark text-white hover:shadow-lg hover:shadow-school-sky/30 hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-school-sky/50 rounded-xl',
+        health:
+          'bg-gradient-to-r from-health-mint to-health-teal text-white hover:shadow-lg hover:shadow-health-mint/30 hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-health-mint/50 rounded-xl',
+
         // Emotional variants - Pour design parental rassurant
         protective:
           'bg-linear-to-r from-protective to-purple-700 text-white hover:shadow-lg hover:shadow-protective/30 hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-protective/50',

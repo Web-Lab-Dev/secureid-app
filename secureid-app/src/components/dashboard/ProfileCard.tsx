@@ -104,7 +104,7 @@ export const ProfileCard = memo(function ProfileCard({
   return (
     <Card
       variant="default"
-      className="overflow-hidden transition-all hover:border-brand-orange hover:shadow-lg hover:shadow-brand-orange/10 bg-linear-to-br from-warm-gray to-brand-black"
+      className="overflow-hidden transition-all hover:border-soft-pink/50 hover:shadow-xl hover:shadow-soft-pink/10 bg-gradient-to-br from-slate-800/90 to-slate-900/95 rounded-2xl border-2 border-slate-700/50"
     >
       <div className="p-6">
         {/* Header avec Photo - Clickable pour éditer profil */}
@@ -113,7 +113,7 @@ export const ProfileCard = memo(function ProfileCard({
             {/* Photo de profil - Clickable pour voir en grand */}
             <button
               onClick={() => profile.photoUrl && setIsPhotoModalOpen(true)}
-              className={`relative h-28 w-28 overflow-hidden rounded-full border-2 transition-transform hover:scale-105 active:scale-95 ${localStatus === 'ACTIVE' ? 'border-brand-orange animate-pulse shadow-lg shadow-brand-orange/50' : 'border-slate-700'}`}
+              className={`relative h-28 w-28 overflow-hidden rounded-full border-4 transition-transform hover:scale-105 active:scale-95 ${localStatus === 'ACTIVE' ? 'border-soft-pink ring-4 ring-soft-pink/30 shadow-lg shadow-soft-pink/30 animate-soft-bounce' : 'border-slate-600 ring-2 ring-slate-700/50'}`}
               disabled={!profile.photoUrl}
               aria-label={profile.photoUrl ? `Voir la photo de ${profile.fullName} en grand` : `Pas de photo pour ${profile.fullName}`}
             >
@@ -205,16 +205,16 @@ export const ProfileCard = memo(function ProfileCard({
             Modifier le Profil
           </Button>
 
-          {/* Bouton 3: Son Carnet de Santé - Design Protecteur */}
-          <Button onClick={onManageMedical} variant="primary" size="sm" fullWidth className="bg-linear-to-r from-trust-blue to-trust-blue-dark hover:shadow-trust-blue/20">
+          {/* Bouton 3: Son Carnet de Santé - Design Apaisant Menthe */}
+          <Button onClick={onManageMedical} variant="primary" size="sm" fullWidth className="bg-gradient-to-r from-health-mint to-health-teal hover:shadow-lg hover:shadow-health-mint/30 rounded-xl">
             <Shield className="h-4 w-4" />
-            Son Carnet de Santé
+            Son Carnet de Santé 🩺
           </Button>
 
-          {/* Bouton 4: Portail Scolaire */}
-          <Button onClick={onManageSchool} variant="indigo" size="sm" fullWidth>
+          {/* Bouton 4: Portail Scolaire - Design Enfantin Bleu Ciel */}
+          <Button onClick={onManageSchool} variant="primary" size="sm" fullWidth className="bg-gradient-to-r from-school-sky to-school-sky-dark hover:shadow-lg hover:shadow-school-sky/30 rounded-xl">
             <GraduationCap className="h-4 w-4" />
-            Portail Scolaire
+            Portail Scolaire 🏫
           </Button>
 
           {/* Bouton 5: Historique des Scans */}
