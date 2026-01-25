@@ -35,23 +35,38 @@ export default function HeroSection({ braceletParams }: HeroSectionProps) {
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/50" />
         </div>
 
-        {/* Titre optimisé pour LCP - Animations simplifiées */}
+        {/* Titre avec animations Framer Motion */}
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
-          <h1 className="font-playfair text-4xl font-bold leading-tight text-white drop-shadow-2xl sm:text-5xl md:text-6xl lg:text-7xl animate-in fade-in duration-500">
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="font-playfair text-4xl font-bold leading-tight text-white drop-shadow-2xl sm:text-5xl md:text-6xl lg:text-7xl"
+          >
             <span className="block">
               Parce qu'il est
             </span>
             <span className="block bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent">
               votre monde.
             </span>
-          </h1>
+          </motion.h1>
 
-          <p className="mt-6 max-w-2xl font-outfit text-lg text-white/95 drop-shadow-lg sm:text-xl animate-in fade-in duration-500 delay-150">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="mt-6 max-w-2xl font-outfit text-lg text-white/95 drop-shadow-lg sm:text-xl"
+          >
             Un lien invisible qui veille sur lui quand vos yeux ne le peuvent pas.
-          </p>
+          </motion.p>
 
           {/* CTA Buttons */}
-          <div className="mt-10 flex flex-wrap items-center gap-4 animate-in fade-in duration-500 delay-300">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="mt-10 flex flex-wrap items-center gap-4"
+          >
             {/* Bouton Principal - Activer */}
             <Button variant="gradient" size="lg" rounded="full" asChild>
               <Link href={getActivateUrl(braceletParams)}>
@@ -65,7 +80,7 @@ export default function HeroSection({ braceletParams }: HeroSectionProps) {
               <ShoppingCart className="h-5 w-5" aria-hidden="true" />
               Commander un bracelet
             </Button>
-          </div>
+          </motion.div>
         </div>
 
         {/* Scroll indicator - Lazy loaded avec motion */}

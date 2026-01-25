@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, MapPin, Loader2, ShoppingCart, CheckCircle } from 'lucide-react';
+import { useState } from 'react';
+import { X, Loader2, ShoppingCart, CheckCircle } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { PRICING } from '@/lib/config';
@@ -28,8 +28,6 @@ interface OrderFormData {
   customerPhone: string;
   quantity: number;
   deliveryAddress: string;
-  gpsLocation: { lat: number; lng: number } | null;
-  deliveryNotes?: string;
 }
 
 export function OrderModal({ isOpen, onClose }: OrderModalProps) {
@@ -38,49 +36,11 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
     customerPhone: '+226',
     quantity: 1,
     deliveryAddress: '',
-    gpsLocation: null,
-    deliveryNotes: '',
   });
 
-  const [isLoadingGPS, setIsLoadingGPS] = useState(false);
-  const [gpsError, setGpsError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  // Auto-détection GPS au montage du composant
-  useEffect(() => {
-    if (isOpen && !formData.gpsLocation) {
-      detectGPS();
-    }
-  }, [isOpen]);
-
-  const detectGPS = () => {
-    if (!navigator.geolocation) {
-      setGpsError('Géolocalisation non supportée par votre navigateur');
-      return;
-    }
-
-    setIsLoadingGPS(true);
-    setGpsError(null);
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setFormData((prev) => ({
-          ...prev,
-          gpsLocation: {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          },
-        }));
-        setIsLoadingGPS(false);
-      },
-      (error) => {
-        setGpsError('Impossible de détecter votre position');
-        setIsLoadingGPS(false);
-      }
-    );
-  };
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFormData({ ...formData, quantity: parseInt(e.target.value) });
@@ -112,8 +72,6 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
           pricePerBracelet: PRICING.bracelet.priceInCFA,
           totalAmount,
           deliveryAddress: formData.deliveryAddress,
-          gpsLocation: formData.gpsLocation,
-          deliveryNotes: formData.deliveryNotes,
         }),
         signal: controller.signal,
       });
@@ -132,8 +90,6 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
             customerPhone: '+226',
             quantity: 1,
             deliveryAddress: '',
-            gpsLocation: null,
-            deliveryNotes: '',
           });
           onClose();
         }, 3000);
@@ -174,8 +130,7 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
             Commande Reçue ! ✅
           </h2>
           <p className="text-slate-600">
-            Merci pour votre commande. Un livreur vous contactera dans les 24h pour confirmer la
-            livraison.
+            Merci pour votre commande. Nous vous contacterons dans les 24h pour confirmer votre commande.
           </p>
         </div>
       </div>
@@ -291,59 +246,6 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
               />
             </div>
 
-            {/* GPS */}
-            <div>
-              <label className="mb-2 block font-outfit text-sm font-semibold text-slate-700">
-                Position GPS (optionnel)
-              </label>
-              <div className="flex items-center gap-3">
-                {isLoadingGPS ? (
-                  <div className="flex items-center gap-2 text-slate-600">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span className="font-outfit text-sm">Détection en cours...</span>
-                  </div>
-                ) : formData.gpsLocation ? (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <MapPin className="h-5 w-5" />
-                    <span className="font-outfit text-sm">
-                      Position détectée ({formData.gpsLocation.lat.toFixed(4)}, {formData.gpsLocation.lng.toFixed(4)})
-                    </span>
-                  </div>
-                ) : (
-                  <Button
-                    type="button"
-                    onClick={detectGPS}
-                    variant="outline"
-                    size="sm"
-                    className="border-orange-500 text-orange-500 hover:bg-orange-50"
-                  >
-                    <MapPin className="h-4 w-4" />
-                    Détecter ma position
-                  </Button>
-                )}
-              </div>
-              {gpsError && (
-                <p className="mt-2 font-outfit text-sm text-red-500">{gpsError}</p>
-              )}
-            </div>
-
-            {/* Notes supplémentaires */}
-            <div>
-              <label
-                htmlFor="deliveryNotes"
-                className="mb-2 block font-outfit text-sm font-semibold text-slate-700"
-              >
-                Notes pour la livraison (optionnel)
-              </label>
-              <textarea
-                id="deliveryNotes"
-                rows={2}
-                value={formData.deliveryNotes}
-                onChange={(e) => setFormData({ ...formData, deliveryNotes: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 font-outfit text-slate-900 transition-colors focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-                placeholder="Ex: Appeler avant d'arriver, porte bleue..."
-              />
-            </div>
           </div>
 
           {/* Total */}
@@ -381,22 +283,22 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
               disabled={isSubmitting}
               variant="gradient"
               size="md"
-              className="flex-1"
+              className="flex-1 gap-2"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  Envoi...
+                  <span>Envoi...</span>
                 </>
               ) : (
-                'Confirmer la commande'
+                <>
+                  <ShoppingCart className="h-5 w-5" />
+                  <span>Confirmer la commande</span>
+                </>
               )}
             </Button>
           </div>
 
-          <p className="mt-4 text-center font-outfit text-xs text-slate-500">
-            📞 Un livreur vous contactera dans les 24h pour confirmer la livraison
-          </p>
         </form>
       </div>
     </div>

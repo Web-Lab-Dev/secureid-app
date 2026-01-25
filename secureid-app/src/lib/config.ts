@@ -55,7 +55,7 @@ export const PRICING = {
     currencySymbol: '€',
     originalPrice: 49.99, // Prix barré
     discount: 40, // Pourcentage de réduction
-    priceInCFA: 5000, // Prix en FCFA pour les paiements locaux
+    priceInCFA: 10000, // Prix en FCFA pour les paiements locaux
   },
   shipping: {
     standard: 4.99,
