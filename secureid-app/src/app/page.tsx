@@ -96,6 +96,10 @@ export default function LandingPage() {
 
         <ShieldSection />
         <FeaturesSection />
+
+        {/* DÉMO PRODUIT - Présenté AVANT les fonctionnalités détaillées pour cohérence narrative */}
+        <ProductDemoSection />
+
         <IASection />
       </Suspense>
 
@@ -104,18 +108,14 @@ export default function LandingPage() {
         <ParentTestimonialsTikTokSection />
       </Suspense>
 
-      {/* NOUVELLE SECTION: Geofencing GPS - Solution proactive */}
+      {/* NOUVELLE SECTION: Geofencing GPS - Solution proactive après le choc émotionnel */}
       <Suspense fallback={<div className="min-h-96 w-full bg-gradient-to-br from-indigo-50 to-blue-50" />}>
         <GeofencingSection />
       </Suspense>
 
+      {/* Interface Secouriste - Les deux portails */}
       <Suspense fallback={<div className="min-h-96 w-full bg-slate-900" />}>
         <SecoursiteSection />
-      </Suspense>
-
-      {/* INSERTION C: DÉMO PRODUIT "L'ARMURE INVISIBLE" */}
-      <Suspense fallback={<div className="min-h-96 w-full bg-stone-900" />}>
-        <ProductDemoSection />
       </Suspense>
 
       {/* SECTION 4: TÉMOIGNAGES - PHASE 12 CARROUSEL */}

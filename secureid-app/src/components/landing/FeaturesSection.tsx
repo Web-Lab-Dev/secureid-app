@@ -89,7 +89,7 @@ export default function FeaturesSection() {
             </p>
           </motion.div>
 
-          {/* Carte 3: Le Lien */}
+          {/* Carte 3: La Localisation */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -101,12 +101,12 @@ export default function FeaturesSection() {
               <Radio className="h-8 w-8 text-white" strokeWidth={2} aria-hidden="true" />
             </div>
             <h3 className="font-playfair text-2xl font-bold text-[#1c1917]">
-              Le Lien
+              La Localisation
             </h3>
             <p className="mt-4 font-outfit leading-relaxed text-[#57534e]">
-              Un lien invisible qui ne rompt jamais.
+              Vous savez toujours où il est, en temps réel.
               <span className="block mt-2 font-semibold text-indigo-700">
-                Le chemin le plus court vers votre voix.
+                Alerte instantanée s'il sort d'une zone sécurisée.
               </span>
             </p>
           </motion.div>

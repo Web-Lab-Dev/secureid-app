@@ -30,6 +30,14 @@ const testimonials: Testimonial[] = [
       "Le bracelet a sauvé du temps précieux. Les infirmiers ont pu voir ses allergies immédiatement et agir vite.",
     bgColor: 'orange',
   },
+  {
+    id: 'fatou',
+    name: 'Fatou O.',
+    city: 'Ouagadougou',
+    quote:
+      "Mon fils est sorti de l'école sans prévenir. J'ai reçu l'alerte sur mon téléphone immédiatement. En 5 minutes, je savais exactement où il était.",
+    bgColor: 'rose',
+  },
 ];
 
 /**

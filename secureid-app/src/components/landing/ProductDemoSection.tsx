@@ -1,6 +1,6 @@
 'use client';
 
-import { Shield, Battery, Droplet } from 'lucide-react';
+import { Shield, Zap, Droplet } from 'lucide-react';
 
 /**
  * Section Démo Produit "L'Armure Invisible"
@@ -19,7 +19,7 @@ export function ProductDemoSection() {
             </span>
           </h2>
           <p className="mt-4 font-outfit text-lg text-stone-300 sm:text-xl">
-            Pas de batterie. Pas d'ondes. 100% Étanche. Indestructible.
+            Robuste. Étanche. Confortable. Prêt pour toutes ses aventures.
           </p>
         </div>
 
@@ -39,16 +39,16 @@ export function ProductDemoSection() {
 
         {/* Grid Features */}
         <div className="grid gap-8 md:grid-cols-3">
-          {/* Feature 1: Pas de Batterie */}
+          {/* Feature 1: Autonomie longue durée */}
           <div className="text-center">
             <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500/10">
-              <Battery className="h-8 w-8 text-orange-400" strokeWidth={2} aria-hidden="true" />
+              <Zap className="h-8 w-8 text-orange-400" strokeWidth={2} aria-hidden="true" />
             </div>
             <h3 className="mb-2 font-outfit text-xl font-semibold text-white">
-              0% Batterie requise
+              Autonomie optimisée
             </h3>
             <p className="font-outfit text-stone-400">
-              Aucune recharge nécessaire. Il protège jour et nuit, sans jamais s'éteindre.
+              Une recharge rapide pour des jours de protection. Le QR reste actif même batterie vide.
             </p>
           </div>
 
@@ -65,7 +65,7 @@ export function ProductDemoSection() {
             </p>
           </div>
 
-          {/* Feature 3: Indestructible */}
+          {/* Feature 3: Hypoallergénique */}
           <div className="text-center">
             <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10">
               <Shield className="h-8 w-8 text-emerald-400" strokeWidth={2} aria-hidden="true" />
@@ -74,7 +74,7 @@ export function ProductDemoSection() {
               Matériaux Hypoallergéniques
             </h3>
             <p className="font-outfit text-stone-400">
-              Conçu avec des matériaux certifiés, doux pour la peau. Indestructible.
+              Conçu avec des matériaux certifiés, doux pour la peau sensible des enfants.
             </p>
           </div>
         </div>
