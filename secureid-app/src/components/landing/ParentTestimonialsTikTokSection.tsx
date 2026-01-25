@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { Heart } from 'lucide-react';
 
 /**
@@ -210,11 +211,15 @@ export default function ParentTestimonialsTikTokSection() {
                 <div className="group relative overflow-hidden rounded-2xl bg-slate-800/50 p-3 backdrop-blur-sm transition-all duration-300 hover:bg-slate-800/70 hover:scale-[1.02]">
                   {/* Image annonce */}
                   <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-slate-900">
-                    {/* Image réelle de l'annonce */}
-                    <img
-                      src={announcement.imagePath}
+                    {/* Image réelle de l'annonce - Optimisée avec Next.js Image */}
+                    <Image
+                      src={decodeURIComponent(announcement.imagePath)}
                       alt={announcement.caption}
-                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 640px) 280px, 320px"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                      quality={60}
                     />
 
                     {/* Overlay gradient */}

@@ -41,7 +41,7 @@ const nextConfig: NextConfig = {
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     // Configuration des qualités d'image
-    qualities: [75, 90], // Support quality 90 pour hero image
+    qualities: [60, 75, 90], // 60 pour carousel, 75 default, 90 pour hero
     // Domaines autorisés pour les images externes
     remotePatterns: [
       {

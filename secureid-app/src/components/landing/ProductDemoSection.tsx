@@ -1,12 +1,35 @@
 'use client';
 
 import { Shield, Zap, Droplet } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * Section Démo Produit "L'Armure Invisible"
  * Présente les caractéristiques physiques du bracelet
  */
 export function ProductDemoSection() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isInView, setIsInView] = useState(false);
+
+  // Lazy load: ne charge la vidéo que lorsqu'elle est visible
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section className="relative z-10 bg-stone-900 px-4 py-20 sm:py-32">
       <div className="mx-auto max-w-6xl">
@@ -23,16 +46,18 @@ export function ProductDemoSection() {
           </p>
         </div>
 
-        {/* Vidéo Démo */}
-        <div className="relative mb-16 aspect-video overflow-hidden rounded-3xl shadow-2xl shadow-orange-500/20">
+        {/* Vidéo Démo - Lazy loaded */}
+        <div className="relative mb-16 aspect-video overflow-hidden rounded-3xl shadow-2xl shadow-orange-500/20 bg-stone-800">
           <video
-            autoPlay
+            ref={videoRef}
+            autoPlay={isInView}
             muted
             loop
             playsInline
+            preload="none"
             className="h-full w-full object-cover rounded-3xl"
           >
-            <source src="/landing/video-demo.mp4" type="video/mp4" />
+            {isInView && <source src="/landing/video-demo.mp4" type="video/mp4" />}
             Votre navigateur ne supporte pas la vidéo HTML5.
           </video>
         </div>

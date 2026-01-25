@@ -36,6 +36,8 @@ export default function TrustBar() {
                 key={`trust-${index}`}
                 className="flex items-center gap-2 grayscale opacity-50"
                 title={item.title}
+                role="img"
+                aria-label={item.title}
               >
                 <Icon className="h-10 w-10 text-stone-700" aria-hidden="true" />
                 <span className="text-xs font-medium text-stone-600 whitespace-nowrap">{item.label}</span>
