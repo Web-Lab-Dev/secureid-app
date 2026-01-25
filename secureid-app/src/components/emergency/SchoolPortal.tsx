@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Calendar, UserCheck, Clock } from 'lucide-react';
+import { X, Calendar, UserCheck, Clock, GraduationCap } from 'lucide-react';
 import Image from 'next/image';
 import type { PickupDocument } from '@/types/profile';
 import { getAuthorizedPickups } from '@/actions/school-actions';
@@ -85,18 +85,23 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
         onClick={onClose}
       />
 
-      {/* Modal */}
+      {/* Modal - Design Enfantin Bleu Ciel */}
       <div className="fixed inset-x-0 top-0 bottom-0 z-50 overflow-y-auto">
-        <div className="min-h-full bg-gradient-to-b from-indigo-950 to-slate-900 px-4 py-6">
+        <div className="min-h-full bg-gradient-to-b from-school-bg to-slate-900 px-4 py-6">
           {/* Header */}
           <div className="mx-auto mb-6 flex max-w-4xl items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-white">
-                Contrôle Sortie École 🎓
-              </h1>
-              <p className="mt-1 text-lg text-indigo-300">
-                Qui est venu chercher <span className="font-semibold">{childName}</span> ?
-              </p>
+            <div className="flex items-center gap-4">
+              <div className="rounded-2xl bg-school-yellow/20 p-3 animate-float">
+                <GraduationCap className="h-8 w-8 text-school-yellow" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">
+                  Contrôle Sortie École 🏫
+                </h1>
+                <p className="mt-1 text-lg text-school-sky">
+                  Qui est venu chercher <span className="font-semibold">{childName}</span> ?
+                </p>
+              </div>
             </div>
             <button
               onClick={onClose}
@@ -110,15 +115,15 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
           {loading ? (
             <div className="flex min-h-[40vh] items-center justify-center">
               <div className="text-center">
-                <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
-                <p className="mt-4 text-slate-400">Chargement...</p>
+                <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-school-sky border-t-transparent" />
+                <p className="mt-4 text-school-sky/70">Chargement...</p>
               </div>
             </div>
           ) : pickups.length === 0 ? (
             <div className="flex min-h-[40vh] items-center justify-center">
               <div className="text-center">
-                <UserCheck className="mx-auto h-16 w-16 text-slate-600" />
-                <p className="mt-4 text-lg text-slate-400">
+                <UserCheck className="mx-auto h-16 w-16 text-school-sky/50" />
+                <p className="mt-4 text-lg text-white/80">
                   Aucun récupérateur autorisé configuré
                 </p>
               </div>
@@ -131,7 +136,7 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
                 return (
                   <div
                     key={pickup.id}
-                    className="group relative overflow-hidden rounded-2xl border-2 border-indigo-500/30 bg-slate-800/50 p-6 shadow-2xl backdrop-blur-sm transition-all hover:border-indigo-400 hover:shadow-indigo-500/20"
+                    className="group relative overflow-hidden rounded-3xl border-2 border-school-sky/30 bg-gradient-to-br from-slate-800/80 to-school-bg/30 p-6 shadow-2xl backdrop-blur-sm transition-all hover:border-school-sky hover:shadow-school-sky/30"
                   >
                     {/* Badge Temporaire */}
                     {pickup.type === 'TEMPORARY' && expirationInfo && (
@@ -154,7 +159,7 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
 
                     {/* Photo */}
                     <div
-                      className="relative mx-auto mb-4 h-40 w-40 cursor-pointer overflow-hidden rounded-full border-4 border-indigo-400 shadow-[0_0_30px_rgba(99,102,241,0.3)] transition-transform hover:scale-110"
+                      className="relative mx-auto mb-4 h-40 w-40 cursor-pointer overflow-hidden rounded-full border-4 border-school-sky ring-4 ring-school-sky/30 shadow-[0_0_30px_rgba(56,189,248,0.3)] transition-transform hover:scale-110"
                       onClick={() => setSelectedPhoto({ url: pickup.photoUrl, name: pickup.name })}
                       title="Cliquez pour agrandir"
                     >
@@ -170,7 +175,7 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
                     {/* Info */}
                     <div className="text-center">
                       <h3 className="text-xl font-bold text-white">{pickup.name}</h3>
-                      <p className="mt-1 text-sm font-medium text-indigo-300">{pickup.relation}</p>
+                      <p className="mt-1 text-sm font-medium text-school-sky">{pickup.relation}</p>
 
                       {/* Expiration */}
                       {expirationInfo && (
@@ -194,8 +199,8 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
           )}
 
           {/* Footer info */}
-          <div className="mx-auto mt-8 max-w-4xl rounded-lg border border-indigo-500/30 bg-indigo-950/50 p-4 text-center">
-            <p className="text-sm text-indigo-300">
+          <div className="mx-auto mt-8 max-w-4xl rounded-2xl border-2 border-school-yellow/30 bg-school-bg/50 p-4 text-center">
+            <p className="text-sm text-school-yellow">
               ⚠️ Vérifiez visuellement l'identité de la personne avant de confier l'enfant
             </p>
           </div>

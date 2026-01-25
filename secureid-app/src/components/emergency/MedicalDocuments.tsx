@@ -55,7 +55,7 @@ export function MedicalDocuments({ profileId, pin }: MedicalDocumentsProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-health-mint" />
       </div>
     );
   }
@@ -71,15 +71,15 @@ export function MedicalDocuments({ profileId, pin }: MedicalDocumentsProps) {
   if (documents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
-        <FileX className="mb-3 h-12 w-12 text-slate-600" />
-        <p className="text-sm text-slate-400">Aucun document médical disponible</p>
+        <FileX className="mb-3 h-12 w-12 text-health-lavender/50" />
+        <p className="text-sm text-health-teal/70">Aucun document médical disponible</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-medium text-slate-400">
+      <p className="text-sm font-medium text-health-teal">
         {documents.length} document{documents.length > 1 ? 's' : ''} disponible
         {documents.length > 1 ? 's' : ''}
       </p>
@@ -91,28 +91,28 @@ export function MedicalDocuments({ profileId, pin }: MedicalDocumentsProps) {
             href={doc.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-800 p-3 transition-colors hover:bg-slate-750"
+            className="flex items-center justify-between rounded-xl border-2 border-health-mint/20 bg-slate-800/80 p-3 transition-all hover:bg-health-bg/20 hover:border-health-mint/40"
           >
             <div className="flex items-center gap-3">
               {doc.type === 'pdf' ? (
-                <FileText className="h-5 w-5 text-red-500" />
+                <FileText className="h-5 w-5 text-health-pink" />
               ) : (
-                <ImageIcon className="h-5 w-5 text-blue-500" />
+                <ImageIcon className="h-5 w-5 text-health-lavender" />
               )}
               <div>
                 <p className="text-sm font-medium text-white">{doc.name}</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-health-teal/60">
                   {doc.type === 'pdf' ? 'Document PDF' : 'Image'}
                 </p>
               </div>
             </div>
 
-            <Download className="h-4 w-4 text-slate-400" />
+            <Download className="h-4 w-4 text-health-mint" />
           </a>
         ))}
       </div>
 
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-health-teal/50">
         Les liens de téléchargement expirent après 15 minutes
       </p>
     </div>

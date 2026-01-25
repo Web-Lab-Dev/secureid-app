@@ -99,28 +99,28 @@ export function ActionsFooter({ profile, geolocation, onOpenMedicalPortal, onOpe
           )}
         </Button>
 
-        {/* Bouton Contrôle École (Outline, Indigo) - PHASE 8 */}
+        {/* Bouton Contrôle École - Design Enfantin Bleu Ciel */}
         <Button
           onClick={onOpenSchoolPortal}
           variant="outline"
           size="md"
           fullWidth
-          className="border-2 border-indigo-600 text-indigo-400 hover:bg-indigo-600/10"
+          className="border-2 border-school-sky text-school-sky hover:bg-school-sky/10 hover:border-school-yellow hover:shadow-lg hover:shadow-school-sky/20 rounded-xl transition-all"
         >
           <GraduationCap className="h-5 w-5" />
-          <span>Contrôle Sortie École 🎓</span>
+          <span>Contrôle Sortie École 🏫</span>
         </Button>
 
-        {/* Bouton Portail Médecin (Outline, Bleu, Discret) */}
+        {/* Bouton Portail Médecin - Design Apaisant Menthe */}
         <Button
           onClick={onOpenMedicalPortal}
           variant="outline"
           size="md"
           fullWidth
-          className="border-2 border-blue-600 text-blue-400 hover:bg-blue-600/10"
+          className="border-2 border-health-mint text-health-mint hover:bg-health-mint/10 hover:border-health-teal hover:shadow-lg hover:shadow-health-mint/20 rounded-xl transition-all"
         >
           <Stethoscope className="h-5 w-5" />
-          <span>Accès Personnel Médical 🔒</span>
+          <span>Accès Personnel Médical 🩺</span>
         </Button>
 
         {/* Note de confidentialité */}

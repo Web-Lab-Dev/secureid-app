@@ -75,9 +75,11 @@ export function PinDialog({ isOpen, onClose, profileId }: PinDialogProps) {
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5 text-blue-500" />
-            Accès Personnel Médical
+          <DialogTitle className="flex items-center gap-3">
+            <div className="rounded-xl bg-health-mint/20 p-2 animate-soft-bounce">
+              <Lock className="h-5 w-5 text-health-mint" />
+            </div>
+            <span>Accès Personnel Médical 🩺</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -96,7 +98,7 @@ export function PinDialog({ isOpen, onClose, profileId }: PinDialogProps) {
                 onChange={handlePinChange}
                 maxLength={6}
                 autoFocus
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-center font-mono text-2xl tracking-widest text-white focus:border-blue-500 focus:outline-none"
+                className="w-full rounded-xl border-2 border-health-mint/40 bg-slate-800 px-4 py-3 text-center font-mono text-2xl tracking-widest text-white focus:border-health-mint focus:outline-none focus:ring-2 focus:ring-health-mint/30"
                 placeholder="••••"
               />
             </div>
@@ -110,7 +112,7 @@ export function PinDialog({ isOpen, onClose, profileId }: PinDialogProps) {
             <Button
               type="submit"
               disabled={isVerifying || pin.length !== 4}
-              variant="info"
+              variant="health"
               size="md"
               fullWidth
             >
@@ -124,15 +126,15 @@ export function PinDialog({ isOpen, onClose, profileId }: PinDialogProps) {
               )}
             </Button>
 
-            <p className="text-center text-xs text-slate-500">
+            <p className="text-center text-xs text-health-teal/70">
               Code réservé au personnel médical autorisé
             </p>
           </form>
         ) : (
           // Vue documents (PIN validé)
           <div>
-            <div className="mb-4 rounded-lg bg-green-500/10 border border-green-500/30 p-3">
-              <p className="text-sm text-green-500">✓ Accès autorisé</p>
+            <div className="mb-4 rounded-xl bg-health-mint/10 border-2 border-health-mint/30 p-3">
+              <p className="text-sm text-health-mint">✓ Accès autorisé</p>
             </div>
 
             {validatedPin && <MedicalDocuments profileId={profileId} pin={validatedPin} />}

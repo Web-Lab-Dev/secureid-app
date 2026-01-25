@@ -80,18 +80,18 @@ export function SchoolPinDialog({
         onClick={handleClose}
       />
 
-      {/* Dialog */}
+      {/* Dialog - Design Enfantin Bleu Ciel */}
       <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 p-4">
-        <div className="rounded-2xl border border-indigo-500/30 bg-slate-900 p-6 shadow-2xl">
+        <div className="rounded-3xl border-2 border-school-sky/40 bg-gradient-to-br from-school-bg/90 to-slate-900 p-6 shadow-2xl shadow-school-sky/20">
           {/* Header */}
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-indigo-500/20 p-3">
-                <GraduationCap className="h-6 w-6 text-indigo-400" />
+              <div className="rounded-2xl bg-school-yellow/20 p-3 animate-soft-bounce">
+                <GraduationCap className="h-7 w-7 text-school-yellow" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Contrôle École</h2>
-                <p className="text-sm text-slate-400">Code PIN à 4 chiffres</p>
+                <h2 className="text-xl font-bold text-white">Contrôle École 🏫</h2>
+                <p className="text-sm text-school-sky">Code PIN à 4 chiffres</p>
               </div>
             </div>
             <button
@@ -118,7 +118,7 @@ export function SchoolPinDialog({
                   value={pin}
                   onChange={(e) => handlePinChange(e.target.value)}
                   placeholder="••••"
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800 py-3 pl-10 pr-4 text-center text-2xl font-bold tracking-widest text-white placeholder-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                  className="w-full rounded-xl border-2 border-school-sky/40 bg-slate-800/80 py-3 pl-10 pr-4 text-center text-2xl font-bold tracking-widest text-white placeholder-slate-600 focus:border-school-sky focus:outline-none focus:ring-2 focus:ring-school-sky/50"
                   autoFocus
                   disabled={loading}
                 />
@@ -131,7 +131,7 @@ export function SchoolPinDialog({
             <Button
               type="submit"
               disabled={pin.length !== 4 || loading}
-              variant="indigo"
+              variant="school"
               size="md"
               fullWidth
             >
@@ -140,8 +140,8 @@ export function SchoolPinDialog({
           </form>
 
           {/* Info */}
-          <div className="mt-4 rounded-lg bg-indigo-950/50 p-3">
-            <p className="text-center text-xs text-indigo-300">
+          <div className="mt-4 rounded-2xl bg-school-bg/50 border border-school-sky/30 p-3">
+            <p className="text-center text-xs text-school-sky">
               🔒 Ce code permet de voir les personnes autorisées à récupérer l'enfant
             </p>
           </div>
