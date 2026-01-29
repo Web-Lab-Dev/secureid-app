@@ -175,6 +175,12 @@
   }
 }
 
+/* ============================================
+   UTILITIES LAYER - Classes personnalisées
+   Doit être dans @layer pour éviter le purge
+   ============================================ */
+@layer utilities {
+
 /* PHASE 6 - Custom Animations */
 
 /* Optimized fade-in animation for LCP */
@@ -598,3 +604,5 @@
   );
   pointer-events: none;
 }
+
+} /* Fin de @layer utilities */
