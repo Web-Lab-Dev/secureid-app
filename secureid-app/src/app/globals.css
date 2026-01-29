@@ -553,22 +553,12 @@
    ============================================ */
 
 /* Soft Constellation - Fond doux avec dots rose pastel */
+/* Soft Constellation - Fond doux avec dots rose pastel */
 .bg-soft-constellation {
   background-color: #0f172a;
   background-image:
-    /* Gradient de base avec teinte chaude */
-    linear-gradient(
-      to bottom,
-      rgba(30, 27, 46, 0.8) 0%,
-      rgba(15, 23, 42, 1) 50%,
-      rgba(10, 10, 15, 1) 100%
-    ),
-    /* Points soft-pink subtils */
-    radial-gradient(
-      circle at center,
-      rgba(251, 207, 232, 0.15) 0.5px,
-      transparent 0.5px
-    );
+    linear-gradient(to bottom, rgba(30, 27, 46, 0.8) 0%, rgba(15, 23, 42, 1) 50%, rgba(10, 10, 15, 1) 100%),
+    radial-gradient(circle at center, rgba(251, 207, 232, 0.15) 0.5px, transparent 0.5px);
   background-size: 100% 100%, 28px 28px;
   background-position: 0 0, 0 0;
   background-attachment: fixed;
