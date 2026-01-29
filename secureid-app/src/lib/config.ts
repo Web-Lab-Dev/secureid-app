@@ -27,8 +27,8 @@ export const CONTACT_INFO = {
     sales: 'ventes@secureid.com',
   },
   phone: {
-    support: '+33 1 23 45 67 89',
-    emergency: '112', // Numéro d'urgence européen
+    support: '+226 77 04 04 92',
+    emergency: '17', // Police nationale Burkina Faso
   },
   social: {
     facebook: 'https://facebook.com/secureid',
@@ -37,10 +37,10 @@ export const CONTACT_INFO = {
     linkedin: 'https://linkedin.com/company/secureid',
   },
   address: {
-    street: '123 Avenue de la Sécurité',
-    city: 'Paris',
-    postalCode: '75001',
-    country: 'France',
+    street: 'Secteur 30, Quartier Gounghin',
+    city: 'Ouagadougou',
+    postalCode: '01 BP 1234',
+    country: 'Burkina Faso',
   },
 } as const;
 
@@ -77,7 +77,7 @@ export const EXTERNAL_URLS = {
   // Messagerie
   whatsapp: {
     base: 'https://wa.me',
-    businessNumber: '33123456789', // Numéro WhatsApp Business
+    businessNumber: '22677040492', // Numéro WhatsApp Business Burkina Faso
   },
 
   // Cartes et localisation

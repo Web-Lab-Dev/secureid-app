@@ -182,7 +182,7 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
                 value={formData.customerName}
                 onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
                 className="w-full rounded-lg border border-slate-300 px-4 py-3 font-outfit text-slate-900 transition-colors focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-                placeholder="Ex: Ouedraogo Jean"
+                placeholder="Ex: Sawadogo Malick"
               />
             </div>
 

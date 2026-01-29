@@ -86,7 +86,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
               type="text"
               {...register('displayName')}
               className="w-full pl-11 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange"
-              placeholder="Ex: Jean Dupont"
+              placeholder="Ex: Sawadogo Malick"
               disabled={isSubmitting}
             />
           </div>

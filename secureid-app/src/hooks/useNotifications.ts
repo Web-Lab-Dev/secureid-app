@@ -13,6 +13,7 @@ import { db } from '@/lib/firebase';
  * - Demande la permission
  * - Enregistre le token FCM dans Firestore
  * - Écoute les messages en premier plan
+ * - Gère le badge sur l'icône de l'app (PWA)
  */
 
 interface UseNotificationsReturn {
@@ -24,6 +25,10 @@ interface UseNotificationsReturn {
   requestPermission: () => Promise<void>;
   /** État de chargement */
   loading: boolean;
+  /** Nombre de notifications non lues */
+  unreadCount: number;
+  /** Marquer toutes les notifications comme lues */
+  clearBadge: () => Promise<void>;
 }
 
 export function useNotifications(): UseNotificationsReturn {
@@ -31,6 +36,36 @@ export function useNotifications(): UseNotificationsReturn {
   const [hasPermission, setHasPermission] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  /**
+   * Mettre à jour le badge de l'icône de l'app (PWA)
+   * Utilise l'API Badging pour afficher un compteur sur l'icône
+   */
+  const updateAppBadge = async (count: number) => {
+    try {
+      if ('setAppBadge' in navigator) {
+        if (count > 0) {
+          await (navigator as Navigator & { setAppBadge: (count: number) => Promise<void> }).setAppBadge(count);
+          logger.info('App badge updated', { count });
+        } else {
+          await (navigator as Navigator & { clearAppBadge: () => Promise<void> }).clearAppBadge();
+          logger.info('App badge cleared');
+        }
+      }
+    } catch (error) {
+      // L'API Badging peut échouer silencieusement sur certains navigateurs
+      logger.debug('App badge API not available or failed', { error });
+    }
+  };
+
+  /**
+   * Effacer le badge et réinitialiser le compteur
+   */
+  const clearBadge = async () => {
+    setUnreadCount(0);
+    await updateAppBadge(0);
+  };
 
   useEffect(() => {
     if (!user) {
@@ -100,12 +135,20 @@ export function useNotifications(): UseNotificationsReturn {
         onMessage(messaging, (payload) => {
           logger.info('Foreground message received', { payload });
 
+          // Incrémenter le compteur de notifications non lues
+          setUnreadCount((prev) => {
+            const newCount = prev + 1;
+            // Mettre à jour le badge de l'app
+            updateAppBadge(newCount);
+            return newCount;
+          });
+
           // Afficher notification même si app ouverte
           if (Notification.permission === 'granted') {
             new Notification(payload.notification?.title || 'SecureID Alert', {
               body: payload.notification?.body || 'Nouvelle activité',
-              icon: '/icon-192x192.png',
-              badge: '/badge-72x72.png',
+              icon: '/icon-192.png',
+              badge: '/icon-72.png',
               tag: 'secureid-scan',
             });
           }
@@ -146,5 +189,7 @@ export function useNotifications(): UseNotificationsReturn {
     token,
     requestPermission,
     loading,
+    unreadCount,
+    clearBadge,
   };
 }

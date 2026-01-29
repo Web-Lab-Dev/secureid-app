@@ -19,9 +19,15 @@ export default function DashboardLayout({
   return (
     <AuthGuard>
       <AppLockScreen />
-      <div className="min-h-screen bg-brand-black">
-        <DashboardNav />
-        <main className="container mx-auto px-4 py-6">{children}</main>
+      <div className="relative min-h-screen bg-soft-constellation">
+        {/* Vignette overlay pour effet premium */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
+
+        {/* Contenu */}
+        <div className="relative z-10">
+          <DashboardNav />
+          <main className="container mx-auto px-4 py-6">{children}</main>
+        </div>
       </div>
       {/* Toast Notifications */}
       <Toaster

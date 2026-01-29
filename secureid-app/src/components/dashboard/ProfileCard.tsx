@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, memo } from 'react';
-import Image from 'next/image';
+import { useState, useEffect, memo } from 'react';
 import Link from 'next/link';
+import { AnimatedImage } from '@/components/ui/AnimatedImage';
 import { User, GraduationCap, Edit3, AlertCircle, History, MapPin, Heart, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -56,11 +56,24 @@ export const ProfileCard = memo(function ProfileCard({
   const [localStatus, setLocalStatus] = useState(bracelet?.status || 'ACTIVE');
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
 
+  // ✅ Synchroniser localStatus avec le prop bracelet.status quand il change
+  // Note: localStatus intentionnellement omis des deps pour éviter boucle infinie
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (bracelet?.status) {
+      setLocalStatus(bracelet.status);
+    }
+  }, [bracelet?.status]);
+
   const handleToggleLost = async () => {
     if (!bracelet || !user) return;
 
+    // ✅ FIX: Capturer le statut original AVANT la mise à jour optimiste
+    const originalStatus = localStatus;
+    const newStatus = originalStatus === 'LOST' ? 'ACTIVE' : 'LOST';
+
     const toastId = toast.loading(
-      localStatus === 'LOST'
+      originalStatus === 'LOST'
         ? 'Réactivation du bracelet...'
         : 'Déclaration de perte...'
     );
@@ -69,7 +82,6 @@ export const ProfileCard = memo(function ProfileCard({
 
     try {
       // Mise à jour optimiste
-      const newStatus = localStatus === 'LOST' ? 'ACTIVE' : 'LOST';
       setLocalStatus(newStatus);
 
       // Appeler l'action serveur
@@ -78,8 +90,8 @@ export const ProfileCard = memo(function ProfileCard({
         : await reactivateBracelet({ braceletId: bracelet.id, userId: user.uid });
 
       if (!result.success) {
-        // Revert en cas d'erreur
-        setLocalStatus(localStatus);
+        // ✅ FIX: Revert avec le statut ORIGINAL capturé
+        setLocalStatus(originalStatus);
         toast.error(result.error || 'Erreur lors de la mise à jour', { id: toastId });
       } else {
         toast.success(
@@ -92,8 +104,8 @@ export const ProfileCard = memo(function ProfileCard({
         onStatusChange?.();
       }
     } catch (error) {
-      // Revert en cas d'erreur
-      setLocalStatus(localStatus);
+      // ✅ FIX: Revert avec le statut ORIGINAL capturé
+      setLocalStatus(originalStatus);
       logger.error('Error toggling bracelet status', { error, braceletId: bracelet?.id });
       toast.error('Une erreur est survenue', { id: toastId });
     } finally {
@@ -118,15 +130,18 @@ export const ProfileCard = memo(function ProfileCard({
               aria-label={profile.photoUrl ? `Voir la photo de ${profile.fullName} en grand` : `Pas de photo pour ${profile.fullName}`}
             >
               {profile.photoUrl ? (
-                <Image
+                <AnimatedImage
                   src={profile.photoUrl}
                   alt={profile.fullName}
                   width={112}
                   height={112}
                   className="h-full w-full object-cover"
+                  containerClassName="h-full w-full"
                   sizes="112px"
                   priority={false}
                   quality={90}
+                  animationType="blur-scale"
+                  transitionDuration={800}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-slate-800">

@@ -1,8 +1,88 @@
 import type { NextConfig } from "next";
+import withPWAInit from "@ducanh2912/next-pwa";
 
 // NIVEAU 3 - Bundle Analyzer pour optimisation des performances
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
+});
+
+// PWA Configuration - Mode offline complet avec caching stratégique
+const withPWA = withPWAInit({
+  dest: "public",
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  reloadOnOnline: true,
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  fallbacks: {
+    document: "/offline",
+  },
+  workboxOptions: {
+    skipWaiting: true,
+    clientsClaim: true,
+    // Stratégies de cache personnalisées
+    runtimeCaching: [
+      // Cache d'abord pour les assets statiques (images, fonts, etc.)
+      {
+        urlPattern: /^https:\/\/fonts\.(?:gstatic|googleapis)\.com\/.*/i,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "google-fonts",
+          expiration: {
+            maxEntries: 20,
+            maxAgeSeconds: 365 * 24 * 60 * 60, // 1 an
+          },
+        },
+      },
+      {
+        urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif|ico)$/i,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "images",
+          expiration: {
+            maxEntries: 100,
+            maxAgeSeconds: 30 * 24 * 60 * 60, // 30 jours
+          },
+        },
+      },
+      {
+        urlPattern: /\.(?:js|css)$/i,
+        handler: "StaleWhileRevalidate",
+        options: {
+          cacheName: "static-resources",
+          expiration: {
+            maxEntries: 50,
+            maxAgeSeconds: 7 * 24 * 60 * 60, // 7 jours
+          },
+        },
+      },
+      // Network d'abord pour les API Firebase (données fraîches prioritaires)
+      {
+        urlPattern: /^https:\/\/firebasestorage\.googleapis\.com\/.*/i,
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "firebase-storage",
+          networkTimeoutSeconds: 10,
+          expiration: {
+            maxEntries: 50,
+            maxAgeSeconds: 24 * 60 * 60, // 1 jour
+          },
+        },
+      },
+      // Stale while revalidate pour les pages Next.js
+      {
+        urlPattern: /^https?:\/\/.*\/_next\/.*/i,
+        handler: "StaleWhileRevalidate",
+        options: {
+          cacheName: "next-data",
+          expiration: {
+            maxEntries: 32,
+            maxAgeSeconds: 24 * 60 * 60, // 1 jour
+          },
+        },
+      },
+    ],
+  },
 });
 
 const nextConfig: NextConfig = {
@@ -67,6 +147,10 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
   },
 
+  // Désactiver Turbopack pour compatibilité PWA (utilise webpack)
+  // next-pwa nécessite webpack pour générer le Service Worker
+  turbopack: {},
+
   // Headers de sécurité renforcés
   async headers() {
     return [
@@ -119,4 +203,5 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withBundleAnalyzer(nextConfig);
+// Chaîne de plugins: PWA → Bundle Analyzer → NextConfig
+export default withPWA(withBundleAnalyzer(nextConfig));

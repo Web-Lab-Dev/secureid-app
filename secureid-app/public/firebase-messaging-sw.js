@@ -23,14 +23,28 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 // Gestion des messages en arrière-plan (téléphone en veille)
-messaging.onBackgroundMessage((payload) => {
+messaging.onBackgroundMessage(async (payload) => {
   console.log('[firebase-messaging-sw.js] Background message received:', payload);
+
+  // Mettre à jour le badge de l'app (PWA Badge API)
+  if ('setAppBadge' in navigator) {
+    try {
+      // Récupérer le compteur actuel depuis IndexedDB ou incrémenter
+      const currentBadge = parseInt(localStorage.getItem('secureid-badge-count') || '0', 10);
+      const newBadge = currentBadge + 1;
+      await navigator.setAppBadge(newBadge);
+      // Note: localStorage n'est pas accessible dans SW, utiliser un compteur simple
+      console.log('[firebase-messaging-sw.js] App badge set to:', newBadge);
+    } catch (error) {
+      console.log('[firebase-messaging-sw.js] Badge API error:', error);
+    }
+  }
 
   const notificationTitle = payload.notification?.title || 'SecureID Alert';
   const notificationOptions = {
     body: payload.notification?.body || 'Nouvelle activité sur votre bracelet',
-    icon: '/icon-192x192.png',
-    badge: '/badge-72x72.png',
+    icon: '/icon-192.png',
+    badge: '/icon-72.png',
     vibrate: [200, 100, 200],
     tag: 'secureid-scan',
     requireInteraction: true, // La notification reste affichée
@@ -39,12 +53,12 @@ messaging.onBackgroundMessage((payload) => {
       {
         action: 'view',
         title: 'Voir détails',
-        icon: '/icons/view.png'
+        icon: '/icon-96.png'
       },
       {
         action: 'dismiss',
         title: 'Ignorer',
-        icon: '/icons/close.png'
+        icon: '/icon-96.png'
       }
     ]
   };
@@ -57,6 +71,11 @@ self.addEventListener('notificationclick', (event) => {
   console.log('[firebase-messaging-sw.js] Notification clicked:', event);
 
   event.notification.close();
+
+  // Effacer le badge quand l'utilisateur interagit
+  if ('clearAppBadge' in navigator) {
+    navigator.clearAppBadge().catch(() => {});
+  }
 
   if (event.action === 'view') {
     // Ouvrir l'app sur le dashboard

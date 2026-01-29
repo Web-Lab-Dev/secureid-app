@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
-import { Plus, Loader2, Users, MessageCircle, Globe, Bell, BellOff } from 'lucide-react';
+import { Plus, Loader2, Users, MessageCircle, Globe, Bell, BellOff, Heart } from 'lucide-react';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -22,6 +22,13 @@ const SchoolDialog = lazy(() => import('@/components/dashboard/SchoolDialog').th
 const ScanHistoryDialog = lazy(() => import('@/components/dashboard/ScanHistoryDialog').then(m => ({ default: m.ScanHistoryDialog })));
 
 /**
+ * Délai avant rechargement des bracelets après changement de statut.
+ * Nécessaire pour laisser Firestore propager les modifications.
+ * Valeur calibrée pour couvrir la latence Firestore typique (100-200ms).
+ */
+const FIRESTORE_PROPAGATION_DELAY_MS = 300;
+
+/**
  * PHASE 9 - DASHBOARD CLIENT COMPONENT (Refactored)
  * PHASE 11 - Lazy loading dialogs + optimisations bundle
  *
@@ -38,6 +45,9 @@ export function DashboardPageClient() {
   const { hasPermission, requestPermission, loading: notifLoading } = useNotifications();
   const [bracelets, setBracelets] = useState<Record<string, BraceletDocument>>({});
   const [loadingBracelets, setLoadingBracelets] = useState(true);
+
+  // ✅ FIX: Ref pour éviter les updates d'état après démontage (fuite mémoire)
+  const isMountedRef = useRef(true);
 
   // Dialog states
   const [editProfileDialog, setEditProfileDialog] = useState<{
@@ -60,51 +70,79 @@ export function DashboardPageClient() {
     profile: ProfileDocument | null;
   }>({ isOpen: false, profile: null });
 
-  // Charger les bracelets liés aux profils via Server Action sécurisée
+  // ✅ FIX: Cleanup du ref au démontage
   useEffect(() => {
-    const loadBracelets = async () => {
-      if (!profiles || profiles.length === 0 || !user) {
-        setLoadingBracelets(false);
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Fonction de chargement des bracelets - réutilisable
+  const loadBracelets = useCallback(async (showLoading = false) => {
+    if (!profiles || profiles.length === 0 || !user) {
+      if (isMountedRef.current) setLoadingBracelets(false);
+      return;
+    }
+
+    if (showLoading && isMountedRef.current) {
+      setLoadingBracelets(true);
+    }
+
+    try {
+      // Récupérer tous les IDs de profils
+      const profileIds = profiles.map((p) => p.id).filter((id): id is string => !!id);
+
+      if (profileIds.length === 0) {
+        if (isMountedRef.current) setLoadingBracelets(false);
         return;
       }
 
-      try {
-        // Récupérer tous les IDs de profils
-        const profileIds = profiles.map((p) => p.id).filter((id): id is string => !!id);
+      // ✅ SÉCURITÉ: Utilisation de Server Action (Admin SDK)
+      // - Valide que tous les profils appartiennent au user
+      // - Filtre automatiquement secretToken
+      // - Pas d'exposition Client SDK
+      const result = await getBraceletsByProfileIds({
+        profileIds,
+        userId: user.uid,
+      });
 
-        if (profileIds.length === 0) {
-          setLoadingBracelets(false);
-          return;
-        }
+      // ✅ FIX: Vérifier si toujours monté avant update d'état
+      if (!isMountedRef.current) return;
 
-        // ✅ SÉCURITÉ: Utilisation de Server Action (Admin SDK)
-        // - Valide que tous les profils appartiennent au user
-        // - Filtre automatiquement secretToken
-        // - Pas d'exposition Client SDK
-        const result = await getBraceletsByProfileIds({
-          profileIds,
-          userId: user.uid,
-        });
-
-        if (result.success && result.bracelets) {
-          setBracelets(result.bracelets);
-        } else {
-          logger.warn('Failed to load bracelets', { error: result.error });
-        }
-      } catch (error) {
-        logger.error('Error loading bracelets', { error, profileCount: profiles.length });
-      } finally {
-        setLoadingBracelets(false);
+      if (result.success && result.bracelets) {
+        setBracelets(result.bracelets);
+      } else {
+        logger.warn('Failed to load bracelets', { error: result.error });
       }
-    };
-
-    loadBracelets();
+    } catch (error) {
+      logger.error('Error loading bracelets', { error, profileCount: profiles.length });
+    } finally {
+      if (isMountedRef.current) setLoadingBracelets(false);
+    }
   }, [profiles, user]);
 
-  const handleStatusChange = () => {
-    // Rafraîchir les profils et bracelets
-    refetch();
-  };
+  // Charger les bracelets liés aux profils via Server Action sécurisée
+  useEffect(() => {
+    loadBracelets(true);
+  }, [loadBracelets]);
+
+  const handleStatusChange = useCallback(async () => {
+    // ✅ FIX: Rafraîchir les profils de manière séquentielle
+    // Note: refetch() de useProfiles peut être sync ou async selon l'implémentation
+    await Promise.resolve(refetch());
+
+    // ✅ FIX: Vérifier si toujours monté après refetch
+    if (!isMountedRef.current) return;
+
+    // Délai pour laisser Firestore propager les modifications
+    await new Promise(resolve => setTimeout(resolve, FIRESTORE_PROPAGATION_DELAY_MS));
+
+    // ✅ FIX: Vérifier si toujours monté après le délai
+    if (!isMountedRef.current) return;
+
+    await loadBracelets(false);
+  }, [refetch, loadBracelets]);
 
   // Dialog handlers
   const handleEditProfile = (profile: ProfileDocument) => {
@@ -136,13 +174,12 @@ export function DashboardPageClient() {
   if (loading || loadingBracelets) {
     return (
       <div className="py-8">
-        {/* Header skeleton */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <div className="h-9 w-48 bg-slate-800/50 rounded animate-pulse mb-2" />
-            <div className="h-5 w-32 bg-slate-800/50 rounded animate-pulse" />
-          </div>
-          <div className="h-10 w-56 bg-slate-800/50 rounded-lg animate-pulse" />
+        {/* Header skeleton - centré comme le vrai header */}
+        <div className="mb-10 flex flex-col items-center text-center">
+          <div className="mb-4 h-16 w-16 rounded-full bg-slate-800/50 animate-pulse" />
+          <div className="h-9 w-40 bg-slate-800/50 rounded animate-pulse mb-2" />
+          <div className="h-5 w-56 bg-slate-800/50 rounded animate-pulse mb-6" />
+          <div className="h-12 w-48 bg-slate-800/50 rounded-full animate-pulse" />
         </div>
 
         {/* Skeletons grid */}
@@ -180,26 +217,45 @@ export function DashboardPageClient() {
           </div>
         )}
 
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Ma Famille</h1>
-          <p className="mt-2 text-slate-400">
-            {profiles.length === 0
-              ? 'Aucun enfant protégé'
-              : `${profiles.length} enfant${profiles.length > 1 ? 's' : ''} protégé${profiles.length > 1 ? 's' : ''}`}
-          </p>
-        </div>
+        {/* Header - Design Émotionnel Minimaliste */}
+        <div className="mb-10 text-center">
+          {/* Icône coeur animée */}
+          <div className="mb-4 inline-flex items-center justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 animate-ping rounded-full bg-soft-pink/30" />
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-soft-pink/20 to-soft-pink/5 ring-2 ring-soft-pink/30">
+                <Heart className="h-8 w-8 text-soft-pink animate-heartbeat" fill="currentColor" />
+              </div>
+            </div>
+          </div>
 
-        {/* Bouton Ajouter */}
-        <button
-          onClick={handleAddChild}
-          className="flex items-center gap-2 rounded-lg bg-brand-orange px-4 py-2 font-semibold text-white transition-colors hover:bg-brand-orange/90"
-        >
-          <Plus className="h-5 w-5" />
-          Protéger un autre enfant
-        </button>
-      </div>
+          {/* Titre */}
+          <h1 className="text-3xl font-bold text-white font-playfair">
+            Ma Famille
+          </h1>
+
+          {/* Sous-titre émotionnel */}
+          <p className="mt-2 text-slate-400">
+            {profiles.length === 0 ? (
+              <span className="text-slate-500">Aucun enfant sous votre protection</span>
+            ) : (
+              <>
+                <span className="text-soft-pink font-semibold">{profiles.length}</span>
+                {' '}
+                {profiles.length === 1 ? 'trésor' : 'trésors'} sous votre protection
+              </>
+            )}
+          </p>
+
+          {/* Bouton CTA avec effet glow */}
+          <button
+            onClick={handleAddChild}
+            className="group mt-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-orange to-brand-orange-dark px-6 py-3 font-semibold text-white shadow-lg shadow-brand-orange/25 transition-all hover:shadow-xl hover:shadow-brand-orange/30 hover:scale-105 active:scale-95"
+          >
+            <Plus className="h-5 w-5 transition-transform group-hover:rotate-90" />
+            Protéger un enfant
+          </button>
+        </div>
 
       {/* Grille de Profils ou Empty State */}
       {profiles.length === 0 ? (
@@ -218,7 +274,7 @@ export function DashboardPageClient() {
           }
         />
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
           {profiles.map((profile) => (
             <ProfileCard
               key={profile.id}

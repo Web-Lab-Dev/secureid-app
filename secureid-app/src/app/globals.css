@@ -427,3 +427,174 @@
   background-size: 200% 200%;
   animation: gradient-shift 8s ease infinite;
 }
+
+/* ============================================
+   IMAGE & LOADING ANIMATIONS
+   ============================================ */
+
+/* Shimmer effect for loading placeholders */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Soft glow pulse for loaded avatars */
+@keyframes soft-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px 2px currentColor;
+    opacity: 0.3;
+  }
+  50% {
+    box-shadow: 0 0 25px 5px currentColor;
+    opacity: 0.5;
+  }
+}
+
+.animate-soft-glow {
+  animation: soft-glow 3s ease-in-out infinite;
+}
+
+/* Slow spin for loading indicators */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+/* ============================================
+   DASHBOARD ENTRANCE ANIMATIONS
+   ============================================ */
+
+/* Fade in up - pour éléments qui entrent */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
+}
+
+/* Staggered children - délai automatique */
+.stagger-children > * {
+  opacity: 0;
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 100ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 400ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 500ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 600ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 700ms; }
+.stagger-children > *:nth-child(9) { animation-delay: 800ms; }
+
+/* Floating subtle - pour éléments décoratifs */
+@keyframes float-subtle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-float-subtle {
+  animation: float-subtle 4s ease-in-out infinite;
+}
+
+/* Scale in - pour modals et popups */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out forwards;
+}
+
+/* ============================================
+   BACKGROUND PATTERNS - Notion-style
+   ============================================ */
+
+/* Soft Constellation - Fond doux avec dots rose pastel */
+.bg-soft-constellation {
+  background-color: #0f172a;
+  background-image:
+    /* Gradient de base avec teinte chaude */
+    linear-gradient(
+      to bottom,
+      rgba(30, 27, 46, 0.8) 0%,
+      rgba(15, 23, 42, 1) 50%,
+      rgba(10, 10, 15, 1) 100%
+    ),
+    /* Points soft-pink subtils */
+    radial-gradient(
+      circle at center,
+      rgba(251, 207, 232, 0.15) 0.5px,
+      transparent 0.5px
+    );
+  background-size: 100% 100%, 28px 28px;
+  background-position: 0 0, 0 0;
+  background-attachment: fixed;
+}
+
+/* Variante avec dots plus visibles pour sections spécifiques */
+.bg-soft-constellation-dense {
+  background-color: #0f172a;
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(30, 27, 46, 0.6) 0%,
+      rgba(15, 23, 42, 0.9) 100%
+    ),
+    radial-gradient(
+      circle at center,
+      rgba(251, 207, 232, 0.25) 1px,
+      transparent 1px
+    );
+  background-size: 100% 100%, 24px 24px;
+  background-attachment: fixed;
+}
+
+/* Overlay vignette pour effet premium */
+.bg-vignette::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  pointer-events: none;
+}
