@@ -292,18 +292,18 @@ export function DashboardPageClient() {
 
       {/* Stats Summary (optionnel) */}
       {profiles.length > 0 && (
-        <div className="mt-12 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-lg bg-slate-900 p-6 text-center">
+        <div className="mt-12 grid gap-4 sm:grid-cols-3 stagger-children">
+          <div className="rounded-lg bg-slate-900/80 p-6 text-center transition-all hover:bg-slate-900">
             <p className="text-2xl font-bold text-white">{profiles.length}</p>
             <p className="text-sm text-slate-400">Profils Actifs</p>
           </div>
-          <div className="rounded-lg bg-slate-900 p-6 text-center">
+          <div className="rounded-lg bg-slate-900/80 p-6 text-center transition-all hover:bg-slate-900">
             <p className="text-2xl font-bold text-green-500">
               {Object.values(bracelets).filter((b) => b.status === 'ACTIVE').length}
             </p>
             <p className="text-sm text-slate-400">Bracelets Actifs</p>
           </div>
-          <div className="rounded-lg bg-slate-900 p-6 text-center">
+          <div className="rounded-lg bg-slate-900/80 p-6 text-center transition-all hover:bg-slate-900">
             <p className="text-2xl font-bold text-orange-500">
               {Object.values(bracelets).filter((b) => b.status === 'LOST').length}
             </p>

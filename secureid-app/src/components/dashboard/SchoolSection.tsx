@@ -3,7 +3,7 @@
 import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { GraduationCap, Plus, Trash2, Lock, Calendar, User, X } from 'lucide-react';
-import Image from 'next/image';
+import { AnimatedImage } from '@/components/ui/AnimatedImage';
 import type { ProfileDocument, PickupDocument } from '@/types/profile';
 import { usePickups } from '@/hooks/usePickups';
 import { updateSchoolPin, deletePickup } from '@/actions/school-actions';
@@ -243,15 +243,18 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
 
                   {/* Photo */}
                   <div
-                    className="relative mx-auto mb-3 h-24 w-24 cursor-pointer overflow-hidden rounded-full border-3 border-school-sky/60 ring-4 ring-school-sky/20 transition-transform hover:scale-110"
+                    className="relative mx-auto mb-3 h-24 w-24 cursor-pointer overflow-hidden rounded-full border-3 border-school-sky/60 ring-4 ring-school-sky/20 transition-transform hover:scale-105"
                     onClick={() => setSelectedPhoto({ url: pickup.photoUrl, name: pickup.name })}
                     title="Cliquez pour agrandir"
                   >
-                    <Image
+                    <AnimatedImage
                       src={pickup.photoUrl}
                       alt={pickup.name}
                       fill
                       className="object-cover"
+                      containerClassName="h-full w-full"
+                      animationType="blur"
+                      transitionDuration={500}
                     />
                   </div>
 
@@ -307,13 +310,15 @@ export function SchoolSection({ profile }: SchoolSectionProps) {
             >
               <X className="h-6 w-6" />
             </Button>
-            <div className="relative h-[80vh] w-[80vw] overflow-hidden rounded-lg">
-              <Image
+            <div className="relative h-[80vh] w-[80vw] overflow-hidden rounded-lg" onClick={(e) => e.stopPropagation()}>
+              <AnimatedImage
                 src={selectedPhoto.url}
                 alt={selectedPhoto.name}
                 fill
                 className="object-contain"
-                onClick={(e) => e.stopPropagation()}
+                containerClassName="h-full w-full"
+                animationType="fade"
+                transitionDuration={300}
               />
             </div>
             <p className="mt-4 text-center text-lg font-semibold text-white">

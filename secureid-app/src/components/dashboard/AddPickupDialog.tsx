@@ -3,7 +3,7 @@
 import { logger } from '@/lib/logger';
 import { useState } from 'react';
 import { X, Upload, Calendar, User } from 'lucide-react';
-import Image from 'next/image';
+import { AnimatedImage } from '@/components/ui/AnimatedImage';
 import { addPickup } from '@/actions/school-actions';
 import type { PickupType } from '@/types/profile';
 import { storage } from '@/lib/firebase';
@@ -147,11 +147,14 @@ export function AddPickupDialog({ isOpen, onClose, profileId }: AddPickupDialogP
 
               {photoPreview ? (
                 <div className="group relative mx-auto h-40 w-40 overflow-hidden rounded-full border-4 border-indigo-400">
-                  <Image
+                  <AnimatedImage
                     src={photoPreview}
                     alt="Preview"
                     fill
                     className="object-cover"
+                    containerClassName="h-full w-full"
+                    animationType="blur"
+                    transitionDuration={400}
                   />
                   <button
                     type="button"

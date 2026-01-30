@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X, Save, Upload, User, Loader2, Calendar } from 'lucide-react';
-import Image from 'next/image';
+import { AnimatedImage } from '@/components/ui/AnimatedImage';
 import { updateProfile } from '@/actions/profile-actions';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { uploadProfilePhoto } from '@/lib/storage-helpers';
@@ -213,11 +213,14 @@ export function EditProfileDialog({ isOpen, onClose, profile, onUpdate }: EditPr
                 <div className="flex items-center gap-6">
                   <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-slate-700">
                     {photoPreview || profile.photoUrl ? (
-                      <Image
+                      <AnimatedImage
                         src={photoPreview || profile.photoUrl || ''}
                         alt={profile.fullName}
                         fill
                         className="object-cover"
+                        containerClassName="h-full w-full"
+                        animationType="blur"
+                        transitionDuration={500}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-slate-800">
