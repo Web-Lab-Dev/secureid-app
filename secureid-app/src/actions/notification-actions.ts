@@ -83,8 +83,8 @@ export async function sendNotificationToParent(
       },
       webpush: {
         notification: {
-          icon: '/icon-192x192.png',
-          badge: '/badge-72x72.png',
+          icon: '/icon-192.png',
+          badge: '/icon-72.png',
           requireInteraction: true,
           tag: 'secureid-scan',
           // Vibration pour Web Push (format différent d'Android)
