@@ -10,13 +10,14 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-comp
 
 // Note: Les clés Firebase sont publiques et sécurisées par Firestore Security Rules
 // Elles ne donnent pas d'accès privilégié sans authentification
+// IMPORTANT: Ces valeurs doivent correspondre au projet Firebase de production (Vercel)
 const firebaseConfig = {
-  apiKey: self.FIREBASE_API_KEY || "AIzaSyDL0PmkQDjMXF0b4gTI2Fv6QKBPHXfW3J8",
-  authDomain: self.FIREBASE_AUTH_DOMAIN || "securedid.firebaseapp.com",
-  projectId: self.FIREBASE_PROJECT_ID || "securedid",
-  storageBucket: self.FIREBASE_STORAGE_BUCKET || "securedid.firebasestorage.app",
-  messagingSenderId: self.FIREBASE_MESSAGING_SENDER_ID || "638803887867",
-  appId: self.FIREBASE_APP_ID || "1:638803887867:web:99b6a069fc0c2a83a4c12f"
+  apiKey: "AIzaSyDZKzZHIrqWXm_nfGRa2syWEEeSwGu5Eu8",
+  authDomain: "taskflow-26718.firebaseapp.com",
+  projectId: "taskflow-26718",
+  storageBucket: "taskflow-26718.firebasestorage.app",
+  messagingSenderId: "685355004652",
+  appId: "1:685355004652:web:0bc75c2c13cb306ba46bc9"
 };
 
 firebase.initializeApp(firebaseConfig);
