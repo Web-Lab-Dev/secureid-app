@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { getMessaging, getToken, onMessage, deleteToken } from 'firebase/messaging';
 import app from '@/lib/firebase';
 import { logger } from '@/lib/logger';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -29,6 +29,8 @@ interface UseNotificationsReturn {
   unreadCount: number;
   /** Marquer toutes les notifications comme lues */
   clearBadge: () => Promise<void>;
+  /** Réinitialiser les notifications (supprimer token et en générer un nouveau) */
+  resetNotifications: () => Promise<{ success: boolean; newToken?: string; error?: string }>;
 }
 
 export function useNotifications(): UseNotificationsReturn {
@@ -184,6 +186,86 @@ export function useNotifications(): UseNotificationsReturn {
     }
   };
 
+  /**
+   * Réinitialiser complètement les notifications
+   * - Supprime l'ancien token FCM
+   * - Désinstalle l'ancien Service Worker
+   * - Réinstalle un nouveau SW et génère un nouveau token
+   */
+  const resetNotifications = async (): Promise<{ success: boolean; newToken?: string; error?: string }> => {
+    if (!user) {
+      return { success: false, error: 'Utilisateur non connecté' };
+    }
+
+    try {
+      logger.info('🔄 Resetting notifications...');
+
+      // 1. Supprimer l'ancien token FCM
+      const messaging = getMessaging(app);
+      try {
+        await deleteToken(messaging);
+        logger.info('✅ Old FCM token deleted');
+      } catch (e) {
+        logger.warn('Could not delete old token (might not exist)', { e });
+      }
+
+      // 2. Désinstaller tous les Service Workers FCM
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          if (registration.active?.scriptURL.includes('firebase-messaging-sw.js')) {
+            await registration.unregister();
+            logger.info('✅ Old Service Worker unregistered');
+          }
+        }
+      }
+
+      // 3. Attendre un peu pour que tout soit nettoyé
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // 4. Réenregistrer le Service Worker
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+          updateViaCache: 'none' // Force le téléchargement du nouveau SW
+        });
+        logger.info('✅ New Service Worker registered', { scope: registration.scope });
+
+        // Attendre que le SW soit actif
+        await navigator.serviceWorker.ready;
+      }
+
+      // 5. Obtenir un nouveau token FCM
+      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+      if (!vapidKey) {
+        return { success: false, error: 'VAPID key non configurée' };
+      }
+
+      const newToken = await getToken(messaging, { vapidKey });
+
+      if (newToken) {
+        setToken(newToken);
+        logger.info('✅ New FCM token obtained', { tokenPreview: newToken.substring(0, 20) + '...' });
+
+        // 6. Sauvegarder dans Firestore
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          fcmToken: newToken,
+          fcmTokenUpdatedAt: new Date(),
+        });
+        logger.info('✅ New token saved to Firestore');
+
+        return { success: true, newToken: newToken.substring(0, 30) + '...' };
+      } else {
+        return { success: false, error: 'Impossible de générer un nouveau token' };
+      }
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error('❌ Reset notifications failed', { error: errorMessage });
+      return { success: false, error: errorMessage };
+    }
+  };
+
   return {
     hasPermission,
     token,
@@ -191,5 +273,6 @@ export function useNotifications(): UseNotificationsReturn {
     loading,
     unreadCount,
     clearBadge,
+    resetNotifications,
   };
 }

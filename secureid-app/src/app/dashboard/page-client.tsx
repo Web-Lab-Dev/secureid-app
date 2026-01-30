@@ -43,7 +43,7 @@ export function DashboardPageClient() {
   const { user } = useAuthContext();
   const router = useRouter();
   const { profiles, loading, refetch } = useProfiles();
-  const { hasPermission, requestPermission, loading: notifLoading } = useNotifications();
+  const { hasPermission, requestPermission, loading: notifLoading, resetNotifications } = useNotifications();
   const [bracelets, setBracelets] = useState<Record<string, BraceletDocument>>({});
   const [loadingBracelets, setLoadingBracelets] = useState(true);
 
@@ -74,6 +74,7 @@ export function DashboardPageClient() {
   // Test notification state
   const [testingNotif, setTestingNotif] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [resettingNotif, setResettingNotif] = useState(false);
 
   // ✅ FIX: Cleanup du ref au démontage
   useEffect(() => {
@@ -207,6 +208,35 @@ export function DashboardPageClient() {
     }
   };
 
+  // Handler pour réinitialiser les notifications (nouveau token)
+  const handleResetNotifications = async () => {
+    setResettingNotif(true);
+    setTestResult(null);
+
+    try {
+      const result = await resetNotifications();
+
+      if (result.success) {
+        setTestResult({
+          success: true,
+          message: `✅ Token réinitialisé ! Nouveau token: ${result.newToken}`
+        });
+      } else {
+        setTestResult({
+          success: false,
+          message: `❌ Échec réinitialisation: ${result.error}`
+        });
+      }
+    } catch (error) {
+      setTestResult({
+        success: false,
+        message: `❌ Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+      });
+    } finally {
+      setResettingNotif(false);
+    }
+  };
+
   if (loading || loadingBracelets) {
     return (
       <div className="py-8">
@@ -256,31 +286,47 @@ export function DashboardPageClient() {
         {/* Test Notification Button - Debug */}
         {hasPermission && (
           <div className="mb-6 rounded-lg border border-slate-700 bg-slate-800/50 p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-3">
                 <TestTube2 className="h-5 w-5 text-blue-400" />
                 <div>
-                  <p className="text-sm font-medium text-white">Tester les notifications</p>
-                  <p className="text-xs text-slate-400">Envoie une notification de test sur ce téléphone</p>
+                  <p className="text-sm font-medium text-white">Diagnostic notifications</p>
+                  <p className="text-xs text-slate-400">Réinitialiser le token si les notifs ne fonctionnent pas</p>
                 </div>
               </div>
-              <button
-                onClick={handleTestNotification}
-                disabled={testingNotif}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
-              >
-                {testingNotif ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Envoi...
-                  </>
-                ) : (
-                  <>
-                    <Bell className="h-4 w-4" />
-                    Tester
-                  </>
-                )}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleResetNotifications}
+                  disabled={resettingNotif || testingNotif}
+                  className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-500 disabled:opacity-50"
+                >
+                  {resettingNotif ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Reset...
+                    </>
+                  ) : (
+                    'Réinitialiser'
+                  )}
+                </button>
+                <button
+                  onClick={handleTestNotification}
+                  disabled={testingNotif || resettingNotif}
+                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
+                >
+                  {testingNotif ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Envoi...
+                    </>
+                  ) : (
+                    <>
+                      <Bell className="h-4 w-4" />
+                      Tester
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
             {testResult && (
               <div className={`mt-3 rounded-lg p-3 text-sm ${testResult.success ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
