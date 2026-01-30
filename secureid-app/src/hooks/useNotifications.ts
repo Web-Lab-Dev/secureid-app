@@ -221,32 +221,60 @@ export function useNotifications(): UseNotificationsReturn {
       }
 
       // 3. Attendre un peu pour que tout soit nettoyé
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      // 4. Réenregistrer le Service Worker
+      // 4. Réenregistrer le Service Worker et attendre qu'il soit ACTIF
+      let swRegistration: ServiceWorkerRegistration | null = null;
+
       if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-          updateViaCache: 'none' // Force le téléchargement du nouveau SW
+        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+          updateViaCache: 'none'
         });
-        logger.info('✅ New Service Worker registered', { scope: registration.scope });
+        logger.info('✅ New Service Worker registered', { scope: swRegistration.scope });
 
-        // Attendre que le SW soit actif
+        // Attendre que le SW soit ACTIF (pas juste installé)
+        if (swRegistration.installing) {
+          await new Promise<void>((resolve) => {
+            const sw = swRegistration!.installing!;
+            sw.addEventListener('statechange', () => {
+              if (sw.state === 'activated') {
+                logger.info('✅ Service Worker activated');
+                resolve();
+              }
+            });
+          });
+        } else if (swRegistration.waiting) {
+          // SW en attente, forcer l'activation
+          swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } else if (swRegistration.active) {
+          logger.info('✅ Service Worker already active');
+        }
+
+        // Double vérification avec navigator.serviceWorker.ready
         await navigator.serviceWorker.ready;
+        logger.info('✅ Service Worker ready');
       }
 
-      // 5. Obtenir un nouveau token FCM
+      // 5. Petit délai supplémentaire pour stabilité
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // 6. Obtenir un nouveau token FCM avec le SW registration
       const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
       if (!vapidKey) {
         return { success: false, error: 'VAPID key non configurée' };
       }
 
-      const newToken = await getToken(messaging, { vapidKey });
+      const newToken = await getToken(messaging, {
+        vapidKey,
+        serviceWorkerRegistration: swRegistration || undefined
+      });
 
       if (newToken) {
         setToken(newToken);
         logger.info('✅ New FCM token obtained', { tokenPreview: newToken.substring(0, 20) + '...' });
 
-        // 6. Sauvegarder dans Firestore
+        // 7. Sauvegarder dans Firestore
         const userRef = doc(db, 'users', user.uid);
         await updateDoc(userRef, {
           fcmToken: newToken,
