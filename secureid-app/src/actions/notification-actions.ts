@@ -212,6 +212,121 @@ export async function sendBraceletFoundNotification(
 }
 
 /**
+ * Envoie une notification de TEST pour diagnostiquer les problèmes
+ *
+ * @param userId - ID de l'utilisateur à notifier
+ * @returns Résultat détaillé pour diagnostic
+ */
+export async function sendTestNotification(
+  userId: string
+): Promise<{ success: boolean; error?: string; details?: Record<string, unknown> }> {
+  'use server';
+
+  try {
+    // 1. Vérifier que l'utilisateur existe et a un token FCM
+    const userDoc = await adminDb.collection('users').doc(userId).get();
+
+    if (!userDoc.exists) {
+      return {
+        success: false,
+        error: 'Utilisateur introuvable',
+        details: { userId, step: 'user_lookup' }
+      };
+    }
+
+    const userData = userDoc.data();
+    const fcmToken = userData?.fcmToken;
+
+    if (!fcmToken) {
+      return {
+        success: false,
+        error: 'Aucun token FCM enregistré. Réactivez les notifications.',
+        details: { userId, step: 'token_check', hasToken: false }
+      };
+    }
+
+    // 2. Construire et envoyer le message de test
+    const message = {
+      token: fcmToken,
+      notification: {
+        title: '🔔 Test de notification SecureID',
+        body: `Test envoyé à ${new Date().toLocaleTimeString('fr-FR')}. Si vous voyez ce message, les notifications fonctionnent !`,
+      },
+      data: {
+        type: 'test',
+        timestamp: new Date().toISOString(),
+      },
+      android: {
+        priority: 'high' as const,
+        notification: {
+          channelId: 'secureid_alerts',
+          priority: 'high' as const,
+          sound: 'default',
+          defaultVibrateTimings: false,
+          vibrateTimingsMillis: [200, 100, 200],
+        },
+      },
+      webpush: {
+        notification: {
+          icon: '/icon-192.png',
+          badge: '/icon-72.png',
+          requireInteraction: true,
+          tag: 'secureid-test',
+          vibrate: [200, 100, 200],
+        },
+        fcmOptions: {
+          link: '/dashboard',
+        },
+      },
+    };
+
+    const response = await admin.messaging().send(message);
+
+    logger.info('✅ Test notification sent successfully', {
+      userId,
+      messageId: response,
+    });
+
+    return {
+      success: true,
+      details: {
+        messageId: response,
+        tokenPreview: fcmToken.substring(0, 20) + '...',
+        step: 'sent'
+      }
+    };
+
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    logger.error('❌ Test notification failed', {
+      userId,
+      error: errorMessage,
+      errorStack: error instanceof Error ? error.stack : undefined,
+    });
+
+    // Diagnostic détaillé selon le type d'erreur
+    let diagnosis = 'Erreur inconnue';
+    if (errorMessage.includes('registration-token-not-registered')) {
+      diagnosis = 'Token FCM expiré ou invalide. Déconnectez-vous et reconnectez-vous.';
+    } else if (errorMessage.includes('invalid-argument')) {
+      diagnosis = 'Configuration FCM incorrecte.';
+    } else if (errorMessage.includes('PERMISSION_DENIED')) {
+      diagnosis = 'Firebase Admin SDK mal configuré sur le serveur.';
+    }
+
+    return {
+      success: false,
+      error: diagnosis,
+      details: {
+        rawError: errorMessage,
+        step: 'send_failed'
+      }
+    };
+  }
+}
+
+/**
  * Envoie une notification de sortie de zone de sécurité
  *
  * @param parentId - ID du parent

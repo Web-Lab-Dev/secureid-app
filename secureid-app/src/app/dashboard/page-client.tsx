@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
-import { Plus, Loader2, Users, MessageCircle, Globe, Bell, BellOff, Heart } from 'lucide-react';
+import { Plus, Loader2, Users, MessageCircle, Globe, Bell, BellOff, Heart, TestTube2 } from 'lucide-react';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -12,6 +12,7 @@ import { ProfileCardSkeleton } from '@/components/dashboard/ProfileCardSkeleton'
 import { EmptyState } from '@/components/ui/empty-state';
 import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { getBraceletsByProfileIds } from '@/actions/bracelet-actions';
+import { sendTestNotification } from '@/actions/notification-actions';
 import type { BraceletDocument } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
 
@@ -69,6 +70,10 @@ export function DashboardPageClient() {
     isOpen: boolean;
     profile: ProfileDocument | null;
   }>({ isOpen: false, profile: null });
+
+  // Test notification state
+  const [testingNotif, setTestingNotif] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   // ✅ FIX: Cleanup du ref au démontage
   useEffect(() => {
@@ -171,6 +176,37 @@ export function DashboardPageClient() {
     router.push('/scan');
   };
 
+  // Handler pour tester les notifications
+  const handleTestNotification = async () => {
+    if (!user) return;
+
+    setTestingNotif(true);
+    setTestResult(null);
+
+    try {
+      const result = await sendTestNotification(user.uid);
+
+      if (result.success) {
+        setTestResult({
+          success: true,
+          message: `✅ Notification envoyée ! Vérifie ton téléphone. (ID: ${result.details?.messageId})`
+        });
+      } else {
+        setTestResult({
+          success: false,
+          message: `❌ Échec: ${result.error}`
+        });
+      }
+    } catch (error) {
+      setTestResult({
+        success: false,
+        message: `❌ Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+      });
+    } finally {
+      setTestingNotif(false);
+    }
+  };
+
   if (loading || loadingBracelets) {
     return (
       <div className="py-8">
@@ -214,6 +250,43 @@ export function DashboardPageClient() {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Test Notification Button - Debug */}
+        {hasPermission && (
+          <div className="mb-6 rounded-lg border border-slate-700 bg-slate-800/50 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <TestTube2 className="h-5 w-5 text-blue-400" />
+                <div>
+                  <p className="text-sm font-medium text-white">Tester les notifications</p>
+                  <p className="text-xs text-slate-400">Envoie une notification de test sur ce téléphone</p>
+                </div>
+              </div>
+              <button
+                onClick={handleTestNotification}
+                disabled={testingNotif}
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
+              >
+                {testingNotif ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Envoi...
+                  </>
+                ) : (
+                  <>
+                    <Bell className="h-4 w-4" />
+                    Tester
+                  </>
+                )}
+              </button>
+            </div>
+            {testResult && (
+              <div className={`mt-3 rounded-lg p-3 text-sm ${testResult.success ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                {testResult.message}
+              </div>
+            )}
           </div>
         )}
 
