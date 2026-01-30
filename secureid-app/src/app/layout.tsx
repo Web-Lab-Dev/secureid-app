@@ -3,6 +3,7 @@ import { Playfair_Display, Outfit } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { PWAInstallProvider } from "@/hooks/usePWAInstall";
 
 // PHASE 10 - Fonts Landing Page émotionnelle
 // Utilise uniquement Playfair (headings) et Outfit (body, buttons)
@@ -216,7 +217,9 @@ export default function RootLayout({
       <body
         className={`${playfairDisplay.variable} ${outfit.variable} font-outfit antialiased`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <PWAInstallProvider>{children}</PWAInstallProvider>
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

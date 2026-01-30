@@ -1,108 +1,48 @@
 'use client';
 
 import { logger } from '@/lib/logger';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Download, X, Share, Plus, ChevronRight } from 'lucide-react';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
 
 /**
  * PWA INSTALL BANNER - Expérience Native Maximale
  *
- * - Android/Chrome: Utilise le prompt natif beforeinstallprompt
+ * UNIQUEMENT affiché sur le Dashboard (pas sur la landing page)
+ * Utilise le hook global usePWAInstall qui capture beforeinstallprompt
+ *
+ * - Android/Chrome: Utilise le prompt natif
  * - iOS Safari: Affiche les instructions "Ajouter à l'écran d'accueil"
- * - Sticky en bas de l'écran avec animation
- * - Peut être fermée (stocké en localStorage)
  */
 
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
-
-type InstallMode = 'prompt' | 'ios' | 'none';
-
 export function InstallBanner() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showBanner, setShowBanner] = useState(false);
-  const [installMode, setInstallMode] = useState<InstallMode>('none');
+  const { isInstallable, isIOS, isInstalled, triggerInstall, dismissInstall } = usePWAInstall();
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
-
-  useEffect(() => {
-    // Vérifier si l'utilisateur a déjà fermé la bannière
-    const bannerDismissed = localStorage.getItem('pwa-banner-dismissed');
-
-    // Vérifier si l'app est déjà installée (mode standalone)
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      // @ts-expect-error - iOS specific property
-      window.navigator.standalone === true;
-
-    if (bannerDismissed || isStandalone) {
-      return;
-    }
-
-    // Détecter iOS Safari
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window);
-    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-
-    if (isIOS && isSafari) {
-      setInstallMode('ios');
-      setShowBanner(true);
-      return;
-    }
-
-    // Écouter l'événement beforeinstallprompt (Android/Chrome)
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setInstallMode('prompt');
-      setShowBanner(true);
-    };
-
-    // Écouter l'événement appinstalled
-    const handleAppInstalled = () => {
-      setShowBanner(false);
-      localStorage.setItem('pwa-banner-dismissed', 'installed');
-      logger.info('PWA installée avec succès');
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
-  }, []);
+  const [dismissed, setDismissed] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('pwa-banner-dismissed') === 'true';
+  });
 
   const handleInstall = async () => {
-    if (installMode === 'ios') {
+    if (isIOS) {
       setShowIOSInstructions(true);
       return;
     }
 
-    if (!deferredPrompt) return;
-
-    try {
-      await deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-
-      if (outcome === 'accepted') {
-        logger.info('PWA installée via prompt');
-        localStorage.setItem('pwa-banner-dismissed', 'installed');
-      }
-    } catch (error) {
-      logger.error('Erreur lors de l\'installation PWA:', error);
+    const success = await triggerInstall();
+    if (success) {
+      logger.info('PWA installée via prompt');
     }
   };
 
   const handleDismiss = () => {
-    localStorage.setItem('pwa-banner-dismissed', 'true');
-    setShowBanner(false);
+    dismissInstall();
+    setDismissed(true);
     setShowIOSInstructions(false);
   };
 
-  // Ne pas afficher si pas nécessaire
-  if (!showBanner) {
+  // Ne pas afficher si pas installable, déjà installé, ou fermé
+  if (!isInstallable || isInstalled || dismissed) {
     return null;
   }
 
@@ -217,7 +157,7 @@ export function InstallBanner() {
               Installez SecureID
             </p>
             <p className="text-xs text-slate-400 truncate">
-              {installMode === 'ios'
+              {isIOS
                 ? 'Ajoutez à votre écran d\'accueil'
                 : 'Accès rapide comme une vraie app'}
             </p>
