@@ -105,11 +105,15 @@ export function useNotifications(): UseNotificationsReturn {
 
     try {
       const messaging = getMessaging(app);
+      let swRegistration: ServiceWorkerRegistration | undefined;
 
       // Enregistrer le service worker
       if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-        logger.info('Service worker registered', { scope: registration.scope });
+        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        logger.info('Service worker registered', { scope: swRegistration.scope });
+
+        // Attendre que le SW soit prêt
+        await navigator.serviceWorker.ready;
       }
 
       // Obtenir le token FCM
@@ -120,7 +124,11 @@ export function useNotifications(): UseNotificationsReturn {
         return;
       }
 
-      const currentToken = await getToken(messaging, { vapidKey });
+      // Passer le SW registration pour s'assurer que FCM utilise le bon SW
+      const currentToken = await getToken(messaging, {
+        vapidKey,
+        serviceWorkerRegistration: swRegistration
+      });
 
       if (currentToken) {
         setToken(currentToken);
