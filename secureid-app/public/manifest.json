@@ -98,16 +98,16 @@
 
   "screenshots": [
     {
-      "src": "/screenshots/dashboard-mobile.png",
+      "src": "/screenshots/dashboard-mobile.jpg",
       "sizes": "390x844",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow",
       "label": "Tableau de bord - Vos enfants en sécurité"
     },
     {
-      "src": "/screenshots/tracking-mobile.png",
+      "src": "/screenshots/tracking-mobile.jpg",
       "sizes": "390x844",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow",
       "label": "Suivi GPS en temps réel"
     }

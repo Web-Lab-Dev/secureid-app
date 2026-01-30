@@ -100,7 +100,7 @@ export const metadata: Metadata = {
     siteName: "SecureID",
     images: [
       {
-        url: "https://secureid-app.vercel.app/og-image.png",
+        url: "https://secureid-app.vercel.app/og-image.webp",
         width: 1200,
         height: 630,
         alt: "SecureID - Protection invisible pour vos enfants",
@@ -112,7 +112,7 @@ export const metadata: Metadata = {
     title: "SecureID - Parce qu'il est votre monde",
     description:
       "Un lien invisible qui veille sur vos enfants. Bracelet connecté intelligent au Burkina Faso.",
-    images: ["https://secureid-app.vercel.app/twitter-card.png"],
+    images: ["https://secureid-app.vercel.app/og-image.webp"],
     creator: "@SecureID_BF",
   },
   robots: {

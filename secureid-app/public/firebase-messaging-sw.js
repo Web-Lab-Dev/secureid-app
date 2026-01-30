@@ -27,14 +27,13 @@ messaging.onBackgroundMessage(async (payload) => {
   console.log('[firebase-messaging-sw.js] Background message received:', payload);
 
   // Mettre à jour le badge de l'app (PWA Badge API)
+  // Note: Dans un Service Worker, on utilise simplement setAppBadge()
+  // car localStorage n'est pas accessible. Le badge indique juste qu'il y a des notifications.
   if ('setAppBadge' in navigator) {
     try {
-      // Récupérer le compteur actuel depuis IndexedDB ou incrémenter
-      const currentBadge = parseInt(localStorage.getItem('secureid-badge-count') || '0', 10);
-      const newBadge = currentBadge + 1;
-      await navigator.setAppBadge(newBadge);
-      // Note: localStorage n'est pas accessible dans SW, utiliser un compteur simple
-      console.log('[firebase-messaging-sw.js] App badge set to:', newBadge);
+      // Afficher un badge simple (point de notification)
+      await navigator.setAppBadge();
+      console.log('[firebase-messaging-sw.js] App badge set');
     } catch (error) {
       console.log('[firebase-messaging-sw.js] Badge API error:', error);
     }
