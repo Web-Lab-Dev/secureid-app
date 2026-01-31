@@ -68,6 +68,10 @@ export function GpsSimulationCard({
   const [showSecurityAlert, setShowSecurityAlert] = useState<boolean>(false);
   const [alertedZone, setAlertedZone] = useState<SafeZoneDocument | null>(null);
 
+  // Ref pour éviter les notifications multiples
+  const notificationSentRef = useRef<boolean>(false);
+  const previousActiveZonesRef = useRef<number>(0);
+
   // Son d'alerte - lazy-loaded pour réduire bundle initial
   // NOTE: Fichier audio OGG (format compatible tous navigateurs)
   const playAlertRef = useRef<(() => void) | null>(null);
@@ -250,20 +254,36 @@ export function GpsSimulationCard({
       return dist <= zone.radius;
     });
 
+    const currentZoneCount = zonesWhereChildIs.length;
+    const previousZoneCount = previousActiveZonesRef.current;
+
+    // Mettre à jour l'état des zones actives
     setActiveZones(zonesWhereChildIs);
+    previousActiveZonesRef.current = currentZoneCount;
 
     // Si enfant hors de TOUTES les zones
-    const isOutOfAllZones = safeZones.length > 0 && zonesWhereChildIs.length === 0;
-    const wasInAtLeastOneZone = activeZones.length > 0;
+    const isOutOfAllZones = safeZones.length > 0 && currentZoneCount === 0;
+    const wasInAtLeastOneZone = previousZoneCount > 0;
 
     // Si l'enfant SORT de toutes les zones (transition sûre → hors zone)
-    if (wasInAtLeastOneZone && isOutOfAllZones) {
+    // ET qu'on n'a pas encore envoyé de notification
+    if (wasInAtLeastOneZone && isOutOfAllZones && !notificationSentRef.current && !outOfZoneTimer) {
       // Utiliser le délai de la première zone (ou minimum des délais)
       const minDelay = Math.min(...safeZones.map(z => z.alertDelay));
       const delayMs = minDelay * 60 * 1000; // Minutes → millisecondes
 
-      // Démarrer le timer
+      logger.info('Child exited all safe zones, starting timer', { delayMinutes: minDelay });
+
+      // Démarrer le timer (une seule fois)
       const timer = setTimeout(async () => {
+        // Double vérification avant d'envoyer
+        if (notificationSentRef.current) {
+          logger.info('Notification already sent, skipping');
+          return;
+        }
+
+        notificationSentRef.current = true; // Marquer comme envoyé AVANT l'envoi
+
         const firstZone = safeZones[0]; // Zone de référence pour l'alerte
         setShowSecurityAlert(true);
         setAlertedZone(firstZone);
@@ -276,11 +296,11 @@ export function GpsSimulationCard({
           logger.warn('Failed to play alert sound', { error });
         }
 
-        // Envoyer notification push au parent
+        // Envoyer notification push au parent (UNE SEULE FOIS)
         if (user?.uid) {
           try {
             await sendGeofenceExitNotification(user.uid, childName, minDelay);
-            logger.info('Geofence exit notification sent', {
+            logger.info('Geofence exit notification sent (once)', {
               parentId: user.uid,
               childName,
               zoneName: firstZone.name,
@@ -293,19 +313,19 @@ export function GpsSimulationCard({
       }, delayMs);
 
       setOutOfZoneTimer(timer);
-      logger.info('Child exited all safe zones, timer started', { delayMinutes: minDelay });
     }
 
     // Si l'enfant RENTRE dans au moins une zone
-    if (isOutOfAllZones === false && outOfZoneTimer) {
+    if (currentZoneCount > 0 && outOfZoneTimer) {
       // Annuler le timer et réinitialiser
       clearTimeout(outOfZoneTimer);
       setOutOfZoneTimer(null);
       setShowSecurityAlert(false);
       setAlertedZone(null);
-      logger.info('Child re-entered safe zone, timer cancelled');
+      notificationSentRef.current = false; // Reset pour permettre une nouvelle notification
+      logger.info('Child re-entered safe zone, timer cancelled, notification reset');
     }
-  }, [childLocation, safeZones]);
+  }, [childLocation, safeZones, user?.uid, childName, playAlert, outOfZoneTimer]);
 
   // Cleanup du timer au démontage
   useEffect(() => {
