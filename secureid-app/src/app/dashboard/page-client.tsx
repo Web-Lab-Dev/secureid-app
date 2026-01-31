@@ -219,12 +219,12 @@ export function DashboardPageClient() {
       if (result.success) {
         setTestResult({
           success: true,
-          message: `✅ Token réinitialisé ! Nouveau token: ${result.newToken}`
+          message: '✅ Token réinitialisé ! Tu peux maintenant tester.'
         });
       } else {
         setTestResult({
           success: false,
-          message: `❌ Échec réinitialisation: ${result.error}`
+          message: `❌ Échec: ${result.error}`
         });
       }
     } catch (error) {
