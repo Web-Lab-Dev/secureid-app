@@ -91,7 +91,7 @@ export function useNotifications(): UseNotificationsReturn {
             body: body || 'Nouvelle notification',
             icon: '/icon-192.png',
             badge: '/icon-72.png',
-            tag: 'secureid-foreground',
+            tag: `secureid-${Date.now()}`, // Tag unique pour chaque notification
             requireInteraction: true
           });
         }

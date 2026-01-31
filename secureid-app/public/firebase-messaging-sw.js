@@ -33,13 +33,18 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log('[SW] Message reçu en arrière-plan:', payload);
 
+  // Générer un tag unique pour que chaque notification s'affiche
+  // (sinon les notifications avec le même tag se remplacent silencieusement)
+  const uniqueTag = `secureid-${Date.now()}`;
+
   const notificationTitle = payload.notification?.title || 'SecureID';
   const notificationOptions = {
     body: payload.notification?.body || 'Nouvelle notification',
     icon: '/icon-192.png',
     badge: '/icon-72.png',
     vibrate: [200, 100, 200, 100, 200],
-    tag: payload.data?.type || 'secureid-notification',
+    tag: uniqueTag,
+    renotify: true, // Force l'affichage même si tag similaire
     requireInteraction: true,
     data: payload.data,
     actions: [
