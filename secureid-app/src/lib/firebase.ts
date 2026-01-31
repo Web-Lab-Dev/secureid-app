@@ -10,7 +10,8 @@
  * - Storage: Stockage de fichiers
  *
  * IMPORTANT: La persistence Auth est configurée explicitement pour éviter
- * les déconnexions aléatoires sur mobile/PWA.
+ * les déconnexions aléatoires sur mobile/PWA. Le hook useAuth DOIT attendre
+ * que authReady soit résolu avant de configurer onAuthStateChanged.
  */
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
@@ -60,8 +61,9 @@ let auth: Auth;
 let db: Firestore;
 let storage: FirebaseStorage;
 
-// Flag pour savoir si la persistence a été configurée
-let persistenceConfigured = false;
+// Promise qui se résout quand Auth est prêt (persistence configurée)
+let authReadyResolve: () => void;
+let authReadyPromise: Promise<void> | null = null;
 
 /**
  * Initialise Firebase (singleton pattern)
@@ -76,21 +78,26 @@ function initializeFirebase(): FirebaseApp {
 /**
  * Configure la persistence Auth pour éviter les déconnexions
  * Utilise IndexedDB en priorité, localStorage en fallback
+ *
+ * IMPORTANT: Cette fonction DOIT être awaited avant d'utiliser onAuthStateChanged
  */
 async function configureAuthPersistence(authInstance: Auth): Promise<void> {
-  if (persistenceConfigured || typeof window === 'undefined') return;
+  if (typeof window === 'undefined') {
+    return;
+  }
 
   try {
-    // Essayer IndexedDB d'abord (plus fiable)
+    // Essayer IndexedDB d'abord (plus fiable sur mobile/PWA)
     await setPersistence(authInstance, indexedDBLocalPersistence);
-    persistenceConfigured = true;
-  } catch {
+    console.log('[Firebase] Auth persistence: IndexedDB');
+  } catch (indexedDBError) {
+    console.warn('[Firebase] IndexedDB failed, trying localStorage:', indexedDBError);
     try {
       // Fallback sur localStorage
       await setPersistence(authInstance, browserLocalPersistence);
-      persistenceConfigured = true;
-    } catch (error) {
-      console.error('[Firebase] Impossible de configurer la persistence Auth:', error);
+      console.log('[Firebase] Auth persistence: localStorage');
+    } catch (localStorageError) {
+      console.error('[Firebase] All persistence methods failed:', localStorageError);
     }
   }
 }
@@ -101,9 +108,27 @@ auth = getAuth(app);
 db = getFirestore(app);
 storage = getStorage(app);
 
-// Configurer la persistence Auth (côté client uniquement)
+// Créer la promise authReady (côté client uniquement)
 if (typeof window !== 'undefined') {
-  configureAuthPersistence(auth);
+  authReadyPromise = new Promise<void>((resolve) => {
+    authReadyResolve = resolve;
+  });
+
+  // Configurer la persistence et résoudre la promise
+  configureAuthPersistence(auth).finally(() => {
+    authReadyResolve();
+  });
+} else {
+  // Côté serveur, résoudre immédiatement
+  authReadyPromise = Promise.resolve();
+}
+
+/**
+ * Attend que Firebase Auth soit prêt (persistence configurée)
+ * DOIT être appelé avant onAuthStateChanged pour éviter les déconnexions
+ */
+export function waitForAuthReady(): Promise<void> {
+  return authReadyPromise || Promise.resolve();
 }
 
 export { auth, db, storage };

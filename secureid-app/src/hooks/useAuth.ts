@@ -10,7 +10,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { auth, db, waitForAuthReady } from '@/lib/firebase';
 import { generateEmailFromPhone, normalizePhoneNumber } from '@/lib/auth-helpers';
 import { logger } from '@/lib/logger';
 import type { UserDocument, SignupData, LoginData } from '@/types/user';
@@ -77,43 +77,65 @@ export function useAuth(): UseAuthReturn {
   }, []);
 
   // Écouter les changements d'état d'authentification
+  // IMPORTANT: On attend que Auth soit prêt (persistence configurée) avant d'écouter
   useEffect(() => {
     let isMounted = true;
+    let unsubscribe: (() => void) | null = null;
 
-    // Timeout de sécurité - si Firebase ne répond pas en 10s, on arrête le loading
+    // Timeout de sécurité - si Firebase ne répond pas en 15s, on arrête le loading
     const timeoutId = setTimeout(() => {
       if (isMounted && loading) {
-        logger.warn('Auth timeout - Firebase did not respond in 10s');
+        logger.warn('Auth timeout - Firebase did not respond in 15s');
         setLoading(false);
       }
-    }, 10000);
+    }, 15000);
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (!isMounted) return;
+    // Attendre que Auth soit prêt avant de configurer le listener
+    const initAuth = async () => {
+      try {
+        // CRUCIAL: Attendre que la persistence soit configurée
+        // Sinon onAuthStateChanged peut fire avec null avant de lire le storage
+        await waitForAuthReady();
 
-      clearTimeout(timeoutId);
-      setUser(firebaseUser);
+        if (!isMounted) return;
 
-      if (firebaseUser) {
-        // Charger les données utilisateur depuis Firestore
-        try {
-          await loadUserData(firebaseUser.uid);
-        } catch (err) {
-          logger.error('Failed to load user data', { error: err });
+        unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+          if (!isMounted) return;
+
+          clearTimeout(timeoutId);
+          setUser(firebaseUser);
+
+          if (firebaseUser) {
+            // Charger les données utilisateur depuis Firestore
+            try {
+              await loadUserData(firebaseUser.uid);
+            } catch (err) {
+              logger.error('Failed to load user data', { error: err });
+            }
+          } else {
+            setUserData(null);
+          }
+
+          if (isMounted) {
+            setLoading(false);
+          }
+        });
+      } catch (error) {
+        logger.error('Error initializing auth listener', { error });
+        if (isMounted) {
+          setLoading(false);
         }
-      } else {
-        setUserData(null);
       }
+    };
 
-      if (isMounted) {
-        setLoading(false);
-      }
-    });
+    initAuth();
 
     return () => {
       isMounted = false;
       clearTimeout(timeoutId);
-      unsubscribe();
+      if (unsubscribe) {
+        unsubscribe();
+      }
     };
   }, [loadUserData]);
 
