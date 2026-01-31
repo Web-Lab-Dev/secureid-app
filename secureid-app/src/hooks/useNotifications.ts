@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { getMessaging, getToken, onMessage, deleteToken } from 'firebase/messaging';
 import app from '@/lib/firebase';
 import { logger } from '@/lib/logger';
@@ -9,28 +9,21 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 /**
- * Hook pour gérer les notifications push
- * - Demande la permission
- * - Enregistre le token FCM dans Firestore
- * - Écoute les messages en premier plan
- * - Gère le badge sur l'icône de l'app (PWA)
+ * Hook pour gérer les notifications push FCM
+ *
+ * Fonctionnalités:
+ * - Demande de permission
+ * - Enregistrement du token FCM dans Firestore
+ * - Écoute des messages en premier plan
+ * - Réinitialisation du token si nécessaire
  */
 
 interface UseNotificationsReturn {
-  /** Permission accordée */
   hasPermission: boolean;
-  /** Token FCM */
   token: string | null;
-  /** Demander la permission */
-  requestPermission: () => Promise<void>;
-  /** État de chargement */
   loading: boolean;
-  /** Nombre de notifications non lues */
-  unreadCount: number;
-  /** Marquer toutes les notifications comme lues */
-  clearBadge: () => Promise<void>;
-  /** Réinitialiser les notifications (supprimer token et en générer un nouveau) */
-  resetNotifications: () => Promise<{ success: boolean; newToken?: string; error?: string }>;
+  requestPermission: () => Promise<void>;
+  resetNotifications: () => Promise<{ success: boolean; error?: string }>;
 }
 
 export function useNotifications(): UseNotificationsReturn {
@@ -38,140 +31,117 @@ export function useNotifications(): UseNotificationsReturn {
   const [hasPermission, setHasPermission] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [unreadCount, setUnreadCount] = useState(0);
 
   /**
-   * Mettre à jour le badge de l'icône de l'app (PWA)
-   * Utilise l'API Badging pour afficher un compteur sur l'icône
+   * Enregistre le Service Worker et obtient le token FCM
    */
-  const updateAppBadge = async (count: number) => {
+  const registerFCM = useCallback(async (): Promise<string | null> => {
+    if (!user) return null;
+
     try {
-      if ('setAppBadge' in navigator) {
-        if (count > 0) {
-          await (navigator as Navigator & { setAppBadge: (count: number) => Promise<void> }).setAppBadge(count);
-          logger.info('App badge updated', { count });
-        } else {
-          await (navigator as Navigator & { clearAppBadge: () => Promise<void> }).clearAppBadge();
-          logger.info('App badge cleared');
-        }
+      // 1. Enregistrer le Service Worker
+      let swRegistration: ServiceWorkerRegistration | undefined;
+
+      if ('serviceWorker' in navigator) {
+        // Forcer la mise à jour du SW
+        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+          updateViaCache: 'none'
+        });
+
+        // Attendre que le SW soit prêt
+        await navigator.serviceWorker.ready;
+        logger.info('Service Worker prêt', { scope: swRegistration.scope });
       }
+
+      // 2. Obtenir le token FCM
+      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+      if (!vapidKey) {
+        logger.error('VAPID key non configurée');
+        return null;
+      }
+
+      const messaging = getMessaging(app);
+      const fcmToken = await getToken(messaging, {
+        vapidKey,
+        serviceWorkerRegistration: swRegistration
+      });
+
+      if (!fcmToken) {
+        logger.warn('Impossible d\'obtenir le token FCM');
+        return null;
+      }
+
+      logger.info('Token FCM obtenu', { preview: fcmToken.substring(0, 20) + '...' });
+
+      // 3. Sauvegarder dans Firestore
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, {
+        fcmToken,
+        fcmTokenUpdatedAt: new Date()
+      });
+
+      // 4. Configurer le handler pour les messages en premier plan
+      onMessage(messaging, (payload) => {
+        logger.info('Message reçu en premier plan', { payload });
+
+        // Afficher une notification même si l'app est ouverte
+        if (Notification.permission === 'granted' && payload.notification) {
+          const { title, body } = payload.notification;
+          new Notification(title || 'SecureID', {
+            body: body || 'Nouvelle notification',
+            icon: '/icon-192.png',
+            badge: '/icon-72.png',
+            tag: 'secureid-foreground',
+            requireInteraction: true
+          });
+        }
+      });
+
+      return fcmToken;
+
     } catch (error) {
-      // L'API Badging peut échouer silencieusement sur certains navigateurs
-      logger.debug('App badge API not available or failed', { error });
+      logger.error('Erreur lors de l\'enregistrement FCM', { error });
+      return null;
     }
-  };
+  }, [user]);
 
   /**
-   * Effacer le badge et réinitialiser le compteur
+   * Initialisation au montage
    */
-  const clearBadge = async () => {
-    setUnreadCount(0);
-    await updateAppBadge(0);
-  };
-
   useEffect(() => {
     if (!user) {
       setLoading(false);
       return;
     }
 
-    // Vérifier si les notifications sont supportées
+    // Vérifier le support des notifications
     if (typeof window === 'undefined' || !('Notification' in window)) {
-      logger.warn('Notifications not supported in this browser');
+      logger.warn('Notifications non supportées');
       setLoading(false);
       return;
     }
 
-    // Vérifier la permission actuelle
-    const checkPermission = async () => {
+    const init = async () => {
       const permission = Notification.permission;
 
       if (permission === 'granted') {
         setHasPermission(true);
-        await registerFCMToken();
+        const fcmToken = await registerFCM();
+        setToken(fcmToken);
       } else if (permission === 'denied') {
         setHasPermission(false);
-        logger.info('Notification permission denied');
+        logger.info('Permission notifications refusée');
       }
 
       setLoading(false);
     };
 
-    checkPermission();
-  }, [user]);
+    init();
+  }, [user, registerFCM]);
 
-  const registerFCMToken = async () => {
-    if (!user) return;
-
-    try {
-      const messaging = getMessaging(app);
-      let swRegistration: ServiceWorkerRegistration | undefined;
-
-      // Enregistrer le service worker
-      if ('serviceWorker' in navigator) {
-        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-        logger.info('Service worker registered', { scope: swRegistration.scope });
-
-        // Attendre que le SW soit prêt
-        await navigator.serviceWorker.ready;
-      }
-
-      // Obtenir le token FCM
-      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
-
-      if (!vapidKey) {
-        logger.error('VAPID key not configured');
-        return;
-      }
-
-      // Passer le SW registration pour s'assurer que FCM utilise le bon SW
-      const currentToken = await getToken(messaging, {
-        vapidKey,
-        serviceWorkerRegistration: swRegistration
-      });
-
-      if (currentToken) {
-        setToken(currentToken);
-        logger.info('FCM token obtained', { userId: user.uid });
-
-        // Sauvegarder le token dans Firestore (dans le document user)
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, {
-          fcmToken: currentToken,
-          fcmTokenUpdatedAt: new Date(),
-        });
-
-        // Écouter les messages en premier plan (app ouverte)
-        onMessage(messaging, (payload) => {
-          logger.info('Foreground message received', { payload });
-
-          // Incrémenter le compteur de notifications non lues
-          setUnreadCount((prev) => {
-            const newCount = prev + 1;
-            // Mettre à jour le badge de l'app
-            updateAppBadge(newCount);
-            return newCount;
-          });
-
-          // Afficher notification même si app ouverte
-          if (Notification.permission === 'granted') {
-            new Notification(payload.notification?.title || 'SecureID Alert', {
-              body: payload.notification?.body || 'Nouvelle activité',
-              icon: '/icon-192.png',
-              badge: '/icon-72.png',
-              tag: 'secureid-scan',
-            });
-          }
-        });
-
-      } else {
-        logger.warn('No FCM token available');
-      }
-    } catch (error) {
-      logger.error('Error registering FCM token', { error });
-    }
-  };
-
+  /**
+   * Demande la permission et enregistre le token
+   */
   const requestPermission = async () => {
     if (!('Notification' in window)) {
       alert('Les notifications ne sont pas supportées sur ce navigateur');
@@ -183,132 +153,76 @@ export function useNotifications(): UseNotificationsReturn {
 
       if (permission === 'granted') {
         setHasPermission(true);
-        await registerFCMToken();
-        logger.info('Notification permission granted');
+        const fcmToken = await registerFCM();
+        setToken(fcmToken);
+        logger.info('Permission accordée et token enregistré');
       } else {
         setHasPermission(false);
-        logger.warn('Notification permission denied');
+        logger.warn('Permission refusée');
       }
     } catch (error) {
-      logger.error('Error requesting notification permission', { error });
+      logger.error('Erreur demande permission', { error });
     }
   };
 
   /**
-   * Réinitialiser complètement les notifications
-   * - Supprime l'ancien token FCM
-   * - Désinstalle l'ancien Service Worker
-   * - Réinstalle un nouveau SW et génère un nouveau token
+   * Réinitialise complètement les notifications
+   * Utile si le token est invalide ou corrompu
    */
-  const resetNotifications = async (): Promise<{ success: boolean; newToken?: string; error?: string }> => {
+  const resetNotifications = async (): Promise<{ success: boolean; error?: string }> => {
     if (!user) {
-      return { success: false, error: 'Utilisateur non connecté' };
+      return { success: false, error: 'Non connecté' };
     }
 
     try {
-      logger.info('🔄 Resetting notifications...');
+      logger.info('Réinitialisation des notifications...');
 
-      // 1. Supprimer l'ancien token FCM
       const messaging = getMessaging(app);
+
+      // 1. Supprimer l'ancien token
       try {
         await deleteToken(messaging);
-        logger.info('✅ Old FCM token deleted');
-      } catch (e) {
-        logger.warn('Could not delete old token (might not exist)', { e });
+        logger.info('Ancien token supprimé');
+      } catch {
+        // Ignorer si pas de token
       }
 
-      // 2. Désinstaller tous les Service Workers FCM
+      // 2. Désinstaller les anciens Service Workers FCM
       if ('serviceWorker' in navigator) {
         const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const registration of registrations) {
-          if (registration.active?.scriptURL.includes('firebase-messaging-sw.js')) {
-            await registration.unregister();
-            logger.info('✅ Old Service Worker unregistered');
+        for (const reg of registrations) {
+          if (reg.active?.scriptURL.includes('firebase-messaging-sw.js')) {
+            await reg.unregister();
+            logger.info('Ancien SW désinstallé');
           }
         }
       }
 
-      // 3. Attendre un peu pour que tout soit nettoyé
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // 3. Attendre un peu
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // 4. Réenregistrer le Service Worker et attendre qu'il soit ACTIF
-      let swRegistration: ServiceWorkerRegistration | null = null;
-
-      if ('serviceWorker' in navigator) {
-        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-          updateViaCache: 'none'
-        });
-        logger.info('✅ New Service Worker registered', { scope: swRegistration.scope });
-
-        // Attendre que le SW soit ACTIF (pas juste installé)
-        if (swRegistration.installing) {
-          await new Promise<void>((resolve) => {
-            const sw = swRegistration!.installing!;
-            sw.addEventListener('statechange', () => {
-              if (sw.state === 'activated') {
-                logger.info('✅ Service Worker activated');
-                resolve();
-              }
-            });
-          });
-        } else if (swRegistration.waiting) {
-          // SW en attente, forcer l'activation
-          swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
-          await new Promise(resolve => setTimeout(resolve, 500));
-        } else if (swRegistration.active) {
-          logger.info('✅ Service Worker already active');
-        }
-
-        // Double vérification avec navigator.serviceWorker.ready
-        await navigator.serviceWorker.ready;
-        logger.info('✅ Service Worker ready');
-      }
-
-      // 5. Petit délai supplémentaire pour stabilité
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // 6. Obtenir un nouveau token FCM avec le SW registration
-      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
-      if (!vapidKey) {
-        return { success: false, error: 'VAPID key non configurée' };
-      }
-
-      const newToken = await getToken(messaging, {
-        vapidKey,
-        serviceWorkerRegistration: swRegistration || undefined
-      });
+      // 4. Réenregistrer
+      const newToken = await registerFCM();
 
       if (newToken) {
         setToken(newToken);
-        logger.info('✅ New FCM token obtained', { tokenPreview: newToken.substring(0, 20) + '...' });
-
-        // 7. Sauvegarder dans Firestore
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, {
-          fcmToken: newToken,
-          fcmTokenUpdatedAt: new Date(),
-        });
-        logger.info('✅ New token saved to Firestore');
-
-        return { success: true, newToken: newToken.substring(0, 30) + '...' };
+        return { success: true };
       } else {
         return { success: false, error: 'Impossible de générer un nouveau token' };
       }
 
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.error('❌ Reset notifications failed', { error: errorMessage });
-      return { success: false, error: errorMessage };
+      const message = error instanceof Error ? error.message : 'Erreur inconnue';
+      logger.error('Échec réinitialisation', { error: message });
+      return { success: false, error: message };
     }
   };
 
   return {
     hasPermission,
     token,
-    requestPermission,
     loading,
-    unreadCount,
-    clearBadge,
-    resetNotifications,
+    requestPermission,
+    resetNotifications
   };
 }
