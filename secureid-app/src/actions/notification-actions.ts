@@ -54,7 +54,10 @@ export async function sendNotificationToParent(
       return { success: true, error: 'Notifications not enabled (no FCM token)' };
     }
 
-    // Construire le message FCM
+    // Tag unique pour que chaque notification s'affiche
+    const uniqueTag = `secureid-${data?.type || 'alert'}-${Date.now()}`;
+
+    // Construire le message FCM (simplifié pour web push)
     const message = {
       token: fcmToken,
       notification: {
@@ -62,32 +65,18 @@ export async function sendNotificationToParent(
         body,
       },
       data: data || {},
-      android: {
-        priority: 'high' as const,
-        notification: {
-          channelId: 'secureid_alerts',
-          priority: 'high' as const,
-          sound: 'default',
-          // Vibration: format correct pour Android (en millisecondes)
-          defaultVibrateTimings: false,
-          vibrateTimingsMillis: [200, 100, 200],
-        },
-      },
-      apns: {
-        payload: {
-          aps: {
-            sound: 'default',
-            badge: 1,
-          },
-        },
-      },
       webpush: {
+        headers: {
+          Urgency: 'high',
+        },
         notification: {
+          title,
+          body,
           icon: '/icon-192.png',
           badge: '/icon-72.png',
+          tag: uniqueTag,
+          renotify: true,
           requireInteraction: true,
-          tag: 'secureid-scan',
-          // Vibration pour Web Push (format différent d'Android)
           vibrate: [200, 100, 200],
         },
         fcmOptions: {
@@ -246,32 +235,31 @@ export async function sendTestNotification(
     }
 
     // 2. Construire et envoyer le message de test
+    // Tag unique pour que chaque notification s'affiche (sinon elles se remplacent)
+    const uniqueTag = `secureid-test-${Date.now()}`;
+
     const message = {
       token: fcmToken,
       notification: {
-        title: '🔔 Test de notification SecureID',
-        body: `Test envoyé à ${new Date().toLocaleTimeString('fr-FR')}. Si vous voyez ce message, les notifications fonctionnent !`,
+        title: '🔔 Test SecureID',
+        body: `Test à ${new Date().toLocaleTimeString('fr-FR')}`,
       },
       data: {
         type: 'test',
         timestamp: new Date().toISOString(),
       },
-      android: {
-        priority: 'high' as const,
-        notification: {
-          channelId: 'secureid_alerts',
-          priority: 'high' as const,
-          sound: 'default',
-          defaultVibrateTimings: false,
-          vibrateTimingsMillis: [200, 100, 200],
-        },
-      },
       webpush: {
+        headers: {
+          Urgency: 'high',
+        },
         notification: {
+          title: '🔔 Test SecureID',
+          body: `Test à ${new Date().toLocaleTimeString('fr-FR')}`,
           icon: '/icon-192.png',
           badge: '/icon-72.png',
+          tag: uniqueTag,
+          renotify: true,
           requireInteraction: true,
-          tag: 'secureid-test',
           vibrate: [200, 100, 200],
         },
         fcmOptions: {
