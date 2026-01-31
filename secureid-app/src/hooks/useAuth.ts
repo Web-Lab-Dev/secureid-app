@@ -78,20 +78,43 @@ export function useAuth(): UseAuthReturn {
 
   // Écouter les changements d'état d'authentification
   useEffect(() => {
+    let isMounted = true;
+
+    // Timeout de sécurité - si Firebase ne répond pas en 10s, on arrête le loading
+    const timeoutId = setTimeout(() => {
+      if (isMounted && loading) {
+        logger.warn('Auth timeout - Firebase did not respond in 10s');
+        setLoading(false);
+      }
+    }, 10000);
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!isMounted) return;
+
+      clearTimeout(timeoutId);
       setUser(firebaseUser);
 
       if (firebaseUser) {
         // Charger les données utilisateur depuis Firestore
-        await loadUserData(firebaseUser.uid);
+        try {
+          await loadUserData(firebaseUser.uid);
+        } catch (err) {
+          logger.error('Failed to load user data', { error: err });
+        }
       } else {
         setUserData(null);
       }
 
-      setLoading(false);
+      if (isMounted) {
+        setLoading(false);
+      }
     });
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+      unsubscribe();
+    };
   }, [loadUserData]);
 
   /**
