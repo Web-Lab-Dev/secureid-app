@@ -9,9 +9,8 @@
  * - Firestore: Base de données NoSQL
  * - Storage: Stockage de fichiers
  *
- * IMPORTANT: La persistence Auth est configurée explicitement pour éviter
- * les déconnexions aléatoires sur mobile/PWA. Le hook useAuth DOIT attendre
- * que authReady soit résolu avant de configurer onAuthStateChanged.
+ * IMPORTANT: La persistence Auth est configurée ET on attend que Firebase
+ * ait lu l'état depuis le storage avant de considérer auth comme "prêt".
  */
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
@@ -20,7 +19,9 @@ import {
   setPersistence,
   browserLocalPersistence,
   indexedDBLocalPersistence,
-  Auth
+  onAuthStateChanged,
+  Auth,
+  User
 } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
@@ -61,9 +62,9 @@ let auth: Auth;
 let db: Firestore;
 let storage: FirebaseStorage;
 
-// Promise qui se résout quand Auth est prêt (persistence configurée)
-let authReadyResolve: () => void;
-let authReadyPromise: Promise<void> | null = null;
+// État d'auth initial (lu depuis le storage)
+let initialAuthUser: User | null = null;
+let authReadyPromise: Promise<User | null> | null = null;
 
 /**
  * Initialise Firebase (singleton pattern)
@@ -76,30 +77,46 @@ function initializeFirebase(): FirebaseApp {
 }
 
 /**
- * Configure la persistence Auth pour éviter les déconnexions
- * Utilise IndexedDB en priorité, localStorage en fallback
- *
- * IMPORTANT: Cette fonction DOIT être awaited avant d'utiliser onAuthStateChanged
+ * Configure la persistence Auth et attend que Firebase lise l'état depuis storage
+ * Retourne l'utilisateur initial (ou null si pas connecté)
  */
-async function configureAuthPersistence(authInstance: Auth): Promise<void> {
+async function initializeAuth(authInstance: Auth): Promise<User | null> {
   if (typeof window === 'undefined') {
-    return;
+    return null;
   }
 
+  // 1. Configurer la persistence
   try {
-    // Essayer IndexedDB d'abord (plus fiable sur mobile/PWA)
     await setPersistence(authInstance, indexedDBLocalPersistence);
     console.log('[Firebase] Auth persistence: IndexedDB');
   } catch (indexedDBError) {
     console.warn('[Firebase] IndexedDB failed, trying localStorage:', indexedDBError);
     try {
-      // Fallback sur localStorage
       await setPersistence(authInstance, browserLocalPersistence);
       console.log('[Firebase] Auth persistence: localStorage');
     } catch (localStorageError) {
       console.error('[Firebase] All persistence methods failed:', localStorageError);
     }
   }
+
+  // 2. Attendre que Firebase lise l'état auth depuis le storage
+  // C'est CRUCIAL: le premier callback de onAuthStateChanged contient
+  // l'utilisateur lu depuis le storage (ou null si pas connecté)
+  return new Promise<User | null>((resolve) => {
+    const unsubscribe = onAuthStateChanged(authInstance, (user) => {
+      unsubscribe(); // Se désabonner après le premier callback
+      initialAuthUser = user;
+      console.log('[Firebase] Auth ready, user:', user ? 'logged in' : 'not logged in');
+      resolve(user);
+    });
+
+    // Timeout de sécurité: si Firebase ne répond pas en 5 secondes
+    setTimeout(() => {
+      unsubscribe();
+      console.warn('[Firebase] Auth timeout, assuming not logged in');
+      resolve(null);
+    }, 5000);
+  });
 }
 
 // Initialisation
@@ -108,27 +125,26 @@ auth = getAuth(app);
 db = getFirestore(app);
 storage = getStorage(app);
 
-// Créer la promise authReady (côté client uniquement)
+// Initialiser l'auth (côté client uniquement)
 if (typeof window !== 'undefined') {
-  authReadyPromise = new Promise<void>((resolve) => {
-    authReadyResolve = resolve;
-  });
-
-  // Configurer la persistence et résoudre la promise
-  configureAuthPersistence(auth).finally(() => {
-    authReadyResolve();
-  });
+  authReadyPromise = initializeAuth(auth);
 } else {
-  // Côté serveur, résoudre immédiatement
-  authReadyPromise = Promise.resolve();
+  authReadyPromise = Promise.resolve(null);
 }
 
 /**
- * Attend que Firebase Auth soit prêt (persistence configurée)
- * DOIT être appelé avant onAuthStateChanged pour éviter les déconnexions
+ * Attend que Firebase Auth soit prêt (persistence configurée + état lu)
+ * Retourne l'utilisateur initial ou null
  */
-export function waitForAuthReady(): Promise<void> {
-  return authReadyPromise || Promise.resolve();
+export function waitForAuthReady(): Promise<User | null> {
+  return authReadyPromise || Promise.resolve(null);
+}
+
+/**
+ * Retourne l'utilisateur initial (synchrone, après que authReady soit résolu)
+ */
+export function getInitialAuthUser(): User | null {
+  return initialAuthUser;
 }
 
 export { auth, db, storage };

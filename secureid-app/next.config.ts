@@ -6,20 +6,21 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
 
-// PWA Configuration - Mode offline complet avec caching stratégique
+// PWA Configuration - Mode offline avec caching stratégique
+// IMPORTANT: skipWaiting et reloadOnOnline désactivés pour éviter les déconnexions
 const withPWA = withPWAInit({
   dest: "public",
   disable: process.env.NODE_ENV === "development",
   register: true,
-  reloadOnOnline: true,
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: false,  // DÉSACTIVÉ: évite les reloads qui cassent l'auth
+  cacheOnFrontEndNav: false,  // DÉSACTIVÉ: évite le cache agressif
+  aggressiveFrontEndNavCaching: false,  // DÉSACTIVÉ: causait des problèmes d'auth
   fallbacks: {
     document: "/offline",
   },
   workboxOptions: {
-    skipWaiting: true,
-    clientsClaim: true,
+    skipWaiting: false,  // DÉSACTIVÉ: laisse l'ancien SW finir avant de le remplacer
+    clientsClaim: false,  // DÉSACTIVÉ: évite la prise de contrôle brutale
     // Stratégies de cache personnalisées
     runtimeCaching: [
       // Cache d'abord pour les assets statiques (images, fonts, etc.)

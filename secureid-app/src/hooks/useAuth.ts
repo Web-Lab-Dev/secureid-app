@@ -77,51 +77,59 @@ export function useAuth(): UseAuthReturn {
   }, []);
 
   // Écouter les changements d'état d'authentification
-  // IMPORTANT: On attend que Auth soit prêt (persistence configurée) avant d'écouter
+  // IMPORTANT: waitForAuthReady() attend que Firebase lise l'état depuis le storage
   useEffect(() => {
     let isMounted = true;
     let unsubscribe: (() => void) | null = null;
 
-    // Timeout de sécurité - si Firebase ne répond pas en 15s, on arrête le loading
-    const timeoutId = setTimeout(() => {
-      if (isMounted && loading) {
-        logger.warn('Auth timeout - Firebase did not respond in 15s');
-        setLoading(false);
-      }
-    }, 15000);
-
-    // Attendre que Auth soit prêt avant de configurer le listener
     const initAuth = async () => {
       try {
-        // CRUCIAL: Attendre que la persistence soit configurée
-        // Sinon onAuthStateChanged peut fire avec null avant de lire le storage
-        await waitForAuthReady();
+        // ÉTAPE 1: Attendre que Firebase lise l'état depuis le storage
+        // waitForAuthReady() retourne l'utilisateur initial (ou null)
+        // Cette étape est CRUCIALE pour éviter les déconnexions aléatoires
+        const initialUser = await waitForAuthReady();
 
         if (!isMounted) return;
 
+        // ÉTAPE 2: Appliquer l'état initial
+        setUser(initialUser);
+
+        if (initialUser) {
+          logger.info('Auth initialized with user', { uid: initialUser.uid });
+          try {
+            await loadUserData(initialUser.uid);
+          } catch (err) {
+            logger.error('Failed to load initial user data', { error: err });
+          }
+        } else {
+          logger.info('Auth initialized without user');
+          setUserData(null);
+        }
+
+        if (isMounted) {
+          setLoading(false);
+        }
+
+        // ÉTAPE 3: Écouter les changements futurs (login/logout manuels)
+        // Note: Ce listener PEUT fire immédiatement avec le même état,
+        // mais ce n'est pas un problème car on a déjà mis à jour l'état
         unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
           if (!isMounted) return;
 
-          clearTimeout(timeoutId);
           setUser(firebaseUser);
 
           if (firebaseUser) {
-            // Charger les données utilisateur depuis Firestore
             try {
               await loadUserData(firebaseUser.uid);
             } catch (err) {
-              logger.error('Failed to load user data', { error: err });
+              logger.error('Failed to load user data on change', { error: err });
             }
           } else {
             setUserData(null);
           }
-
-          if (isMounted) {
-            setLoading(false);
-          }
         });
       } catch (error) {
-        logger.error('Error initializing auth listener', { error });
+        logger.error('Error initializing auth', { error });
         if (isMounted) {
           setLoading(false);
         }
@@ -132,7 +140,6 @@ export function useAuth(): UseAuthReturn {
 
     return () => {
       isMounted = false;
-      clearTimeout(timeoutId);
       if (unsubscribe) {
         unsubscribe();
       }
