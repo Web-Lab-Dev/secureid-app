@@ -2,6 +2,7 @@
 
 import { adminDb } from '@/lib/firebase-admin';
 import { logger } from '@/lib/logger';
+import { serializeFirestoreData } from '@/lib/firebase-helpers';
 import type { BraceletDocument } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
 
@@ -102,10 +103,14 @@ export async function getBraceletsByProfileIds(
             // ⚠️ SÉCURITÉ: Ne JAMAIS exposer secretToken
             const { secretToken, id, ...safeBraceletData } = braceletData;
 
-            braceletsMap[braceletId] = {
+            // ✅ Sérialiser les Timestamps Firestore pour éviter erreur Next.js
+            // "Only plain objects can be passed to Client Components"
+            const serializedBracelet = serializeFirestoreData({
               id: braceletSnap.id,
               ...safeBraceletData,
-            } as BraceletDocument;
+            });
+
+            braceletsMap[braceletId] = serializedBracelet as BraceletDocument;
           } else {
             logger.warn('Bracelet not found', { braceletId });
           }
