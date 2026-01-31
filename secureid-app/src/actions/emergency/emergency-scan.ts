@@ -161,22 +161,42 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
 
     // Envoyer notification push au parent
     try {
+      logger.info('📱 Starting scan notification process', { braceletId, scanId: scanDoc.id });
+
       // Récupérer les informations du bracelet et du profil
       const braceletDoc = await adminDb.collection('bracelets').doc(braceletId).get();
 
-      if (braceletDoc.exists) {
+      if (!braceletDoc.exists) {
+        logger.warn('❌ Bracelet not found for notification', { braceletId });
+      } else {
         const braceletData = braceletDoc.data();
         const profileId = braceletData?.profileId;
+        logger.info('📱 Bracelet found', { braceletId, profileId: profileId || 'NONE' });
 
-        if (profileId) {
+        if (!profileId) {
+          logger.warn('❌ No profileId linked to bracelet', { braceletId });
+        } else {
           const profileDoc = await adminDb.collection('profiles').doc(profileId).get();
 
-          if (profileDoc.exists) {
+          if (!profileDoc.exists) {
+            logger.warn('❌ Profile not found', { profileId });
+          } else {
             const profileData = profileDoc.data();
             const parentId = profileData?.parentId;
             const childName = profileData?.fullName;
+            logger.info('📱 Profile found', {
+              profileId,
+              parentId: parentId || 'NONE',
+              childName: childName || 'NONE'
+            });
 
-            if (parentId && childName) {
+            if (!parentId || !childName) {
+              logger.warn('❌ Missing parentId or childName in profile', {
+                profileId,
+                hasParentId: !!parentId,
+                hasChildName: !!childName
+              });
+            } else {
               // Construire le message de localisation
               let locationText = '';
               if (city && country) {
@@ -185,12 +205,15 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
                 locationText = `${geolocation.lat.toFixed(4)}, ${geolocation.lng.toFixed(4)}`;
               }
 
-              // Envoyer la notification (ne pas bloquer si ça échoue)
-              await sendEmergencyScanNotification(parentId, childName, locationText);
-              logger.info('Emergency scan notification sent', {
+              // Envoyer la notification
+              logger.info('📱 Sending scan notification...', { parentId, childName, locationText });
+              const notifResult = await sendEmergencyScanNotification(parentId, childName, locationText);
+              logger.info('📱 Scan notification result', {
                 parentId,
                 childName,
                 scanId: scanDoc.id,
+                success: notifResult.success,
+                error: notifResult.error
               });
             }
           }
@@ -198,8 +221,8 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
       }
     } catch (notifError) {
       // Log l'erreur mais ne pas faire échouer le scan
-      logger.error('Error sending scan notification', {
-        error: notifError,
+      logger.error('❌ Error in scan notification process', {
+        error: notifError instanceof Error ? notifError.message : notifError,
         braceletId,
         scanId: scanDoc.id,
       });

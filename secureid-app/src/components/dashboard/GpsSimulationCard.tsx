@@ -64,11 +64,12 @@ export function GpsSimulationCard({
   const [pointsOfInterest, setPointsOfInterest] = useState<PointOfInterest[]>([]);
 
   // Alerte zone de sécurité
-  const [outOfZoneTimer, setOutOfZoneTimer] = useState<NodeJS.Timeout | null>(null);
   const [showSecurityAlert, setShowSecurityAlert] = useState<boolean>(false);
   const [alertedZone, setAlertedZone] = useState<SafeZoneDocument | null>(null);
 
-  // Ref pour éviter les notifications multiples
+  // Refs pour éviter les notifications multiples et race conditions
+  // IMPORTANT: Utiliser des refs et non des states pour synchronicité
+  const outOfZoneTimerRef = useRef<NodeJS.Timeout | null>(null);
   const notificationSentRef = useRef<boolean>(false);
   const previousActiveZonesRef = useRef<number>(0);
 
@@ -266,75 +267,82 @@ export function GpsSimulationCard({
     const wasInAtLeastOneZone = previousZoneCount > 0;
 
     // Si l'enfant SORT de toutes les zones (transition sûre → hors zone)
-    // ET qu'on n'a pas encore envoyé de notification
-    if (wasInAtLeastOneZone && isOutOfAllZones && !notificationSentRef.current && !outOfZoneTimer) {
+    // Vérifications SYNCHRONES avec refs pour éviter race conditions:
+    // 1. Était dans au moins une zone
+    // 2. Maintenant hors de toutes les zones
+    // 3. Notification pas encore envoyée (ref)
+    // 4. Pas de timer déjà en cours (ref)
+    if (wasInAtLeastOneZone && isOutOfAllZones && !notificationSentRef.current && !outOfZoneTimerRef.current) {
       // Utiliser le délai de la première zone (ou minimum des délais)
       const minDelay = Math.min(...safeZones.map(z => z.alertDelay));
       const delayMs = minDelay * 60 * 1000; // Minutes → millisecondes
 
-      logger.info('Child exited all safe zones, starting timer', { delayMinutes: minDelay });
+      logger.info('🚨 Child exited all safe zones, starting SINGLE timer', {
+        delayMinutes: minDelay,
+        timerAlreadyExists: !!outOfZoneTimerRef.current,
+        notificationAlreadySent: notificationSentRef.current
+      });
 
-      // Démarrer le timer (une seule fois)
+      // Marquer IMMÉDIATEMENT qu'un timer est en cours (synchrone)
       const timer = setTimeout(async () => {
         // Double vérification avant d'envoyer
         if (notificationSentRef.current) {
-          logger.info('Notification already sent, skipping');
+          logger.info('Notification already sent, skipping duplicate');
           return;
         }
 
-        notificationSentRef.current = true; // Marquer comme envoyé AVANT l'envoi
+        // Marquer comme envoyé AVANT toute action async
+        notificationSentRef.current = true;
 
-        const firstZone = safeZones[0]; // Zone de référence pour l'alerte
+        const firstZone = safeZones[0];
         setShowSecurityAlert(true);
         setAlertedZone(firstZone);
 
-        // 🔊 Jouer le son d'alerte (lazy-loaded)
+        // 🔊 Jouer le son d'alerte
         try {
           await playAlert();
-          logger.info('Alert sound played');
         } catch (error) {
           logger.warn('Failed to play alert sound', { error });
         }
 
-        // Envoyer notification push au parent (UNE SEULE FOIS)
+        // Envoyer UNE SEULE notification push
         if (user?.uid) {
           try {
             await sendGeofenceExitNotification(user.uid, childName, minDelay);
-            logger.info('Geofence exit notification sent (once)', {
+            logger.info('✅ Geofence notification sent ONCE', {
               parentId: user.uid,
               childName,
-              zoneName: firstZone.name,
-              delayMinutes: minDelay
             });
           } catch (error) {
-            logger.error('Error sending geofence notification', { error, parentId: user.uid });
+            logger.error('Error sending geofence notification', { error });
           }
         }
       }, delayMs);
 
-      setOutOfZoneTimer(timer);
+      // Stocker dans ref (synchrone, pas de race condition)
+      outOfZoneTimerRef.current = timer;
     }
 
     // Si l'enfant RENTRE dans au moins une zone
-    if (currentZoneCount > 0 && outOfZoneTimer) {
-      // Annuler le timer et réinitialiser
-      clearTimeout(outOfZoneTimer);
-      setOutOfZoneTimer(null);
+    if (currentZoneCount > 0 && outOfZoneTimerRef.current) {
+      clearTimeout(outOfZoneTimerRef.current);
+      outOfZoneTimerRef.current = null;
       setShowSecurityAlert(false);
       setAlertedZone(null);
-      notificationSentRef.current = false; // Reset pour permettre une nouvelle notification
-      logger.info('Child re-entered safe zone, timer cancelled, notification reset');
+      notificationSentRef.current = false;
+      logger.info('Child re-entered safe zone, timer cancelled');
     }
-  }, [childLocation, safeZones, user?.uid, childName, playAlert, outOfZoneTimer]);
+  }, [childLocation, safeZones, user?.uid, childName, playAlert]);
 
   // Cleanup du timer au démontage
   useEffect(() => {
     return () => {
-      if (outOfZoneTimer) {
-        clearTimeout(outOfZoneTimer);
+      if (outOfZoneTimerRef.current) {
+        clearTimeout(outOfZoneTimerRef.current);
+        outOfZoneTimerRef.current = null;
       }
     };
-  }, [outOfZoneTimer]);
+  }, []);
 
   // 3️⃣ CRÉER POI (Points d'Intérêt) - Maison, École, Hôpital (Ouagadougou)
   useEffect(() => {
