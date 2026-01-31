@@ -1,112 +1,110 @@
 /**
- * FIREBASE CONFIGURATION - Initialisation et exports des services Firebase
+ * FIREBASE CLIENT SDK - Configuration et initialisation
  *
- * Ce fichier initialise Firebase de manière sécurisée et exporte les instances
+ * Ce fichier initialise Firebase côté client et exporte les instances
  * pour utilisation dans toute l'application.
  *
- * SERVICES UTILISÉS:
- * - Authentication: Gestion des comptes parents (login/signup)
- * - Firestore: Base de données NoSQL (bracelets, profils enfants, scans)
- * - Storage: Stockage de fichiers (photos profils, documents médicaux PDF)
+ * SERVICES:
+ * - Authentication: Gestion des comptes (login/signup)
+ * - Firestore: Base de données NoSQL
+ * - Storage: Stockage de fichiers
  *
- * SÉCURITÉ:
- * - Toutes les clés API sont dans .env.local (jamais hardcodées)
- * - Validation stricte des variables d'environnement au démarrage
- * - Pattern Singleton pour éviter les réinitialisations multiples
- *
- * @see https://firebase.google.com/docs/web/setup
+ * IMPORTANT: La persistence Auth est configurée explicitement pour éviter
+ * les déconnexions aléatoires sur mobile/PWA.
  */
 
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import {
+  getAuth,
+  setPersistence,
+  browserLocalPersistence,
+  indexedDBLocalPersistence,
+  Auth
+} from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
+
+// Validation des variables d'environnement
+function validateConfig(): void {
+  const required = [
+    'NEXT_PUBLIC_FIREBASE_API_KEY',
+    'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+    'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+    'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+    'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+    'NEXT_PUBLIC_FIREBASE_APP_ID',
+  ];
+
+  const missing = required.filter(key => !process.env[key]);
+
+  if (missing.length > 0 && typeof window !== 'undefined') {
+    console.error(`[Firebase] Variables manquantes: ${missing.join(', ')}`);
+  }
+}
+
+validateConfig();
+
+// Configuration Firebase
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
+
+// Singleton Firebase App
+let app: FirebaseApp;
+let auth: Auth;
+let db: Firestore;
+let storage: FirebaseStorage;
+
+// Flag pour savoir si la persistence a été configurée
+let persistenceConfigured = false;
 
 /**
- * Validation des variables d'environnement Firebase
- *
- * IMPORTANT: Next.js remplace process.env.NEXT_PUBLIC_* uniquement avec l'accès direct,
- * PAS avec la notation entre crochets (process.env[varName]).
- *
- * Cette fonction valide que toutes les variables requises sont présentes.
- * En production Vercel, les variables sont injectées au moment du build.
- *
- * LOGIQUE:
- * - Côté serveur (SSR): Lance une erreur fatale si variables manquantes
- * - Côté client: Log une erreur mais continue (évite les crashs en dev)
+ * Initialise Firebase (singleton pattern)
  */
-function validateFirebaseConfig() {
-  const missingVars: string[] = [];
+function initializeFirebase(): FirebaseApp {
+  if (getApps().length === 0) {
+    return initializeApp(firebaseConfig);
+  }
+  return getApp();
+}
 
-  // ⚠️ CRITIQUE: Utiliser l'accès direct pour que Next.js puisse injecter les variables
-  if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) missingVars.push('NEXT_PUBLIC_FIREBASE_API_KEY');
-  if (!process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN) missingVars.push('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN');
-  if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) missingVars.push('NEXT_PUBLIC_FIREBASE_PROJECT_ID');
-  if (!process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) missingVars.push('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET');
-  if (!process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID) missingVars.push('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID');
-  if (!process.env.NEXT_PUBLIC_FIREBASE_APP_ID) missingVars.push('NEXT_PUBLIC_FIREBASE_APP_ID');
+/**
+ * Configure la persistence Auth pour éviter les déconnexions
+ * Utilise IndexedDB en priorité, localStorage en fallback
+ */
+async function configureAuthPersistence(authInstance: Auth): Promise<void> {
+  if (persistenceConfigured || typeof window === 'undefined') return;
 
-  if (missingVars.length > 0) {
-    if (typeof window === 'undefined') {
-      // Côté serveur - Configuration manquante = erreur critique
-      throw new Error(
-        `Variables d'environnement Firebase manquantes: ${missingVars.join(', ')}\n` +
-        `En production Vercel: Vérifiez que les variables sont configurées dans Settings > Environment Variables\n` +
-        `En local: Créez le fichier .env.local avec toutes les variables NEXT_PUBLIC_FIREBASE_*`
-      );
-    } else {
-      // Côté client - Afficher l'erreur mais ne pas crasher l'app
-      console.error(
-        `Variables d'environnement Firebase manquantes: ${missingVars.join(', ')}\n` +
-        `En production Vercel: Vérifiez que les variables sont configurées dans Settings > Environment Variables\n` +
-        `En local: Créez le fichier .env.local avec toutes les variables NEXT_PUBLIC_FIREBASE_*`
-      );
+  try {
+    // Essayer IndexedDB d'abord (plus fiable)
+    await setPersistence(authInstance, indexedDBLocalPersistence);
+    persistenceConfigured = true;
+  } catch {
+    try {
+      // Fallback sur localStorage
+      await setPersistence(authInstance, browserLocalPersistence);
+      persistenceConfigured = true;
+    } catch (error) {
+      console.error('[Firebase] Impossible de configurer la persistence Auth:', error);
     }
   }
 }
 
-// Valider la configuration au chargement du module
-validateFirebaseConfig();
+// Initialisation
+app = initializeFirebase();
+auth = getAuth(app);
+db = getFirestore(app);
+storage = getStorage(app);
 
-/**
- * Configuration Firebase chargée depuis les variables d'environnement
- *
- * IMPORTANT: Pas de valeurs par défaut (pas de fallback)
- * Si une variable manque, l'application doit échouer explicitement
- * plutôt que de fonctionner avec une configuration incorrecte
- */
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
-};
+// Configurer la persistence Auth (côté client uniquement)
+if (typeof window !== 'undefined') {
+  configureAuthPersistence(auth);
+}
 
-/**
- * Initialisation Firebase en mode Singleton
- *
- * POURQUOI SINGLETON?
- * En développement avec Next.js, le Hot Module Replacement (HMR)
- * peut réimporter ce module plusieurs fois. Sans cette vérification,
- * Firebase lancerait une erreur "Firebase app already initialized".
- *
- * LOGIQUE:
- * - Si aucune app Firebase n'existe → Initialiser une nouvelle
- * - Si une app existe déjà → Réutiliser l'instance existante
- */
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-
-/**
- * Instances des services Firebase exportées
- *
- * Ces exports sont utilisés partout dans l'application:
- * - auth: Login/signup/logout des parents
- * - db: Requêtes Firestore (bracelets, profiles, scans, etc.)
- * - storage: Upload/download de fichiers (photos, PDFs médicaux)
- */
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+export { auth, db, storage };
 export default app;

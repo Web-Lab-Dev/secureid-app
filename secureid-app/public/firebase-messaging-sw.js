@@ -1,18 +1,14 @@
 /**
  * Firebase Cloud Messaging Service Worker
  *
- * Gère les notifications push en arrière-plan (quand l'app est fermée ou minimisée).
- *
- * IMPORTANT: La configuration Firebase doit correspondre EXACTEMENT à celle utilisée
- * côté client (Vercel env vars) sinon les notifications ne fonctionneront pas.
- *
+ * Gère les notifications push en arrière-plan.
  * Projet Firebase: taskflow-26718
  */
 
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
-// Configuration Firebase - DOIT correspondre aux variables Vercel NEXT_PUBLIC_FIREBASE_*
+// Configuration Firebase (doit correspondre à Vercel)
 const firebaseConfig = {
   apiKey: "AIzaSyDZKzZHIrqWXm_nfGRa2syWEEeSwGu5Eu8",
   authDomain: "taskflow-26718.firebaseapp.com",
@@ -27,90 +23,97 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 /**
- * Gestionnaire des messages en arrière-plan
- * Appelé quand l'app est fermée ou minimisée
+ * Handler FCM pour messages en arrière-plan
  */
 messaging.onBackgroundMessage((payload) => {
-  console.log('[SW] Message reçu en arrière-plan:', payload);
-
-  // Générer un tag unique pour que chaque notification s'affiche
-  // (sinon les notifications avec le même tag se remplacent silencieusement)
-  const uniqueTag = `secureid-${Date.now()}`;
-
-  const notificationTitle = payload.notification?.title || 'SecureID';
-  const notificationOptions = {
-    body: payload.notification?.body || 'Nouvelle notification',
-    icon: '/icon-192.png',
-    badge: '/icon-72.png',
-    vibrate: [200, 100, 200, 100, 200],
-    tag: uniqueTag,
-    renotify: true, // Force l'affichage même si tag similaire
-    requireInteraction: true,
-    data: payload.data,
-    actions: [
-      { action: 'open', title: 'Ouvrir' },
-      { action: 'dismiss', title: 'Fermer' }
-    ]
-  };
-
-  // Afficher la notification système
-  return self.registration.showNotification(notificationTitle, notificationOptions);
+  console.log('[SW] onBackgroundMessage:', payload);
+  return showNotification(payload);
 });
 
 /**
- * Gestionnaire des clics sur les notifications
+ * Handler push direct (fallback si onBackgroundMessage ne fonctionne pas)
  */
-self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Notification cliquée:', event.action);
+self.addEventListener('push', (event) => {
+  console.log('[SW] Push event reçu:', event);
 
-  event.notification.close();
-
-  if (event.action === 'dismiss') {
+  if (!event.data) {
+    console.log('[SW] Push sans données');
     return;
   }
 
-  // Ouvrir ou focus l'app
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    payload = { notification: { title: 'SecureID', body: event.data.text() } };
+  }
+
+  // Note: FCM peut avoir déjà affiché la notification via onBackgroundMessage
+  // On vérifie si c'est un message FCM standard
+  if (payload.notification) {
+    event.waitUntil(showNotification(payload));
+  }
+});
+
+/**
+ * Affiche une notification système
+ */
+function showNotification(payload) {
+  const title = payload.notification?.title || 'SecureID';
+  const options = {
+    body: payload.notification?.body || 'Nouvelle notification',
+    icon: '/icon-192.png',
+    badge: '/icon-72.png',
+    vibrate: [200, 100, 200],
+    tag: `secureid-${Date.now()}`,
+    renotify: true,
+    requireInteraction: true,
+    data: payload.data || {},
+    actions: [
+      { action: 'open', title: 'Ouvrir' },
+      { action: 'close', title: 'Fermer' }
+    ]
+  };
+
+  return self.registration.showNotification(title, options);
+}
+
+/**
+ * Handler clic sur notification
+ */
+self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] Notification cliquée:', event.action);
+  event.notification.close();
+
+  if (event.action === 'close') return;
+
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Si une fenêtre est déjà ouverte, la focus
-      for (const client of clientList) {
-        if (client.url.includes('/dashboard') && 'focus' in client) {
-          return client.focus();
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clientList) => {
+        // Focus fenêtre existante
+        for (const client of clientList) {
+          if (client.url.includes('secureid') && 'focus' in client) {
+            return client.focus();
+          }
         }
-      }
-      // Sinon ouvrir une nouvelle fenêtre
-      if (clients.openWindow) {
+        // Ouvrir nouvelle fenêtre
         return clients.openWindow('/dashboard');
-      }
-    })
+      })
   );
 });
 
 /**
- * Gestionnaire d'installation du SW
+ * Installation SW
  */
-self.addEventListener('install', (event) => {
-  console.log('[SW] Installation...');
-  // Activer immédiatement sans attendre
+self.addEventListener('install', () => {
+  console.log('[SW] Install');
   self.skipWaiting();
 });
 
 /**
- * Gestionnaire d'activation du SW
+ * Activation SW
  */
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activation...');
-  // Prendre le contrôle immédiatement
+  console.log('[SW] Activate');
   event.waitUntil(clients.claim());
-});
-
-/**
- * Gestionnaire des messages depuis l'app
- */
-self.addEventListener('message', (event) => {
-  console.log('[SW] Message reçu:', event.data);
-
-  if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
 });

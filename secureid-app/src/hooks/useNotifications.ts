@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { getMessaging, getToken, onMessage, deleteToken } from 'firebase/messaging';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { getMessaging, getToken, onMessage, deleteToken, Messaging } from 'firebase/messaging';
 import app from '@/lib/firebase';
 import { logger } from '@/lib/logger';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -11,11 +11,11 @@ import { db } from '@/lib/firebase';
 /**
  * Hook pour gérer les notifications push FCM
  *
- * Fonctionnalités:
+ * Gère:
  * - Demande de permission
- * - Enregistrement du token FCM dans Firestore
- * - Écoute des messages en premier plan
- * - Réinitialisation du token si nécessaire
+ * - Enregistrement du token FCM
+ * - Messages en premier plan
+ * - Réinitialisation si problèmes
  */
 
 interface UseNotificationsReturn {
@@ -26,14 +26,69 @@ interface UseNotificationsReturn {
   resetNotifications: () => Promise<{ success: boolean; error?: string }>;
 }
 
+// Singleton pour éviter les handlers multiples
+let messagingInstance: Messaging | null = null;
+let onMessageUnsubscribe: (() => void) | null = null;
+
 export function useNotifications(): UseNotificationsReturn {
   const { user } = useAuthContext();
   const [hasPermission, setHasPermission] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Ref pour éviter les initialisations multiples
+  const initRef = useRef(false);
+
   /**
-   * Enregistre le Service Worker et obtient le token FCM
+   * Obtient l'instance Messaging (singleton)
+   */
+  const getMessagingInstance = useCallback((): Messaging | null => {
+    if (typeof window === 'undefined') return null;
+
+    if (!messagingInstance) {
+      try {
+        messagingInstance = getMessaging(app);
+      } catch (error) {
+        logger.error('Erreur création Messaging', { error });
+        return null;
+      }
+    }
+    return messagingInstance;
+  }, []);
+
+  /**
+   * Configure le handler pour les messages en premier plan
+   * (Une seule fois, pas à chaque render)
+   */
+  const setupForegroundHandler = useCallback((messaging: Messaging) => {
+    // Désabonner l'ancien handler si existe
+    if (onMessageUnsubscribe) {
+      onMessageUnsubscribe();
+    }
+
+    onMessageUnsubscribe = onMessage(messaging, (payload) => {
+      logger.info('Message reçu (foreground)', {
+        title: payload.notification?.title,
+        body: payload.notification?.body
+      });
+
+      // Afficher notification même si app ouverte
+      if (Notification.permission === 'granted' && payload.notification) {
+        const { title, body } = payload.notification;
+
+        new Notification(title || 'SecureID', {
+          body: body || 'Nouvelle notification',
+          icon: '/icon-192.png',
+          badge: '/icon-72.png',
+          tag: `secureid-fg-${Date.now()}`,
+          requireInteraction: true
+        });
+      }
+    });
+  }, []);
+
+  /**
+   * Enregistre le SW et obtient le token FCM
    */
   const registerFCM = useCallback(async (): Promise<string | null> => {
     if (!user) return null;
@@ -43,83 +98,72 @@ export function useNotifications(): UseNotificationsReturn {
       let swRegistration: ServiceWorkerRegistration | undefined;
 
       if ('serviceWorker' in navigator) {
-        // Forcer la mise à jour du SW
-        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-          updateViaCache: 'none'
-        });
-
-        // Attendre que le SW soit prêt
+        swRegistration = await navigator.serviceWorker.register(
+          '/firebase-messaging-sw.js',
+          { updateViaCache: 'none' }
+        );
         await navigator.serviceWorker.ready;
-        logger.info('Service Worker prêt', { scope: swRegistration.scope });
       }
 
-      // 2. Obtenir le token FCM
+      // 2. Vérifier VAPID key
       const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
       if (!vapidKey) {
-        logger.error('VAPID key non configurée');
+        logger.error('VAPID key manquante');
         return null;
       }
 
-      const messaging = getMessaging(app);
+      // 3. Obtenir instance Messaging
+      const messaging = getMessagingInstance();
+      if (!messaging) return null;
+
+      // 4. Obtenir token FCM
       const fcmToken = await getToken(messaging, {
         vapidKey,
         serviceWorkerRegistration: swRegistration
       });
 
       if (!fcmToken) {
-        logger.warn('Impossible d\'obtenir le token FCM');
+        logger.warn('Token FCM non obtenu');
         return null;
       }
 
-      logger.info('Token FCM obtenu', { preview: fcmToken.substring(0, 20) + '...' });
+      logger.info('Token FCM obtenu');
 
-      // 3. Sauvegarder dans Firestore
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
+      // 5. Sauvegarder dans Firestore
+      await updateDoc(doc(db, 'users', user.uid), {
         fcmToken,
         fcmTokenUpdatedAt: new Date()
       });
 
-      // 4. Configurer le handler pour les messages en premier plan
-      onMessage(messaging, (payload) => {
-        logger.info('Message reçu en premier plan', { payload });
-
-        // Afficher une notification même si l'app est ouverte
-        if (Notification.permission === 'granted' && payload.notification) {
-          const { title, body } = payload.notification;
-          new Notification(title || 'SecureID', {
-            body: body || 'Nouvelle notification',
-            icon: '/icon-192.png',
-            badge: '/icon-72.png',
-            tag: `secureid-${Date.now()}`, // Tag unique pour chaque notification
-            requireInteraction: true
-          });
-        }
-      });
+      // 6. Configurer handler foreground (une seule fois)
+      setupForegroundHandler(messaging);
 
       return fcmToken;
 
     } catch (error) {
-      logger.error('Erreur lors de l\'enregistrement FCM', { error });
+      logger.error('Erreur registerFCM', { error });
       return null;
     }
-  }, [user]);
+  }, [user, getMessagingInstance, setupForegroundHandler]);
 
   /**
-   * Initialisation au montage
+   * Initialisation
    */
   useEffect(() => {
+    // Éviter les initialisations multiples
+    if (initRef.current) return;
+
     if (!user) {
       setLoading(false);
       return;
     }
 
-    // Vérifier le support des notifications
     if (typeof window === 'undefined' || !('Notification' in window)) {
-      logger.warn('Notifications non supportées');
       setLoading(false);
       return;
     }
+
+    initRef.current = true;
 
     const init = async () => {
       const permission = Notification.permission;
@@ -130,21 +174,26 @@ export function useNotifications(): UseNotificationsReturn {
         setToken(fcmToken);
       } else if (permission === 'denied') {
         setHasPermission(false);
-        logger.info('Permission notifications refusée');
       }
+      // permission === 'default' : on attend que l'user demande
 
       setLoading(false);
     };
 
     init();
+
+    // Cleanup
+    return () => {
+      initRef.current = false;
+    };
   }, [user, registerFCM]);
 
   /**
-   * Demande la permission et enregistre le token
+   * Demande la permission utilisateur
    */
-  const requestPermission = async () => {
+  const requestPermission = useCallback(async () => {
     if (!('Notification' in window)) {
-      alert('Les notifications ne sont pas supportées sur ce navigateur');
+      alert('Notifications non supportées');
       return;
     }
 
@@ -155,131 +204,75 @@ export function useNotifications(): UseNotificationsReturn {
         setHasPermission(true);
         const fcmToken = await registerFCM();
         setToken(fcmToken);
-        logger.info('Permission accordée et token enregistré');
       } else {
         setHasPermission(false);
-        logger.warn('Permission refusée');
       }
     } catch (error) {
-      logger.error('Erreur demande permission', { error });
+      logger.error('Erreur requestPermission', { error });
     }
-  };
+  }, [registerFCM]);
 
   /**
-   * Nettoie les bases IndexedDB de Firebase (en cas de corruption)
+   * Réinitialise les notifications (en cas de problèmes)
    */
-  const clearFirebaseIndexedDB = async (): Promise<void> => {
-    if (typeof indexedDB === 'undefined') return;
-
-    const dbNames = [
-      'firebase-messaging-database',
-      'firebase-installations-database',
-      'firebaseLocalStorageDb'
-    ];
-
-    for (const dbName of dbNames) {
-      try {
-        await new Promise<void>((resolve, reject) => {
-          const request = indexedDB.deleteDatabase(dbName);
-          request.onsuccess = () => {
-            logger.info(`IndexedDB ${dbName} supprimée`);
-            resolve();
-          };
-          request.onerror = () => reject(request.error);
-          request.onblocked = () => {
-            logger.warn(`IndexedDB ${dbName} bloquée`);
-            resolve();
-          };
-        });
-      } catch {
-        // Ignorer les erreurs
-      }
-    }
-  };
-
-  /**
-   * Réinitialise complètement les notifications
-   * Utile si le token est invalide ou corrompu
-   */
-  const resetNotifications = async (): Promise<{ success: boolean; error?: string }> => {
+  const resetNotifications = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
     if (!user) {
       return { success: false, error: 'Non connecté' };
     }
 
     try {
-      logger.info('Réinitialisation des notifications...');
+      logger.info('Reset notifications...');
 
-      // 1. Désinstaller tous les Service Workers FCM
+      // 1. Supprimer ancien token
+      const messaging = getMessagingInstance();
+      if (messaging) {
+        try {
+          await deleteToken(messaging);
+        } catch {
+          // Ignorer
+        }
+      }
+
+      // 2. Réinitialiser le singleton
+      messagingInstance = null;
+      if (onMessageUnsubscribe) {
+        onMessageUnsubscribe();
+        onMessageUnsubscribe = null;
+      }
+
+      // 3. Désinstaller SW
       if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const reg of registrations) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const reg of regs) {
           if (reg.active?.scriptURL.includes('firebase-messaging-sw.js')) {
             await reg.unregister();
-            logger.info('Ancien SW désinstallé');
           }
         }
       }
 
-      // 2. Nettoyer IndexedDB (résout les corruptions)
-      await clearFirebaseIndexedDB();
+      // 4. Nettoyer IndexedDB Firebase
+      await cleanupIndexedDB();
 
-      // 3. Attendre que tout soit nettoyé
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // 5. Attendre
+      await new Promise(r => setTimeout(r, 1000));
 
-      // 4. Réenregistrer le SW
-      let swRegistration: ServiceWorkerRegistration | undefined;
-      if ('serviceWorker' in navigator) {
-        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-          updateViaCache: 'none'
-        });
-        await navigator.serviceWorker.ready;
-        logger.info('Nouveau SW enregistré');
-      }
-
-      // 5. Vérifier VAPID key
-      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
-      if (!vapidKey) {
-        return { success: false, error: 'VAPID key non configurée côté client' };
-      }
-
-      // 6. Obtenir nouveau token avec messaging frais
-      const messaging = getMessaging(app);
-      const newToken = await getToken(messaging, {
-        vapidKey,
-        serviceWorkerRegistration: swRegistration
-      });
+      // 6. Réenregistrer
+      initRef.current = false; // Permettre réinitialisation
+      const newToken = await registerFCM();
 
       if (newToken) {
         setToken(newToken);
-
-        // Sauvegarder dans Firestore
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, {
-          fcmToken: newToken,
-          fcmTokenUpdatedAt: new Date()
-        });
-
-        logger.info('Nouveau token généré et sauvegardé');
         return { success: true };
-      } else {
-        return { success: false, error: 'getToken() a retourné null - vérifie les permissions' };
       }
+
+      return { success: false, error: 'Token non généré' };
 
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Erreur inconnue';
-
-      // Si c'est une erreur IndexedDB, suggérer de recharger la page
-      if (message.includes('indexeddb') || message.includes('IndexedDB')) {
-        return {
-          success: false,
-          error: 'Erreur IndexedDB - Recharge la page (tire vers le bas) et réessaie'
-        };
-      }
-
-      logger.error('Échec réinitialisation', { error: message });
-      return { success: false, error: message };
+      const msg = error instanceof Error ? error.message : 'Erreur';
+      logger.error('Reset échoué', { error: msg });
+      return { success: false, error: msg };
     }
-  };
+  }, [user, getMessagingInstance, registerFCM]);
 
   return {
     hasPermission,
@@ -288,4 +281,30 @@ export function useNotifications(): UseNotificationsReturn {
     requestPermission,
     resetNotifications
   };
+}
+
+/**
+ * Nettoie les bases IndexedDB Firebase corrompues
+ */
+async function cleanupIndexedDB(): Promise<void> {
+  if (typeof indexedDB === 'undefined') return;
+
+  const dbNames = [
+    'firebase-messaging-database',
+    'firebase-installations-database',
+    'firebaseLocalStorageDb'
+  ];
+
+  for (const name of dbNames) {
+    try {
+      await new Promise<void>((resolve) => {
+        const req = indexedDB.deleteDatabase(name);
+        req.onsuccess = () => resolve();
+        req.onerror = () => resolve();
+        req.onblocked = () => resolve();
+      });
+    } catch {
+      // Ignorer
+    }
+  }
 }
