@@ -201,14 +201,42 @@ export function useNotifications(): UseNotificationsReturn {
       // 3. Attendre un peu
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // 4. Réenregistrer
-      const newToken = await registerFCM();
+      // 4. Réenregistrer le SW
+      let swRegistration: ServiceWorkerRegistration | undefined;
+      if ('serviceWorker' in navigator) {
+        swRegistration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+          updateViaCache: 'none'
+        });
+        await navigator.serviceWorker.ready;
+        logger.info('Nouveau SW enregistré');
+      }
+
+      // 5. Vérifier VAPID key
+      const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+      if (!vapidKey) {
+        return { success: false, error: 'VAPID key non configurée côté client' };
+      }
+
+      // 6. Obtenir nouveau token
+      const newToken = await getToken(messaging, {
+        vapidKey,
+        serviceWorkerRegistration: swRegistration
+      });
 
       if (newToken) {
         setToken(newToken);
+
+        // Sauvegarder dans Firestore
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          fcmToken: newToken,
+          fcmTokenUpdatedAt: new Date()
+        });
+
+        logger.info('Nouveau token généré et sauvegardé');
         return { success: true };
       } else {
-        return { success: false, error: 'Impossible de générer un nouveau token' };
+        return { success: false, error: 'getToken() a retourné null - vérifie les permissions' };
       }
 
     } catch (error) {
