@@ -166,6 +166,38 @@ export function useNotifications(): UseNotificationsReturn {
   };
 
   /**
+   * Nettoie les bases IndexedDB de Firebase (en cas de corruption)
+   */
+  const clearFirebaseIndexedDB = async (): Promise<void> => {
+    if (typeof indexedDB === 'undefined') return;
+
+    const dbNames = [
+      'firebase-messaging-database',
+      'firebase-installations-database',
+      'firebaseLocalStorageDb'
+    ];
+
+    for (const dbName of dbNames) {
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const request = indexedDB.deleteDatabase(dbName);
+          request.onsuccess = () => {
+            logger.info(`IndexedDB ${dbName} supprimée`);
+            resolve();
+          };
+          request.onerror = () => reject(request.error);
+          request.onblocked = () => {
+            logger.warn(`IndexedDB ${dbName} bloquée`);
+            resolve();
+          };
+        });
+      } catch {
+        // Ignorer les erreurs
+      }
+    }
+  };
+
+  /**
    * Réinitialise complètement les notifications
    * Utile si le token est invalide ou corrompu
    */
@@ -177,17 +209,7 @@ export function useNotifications(): UseNotificationsReturn {
     try {
       logger.info('Réinitialisation des notifications...');
 
-      const messaging = getMessaging(app);
-
-      // 1. Supprimer l'ancien token
-      try {
-        await deleteToken(messaging);
-        logger.info('Ancien token supprimé');
-      } catch {
-        // Ignorer si pas de token
-      }
-
-      // 2. Désinstaller les anciens Service Workers FCM
+      // 1. Désinstaller tous les Service Workers FCM
       if ('serviceWorker' in navigator) {
         const registrations = await navigator.serviceWorker.getRegistrations();
         for (const reg of registrations) {
@@ -198,8 +220,11 @@ export function useNotifications(): UseNotificationsReturn {
         }
       }
 
-      // 3. Attendre un peu
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // 2. Nettoyer IndexedDB (résout les corruptions)
+      await clearFirebaseIndexedDB();
+
+      // 3. Attendre que tout soit nettoyé
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       // 4. Réenregistrer le SW
       let swRegistration: ServiceWorkerRegistration | undefined;
@@ -217,7 +242,8 @@ export function useNotifications(): UseNotificationsReturn {
         return { success: false, error: 'VAPID key non configurée côté client' };
       }
 
-      // 6. Obtenir nouveau token
+      // 6. Obtenir nouveau token avec messaging frais
+      const messaging = getMessaging(app);
       const newToken = await getToken(messaging, {
         vapidKey,
         serviceWorkerRegistration: swRegistration
@@ -241,6 +267,15 @@ export function useNotifications(): UseNotificationsReturn {
 
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erreur inconnue';
+
+      // Si c'est une erreur IndexedDB, suggérer de recharger la page
+      if (message.includes('indexeddb') || message.includes('IndexedDB')) {
+        return {
+          success: false,
+          error: 'Erreur IndexedDB - Recharge la page (tire vers le bas) et réessaie'
+        };
+      }
+
       logger.error('Échec réinitialisation', { error: message });
       return { success: false, error: message };
     }
