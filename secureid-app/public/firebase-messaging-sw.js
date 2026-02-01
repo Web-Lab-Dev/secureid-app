@@ -3,6 +3,13 @@
  *
  * Gère les notifications push en arrière-plan.
  * Projet Firebase: taskflow-26718
+ *
+ * IMPORTANT: Les notifications peuvent arriver de 3 sources:
+ * 1. Via webpush.notification dans le message FCM (affichée automatiquement par le navigateur)
+ * 2. Via onBackgroundMessage (code FCM)
+ * 3. Via push event listener (code natif)
+ *
+ * Pour éviter les doublons, on utilise un tag stable basé sur le type + timestamp arrondi.
  */
 
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
@@ -22,51 +29,75 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
+// Cache pour éviter les doublons (stocke les tags récents)
+const recentNotifications = new Set();
+const NOTIFICATION_DEDUP_WINDOW = 5000; // 5 secondes de déduplication
+
+/**
+ * Génère un tag stable pour déduplication
+ * Basé sur le type de notification, pas sur l'heure exacte
+ */
+function getStableTag(payload) {
+  const type = payload.data?.type || 'alert';
+  const childName = payload.data?.childName || '';
+  // Arrondir le timestamp à 10 secondes pour déduplication
+  const roundedTime = Math.floor(Date.now() / 10000);
+  return `secureid-${type}-${childName}-${roundedTime}`;
+}
+
 /**
  * Handler FCM pour messages en arrière-plan
+ * NOTE: onBackgroundMessage reçoit les messages DATA-ONLY (sans notification dans le payload)
+ * Les messages avec webpush.notification sont affichés automatiquement par le navigateur
  */
 messaging.onBackgroundMessage((payload) => {
   console.log('[SW] onBackgroundMessage:', payload);
-  return showNotification(payload);
-});
 
-/**
- * Handler push direct (fallback si onBackgroundMessage ne fonctionne pas)
- */
-self.addEventListener('push', (event) => {
-  console.log('[SW] Push event reçu:', event);
-
-  if (!event.data) {
-    console.log('[SW] Push sans données');
+  // Si le payload contient déjà notification, le navigateur l'a déjà affichée
+  // On ne montre que les messages data-only
+  if (payload.notification) {
+    console.log('[SW] Notification déjà gérée par le navigateur (webpush.notification)');
     return;
   }
 
-  let payload;
-  try {
-    payload = event.data.json();
-  } catch {
-    payload = { notification: { title: 'SecureID', body: event.data.text() } };
-  }
-
-  // Note: FCM peut avoir déjà affiché la notification via onBackgroundMessage
-  // On vérifie si c'est un message FCM standard
-  if (payload.notification) {
-    event.waitUntil(showNotification(payload));
-  }
+  return showNotificationSafe(payload);
 });
 
 /**
- * Affiche une notification système
+ * Handler push direct - DÉSACTIVÉ pour éviter les doublons
+ * FCM gère tout via onBackgroundMessage et webpush.notification
  */
-function showNotification(payload) {
-  const title = payload.notification?.title || 'SecureID';
+self.addEventListener('push', (event) => {
+  console.log('[SW] Push event reçu (ignoré pour éviter doublon FCM)');
+  // Ne pas afficher de notification ici - FCM le fait déjà
+});
+
+/**
+ * Affiche une notification avec déduplication
+ */
+function showNotificationSafe(payload) {
+  const tag = getStableTag(payload);
+
+  // Vérifier si on a déjà affiché cette notification récemment
+  if (recentNotifications.has(tag)) {
+    console.log('[SW] Notification dupliquée ignorée:', tag);
+    return Promise.resolve();
+  }
+
+  // Marquer comme récemment affichée
+  recentNotifications.add(tag);
+  setTimeout(() => recentNotifications.delete(tag), NOTIFICATION_DEDUP_WINDOW);
+
+  console.log('[SW] Affichage notification:', tag);
+
+  const title = payload.notification?.title || payload.data?.title || 'SecureID';
   const options = {
-    body: payload.notification?.body || 'Nouvelle notification',
+    body: payload.notification?.body || payload.data?.body || 'Nouvelle notification',
     icon: '/icon-192.png',
     badge: '/icon-72.png',
     vibrate: [200, 100, 200],
-    tag: `secureid-${Date.now()}`,
-    renotify: true,
+    tag: tag, // Tag stable pour remplacement
+    renotify: false, // Ne pas re-notifier si même tag
     requireInteraction: true,
     data: payload.data || {},
     actions: [

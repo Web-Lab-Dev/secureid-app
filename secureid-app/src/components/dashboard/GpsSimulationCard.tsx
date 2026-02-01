@@ -266,6 +266,17 @@ export function GpsSimulationCard({
     const isOutOfAllZones = safeZones.length > 0 && currentZoneCount === 0;
     const wasInAtLeastOneZone = previousZoneCount > 0;
 
+    // DEBUG: Log pour tracer les appels
+    console.log('🔍 [GEOFENCE] Check:', {
+      currentZoneCount,
+      previousZoneCount,
+      isOutOfAllZones,
+      wasInAtLeastOneZone,
+      notificationSent: notificationSentRef.current,
+      timerExists: !!outOfZoneTimerRef.current,
+      safeZonesCount: safeZones.length,
+    });
+
     // Si l'enfant SORT de toutes les zones (transition sûre → hors zone)
     // Vérifications SYNCHRONES avec refs pour éviter race conditions:
     // 1. Était dans au moins une zone
@@ -277,10 +288,13 @@ export function GpsSimulationCard({
       const minDelay = Math.min(...safeZones.map(z => z.alertDelay));
       const delayMs = minDelay * 60 * 1000; // Minutes → millisecondes
 
-      logger.info('🚨 Child exited all safe zones, starting SINGLE timer', {
+      // DEBUG: Log AVANT de créer le timer
+      console.log('🚨 [GEOFENCE] STARTING TIMER - This should only appear ONCE!', {
         delayMinutes: minDelay,
-        timerAlreadyExists: !!outOfZoneTimerRef.current,
-        notificationAlreadySent: notificationSentRef.current
+        delayMs,
+        timerExists: !!outOfZoneTimerRef.current,
+        notificationSent: notificationSentRef.current,
+        timestamp: new Date().toISOString(),
       });
 
       // Marquer IMMÉDIATEMENT qu'un timer est en cours (synchrone)
@@ -308,13 +322,15 @@ export function GpsSimulationCard({
         // Envoyer UNE SEULE notification push
         if (user?.uid) {
           try {
-            await sendGeofenceExitNotification(user.uid, childName, minDelay);
-            logger.info('✅ Geofence notification sent ONCE', {
+            console.log('📤 [GEOFENCE] SENDING NOTIFICATION - This should only appear ONCE!', {
               parentId: user.uid,
               childName,
+              timestamp: new Date().toISOString(),
             });
+            await sendGeofenceExitNotification(user.uid, childName, minDelay);
+            console.log('✅ [GEOFENCE] Notification sent successfully');
           } catch (error) {
-            logger.error('Error sending geofence notification', { error });
+            console.error('❌ [GEOFENCE] Error sending notification:', error);
           }
         }
       }, delayMs);
@@ -325,12 +341,15 @@ export function GpsSimulationCard({
 
     // Si l'enfant RENTRE dans au moins une zone
     if (currentZoneCount > 0 && outOfZoneTimerRef.current) {
+      console.log('🔙 [GEOFENCE] Child re-entered zone, CANCELLING timer', {
+        currentZoneCount,
+        timestamp: new Date().toISOString(),
+      });
       clearTimeout(outOfZoneTimerRef.current);
       outOfZoneTimerRef.current = null;
       setShowSecurityAlert(false);
       setAlertedZone(null);
       notificationSentRef.current = false;
-      logger.info('Child re-entered safe zone, timer cancelled');
     }
   }, [childLocation, safeZones, user?.uid, childName, playAlert]);
 

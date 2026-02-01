@@ -54,8 +54,11 @@ export async function sendNotificationToParent(
       return { success: true, error: 'Notifications not enabled (no FCM token)' };
     }
 
-    // Tag unique pour que chaque notification s'affiche
-    const uniqueTag = `secureid-${data?.type || 'alert'}-${Date.now()}`;
+    // Tag stable pour déduplication côté client
+    // Arrondi à 10 secondes pour correspondre au service worker
+    const roundedTime = Math.floor(Date.now() / 10000);
+    const childName = data?.childName || '';
+    const stableTag = `secureid-${data?.type || 'alert'}-${childName}-${roundedTime}`;
 
     // Construire le message FCM (simplifié pour web push)
     const message = {
@@ -74,8 +77,8 @@ export async function sendNotificationToParent(
           body,
           icon: '/icon-192.png',
           badge: '/icon-72.png',
-          tag: uniqueTag,
-          renotify: true,
+          tag: stableTag,
+          renotify: false, // Ne pas re-notifier si même tag (évite doublons)
           requireInteraction: true,
           vibrate: [200, 100, 200],
         },
@@ -235,8 +238,8 @@ export async function sendTestNotification(
     }
 
     // 2. Construire et envoyer le message de test
-    // Tag unique pour que chaque notification s'affiche (sinon elles se remplacent)
-    const uniqueTag = `secureid-test-${Date.now()}`;
+    // Tag stable pour déduplication (les tests peuvent avoir des tags uniques)
+    const uniqueTag = `secureid-test-${Date.now()}`; // Tests: tag unique OK pour permettre multiples tests
 
     const message = {
       token: fcmToken,
