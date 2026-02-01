@@ -151,8 +151,8 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
     // ⚠️ IMPORTANT: Inclure l'ID du bracelet (braceletSnap.data() ne l'inclut pas)
     // Nécessaire pour recordScan() qui utilise bracelet.id
     const rawBraceletData = {
-      id: slug, // slug = braceletId
       ...braceletData,
+      id: slug, // slug = braceletId (doit être APRÈS le spread pour écraser)
     };
     const serializedBracelet = serializeFirestoreData(rawBraceletData) as BraceletDocument;
 
@@ -168,8 +168,8 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
 
     // Inclure l'ID du bracelet
     const rawBraceletData = {
-      id: slug,
       ...braceletData,
+      id: slug,
     };
     const serializedBracelet = serializeFirestoreData(rawBraceletData) as BraceletDocument;
 
