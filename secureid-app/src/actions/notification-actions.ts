@@ -54,13 +54,10 @@ export async function sendNotificationToParent(
       return { success: true, error: 'Notifications not enabled (no FCM token)' };
     }
 
-    // Tag stable pour déduplication côté client
-    // Arrondi à 10 secondes pour correspondre au service worker
-    const roundedTime = Math.floor(Date.now() / 10000);
-    const childName = data?.childName || '';
-    const stableTag = `secureid-${data?.type || 'alert'}-${childName}-${roundedTime}`;
+    // Tag unique pour chaque notification
+    const uniqueTag = `secureid-${data?.type || 'alert'}-${Date.now()}`;
 
-    // Construire le message FCM (simplifié pour web push)
+    // Construire le message FCM
     const message = {
       token: fcmToken,
       notification: {
@@ -77,8 +74,8 @@ export async function sendNotificationToParent(
           body,
           icon: '/icon-192.png',
           badge: '/icon-72.png',
-          tag: stableTag,
-          renotify: false, // Ne pas re-notifier si même tag (évite doublons)
+          tag: uniqueTag,
+          renotify: true,
           requireInteraction: true,
           vibrate: [200, 100, 200],
         },
@@ -214,11 +211,14 @@ export async function sendTestNotification(
 ): Promise<{ success: boolean; error?: string; details?: Record<string, unknown> }> {
   'use server';
 
+  console.log('🔔 [TEST-NOTIF] Starting test notification for user:', userId);
+
   try {
     // 1. Vérifier que l'utilisateur existe et a un token FCM
     const userDoc = await adminDb.collection('users').doc(userId).get();
 
     if (!userDoc.exists) {
+      console.log('❌ [TEST-NOTIF] User not found:', userId);
       return {
         success: false,
         error: 'Utilisateur introuvable',
@@ -229,7 +229,14 @@ export async function sendTestNotification(
     const userData = userDoc.data();
     const fcmToken = userData?.fcmToken;
 
+    console.log('🔔 [TEST-NOTIF] Token check:', {
+      hasToken: !!fcmToken,
+      tokenLength: fcmToken?.length || 0,
+      tokenPreview: fcmToken ? fcmToken.substring(0, 30) + '...' : 'NONE'
+    });
+
     if (!fcmToken) {
+      console.log('❌ [TEST-NOTIF] No FCM token for user');
       return {
         success: false,
         error: 'Aucun token FCM enregistré. Réactivez les notifications.',
@@ -271,12 +278,10 @@ export async function sendTestNotification(
       },
     };
 
+    console.log('🔔 [TEST-NOTIF] Sending via FCM...');
     const response = await admin.messaging().send(message);
 
-    logger.info('✅ Test notification sent successfully', {
-      userId,
-      messageId: response,
-    });
+    console.log('✅ [TEST-NOTIF] SUCCESS! Message ID:', response);
 
     return {
       success: true,
@@ -290,11 +295,8 @@ export async function sendTestNotification(
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    logger.error('❌ Test notification failed', {
-      userId,
-      error: errorMessage,
-      errorStack: error instanceof Error ? error.stack : undefined,
-    });
+    console.error('❌ [TEST-NOTIF] FAILED:', errorMessage);
+    console.error('❌ [TEST-NOTIF] Stack:', error instanceof Error ? error.stack : 'N/A');
 
     // Diagnostic détaillé selon le type d'erreur
     let diagnosis = 'Erreur inconnue';
