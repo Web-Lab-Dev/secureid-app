@@ -84,10 +84,11 @@ export function useAuth(): UseAuthReturn {
 
     const initAuth = async () => {
       try {
+        console.log('[useAuth] initAuth starting...');
+
         // ÉTAPE 1: Attendre que Firebase lise l'état depuis le storage
-        // waitForAuthReady() retourne l'utilisateur initial (ou null)
-        // Cette étape est CRUCIALE pour éviter les déconnexions aléatoires
         const initialUser = await waitForAuthReady();
+        console.log('[useAuth] waitForAuthReady resolved:', initialUser ? 'user' : 'null');
 
         if (!isMounted) return;
 
@@ -107,6 +108,7 @@ export function useAuth(): UseAuthReturn {
         }
 
         if (isMounted) {
+          console.log('[useAuth] Setting loading=false');
           setLoading(false);
         }
 

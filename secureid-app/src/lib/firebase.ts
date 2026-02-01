@@ -85,37 +85,38 @@ async function initializeAuth(authInstance: Auth): Promise<User | null> {
     return null;
   }
 
+  console.log('[Firebase] initializeAuth starting...');
+
   // 1. Configurer la persistence
   try {
     await setPersistence(authInstance, indexedDBLocalPersistence);
-    console.log('[Firebase] Auth persistence: IndexedDB');
+    console.log('[Firebase] Auth persistence: IndexedDB OK');
   } catch (indexedDBError) {
     console.warn('[Firebase] IndexedDB failed, trying localStorage:', indexedDBError);
     try {
       await setPersistence(authInstance, browserLocalPersistence);
-      console.log('[Firebase] Auth persistence: localStorage');
+      console.log('[Firebase] Auth persistence: localStorage OK');
     } catch (localStorageError) {
       console.error('[Firebase] All persistence methods failed:', localStorageError);
     }
   }
 
   // 2. Attendre que Firebase lise l'état auth depuis le storage
-  // C'est CRUCIAL: le premier callback de onAuthStateChanged contient
-  // l'utilisateur lu depuis le storage (ou null si pas connecté)
+  console.log('[Firebase] Waiting for auth state...');
   return new Promise<User | null>((resolve) => {
     const unsubscribe = onAuthStateChanged(authInstance, (user) => {
-      unsubscribe(); // Se désabonner après le premier callback
+      unsubscribe();
       initialAuthUser = user;
-      console.log('[Firebase] Auth ready, user:', user ? 'logged in' : 'not logged in');
+      console.log('[Firebase] Auth ready, user:', user ? user.uid : 'null');
       resolve(user);
     });
 
-    // Timeout de sécurité: si Firebase ne répond pas en 5 secondes
+    // Timeout réduit à 3 secondes
     setTimeout(() => {
       unsubscribe();
-      console.warn('[Firebase] Auth timeout, assuming not logged in');
+      console.warn('[Firebase] Auth timeout after 3s, resolving null');
       resolve(null);
-    }, 5000);
+    }, 3000);
   });
 }
 
