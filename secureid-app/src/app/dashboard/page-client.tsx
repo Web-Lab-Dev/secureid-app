@@ -221,7 +221,7 @@ export function DashboardPageClient() {
         )}
 
         {/* Carte Profil Parent */}
-        <div className="mb-6 rounded-xl border border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 p-4 backdrop-blur-sm">
+        <div className="mb-6 rounded-xl border border-brand-orange/30 bg-brand-orange/5 p-4 backdrop-blur-sm">
           <div className="flex items-center gap-4">
             {/* Avatar avec initiales */}
             <div className="relative flex-shrink-0">
@@ -259,28 +259,28 @@ export function DashboardPageClient() {
 
           {/* Stats row */}
           <div className="mt-4 grid grid-cols-3 gap-3">
-            <div className="rounded-lg bg-slate-800/50 px-3 py-2 text-center">
+            <div className="rounded-lg bg-slate-900/50 px-3 py-2 text-center">
               <div className="flex items-center justify-center gap-1 text-soft-pink">
                 <Shield className="h-4 w-4" />
                 <span className="text-lg font-bold">{profiles.length}</span>
               </div>
-              <p className="text-xs text-slate-500">Enfants</p>
+              <p className="text-xs text-slate-400">Enfants</p>
             </div>
-            <div className="rounded-lg bg-slate-800/50 px-3 py-2 text-center">
+            <div className="rounded-lg bg-slate-900/50 px-3 py-2 text-center">
               <div className="flex items-center justify-center gap-1 text-green-400">
                 <CheckCircle2 className="h-4 w-4" />
                 <span className="text-lg font-bold">{Object.values(bracelets).filter(b => b.status === 'ACTIVE').length}</span>
               </div>
-              <p className="text-xs text-slate-500">Bracelets</p>
+              <p className="text-xs text-slate-400">Bracelets</p>
             </div>
-            <div className="rounded-lg bg-slate-800/50 px-3 py-2 text-center">
+            <div className="rounded-lg bg-slate-900/50 px-3 py-2 text-center">
               <div className="flex items-center justify-center gap-1 text-brand-orange">
                 <Calendar className="h-4 w-4" />
                 <span className="text-lg font-bold">
                   {userData?.createdAt ? new Date(userData.createdAt.seconds * 1000).toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }) : '—'}
                 </span>
               </div>
-              <p className="text-xs text-slate-500">Membre</p>
+              <p className="text-xs text-slate-400">Membre</p>
             </div>
           </div>
         </div>
