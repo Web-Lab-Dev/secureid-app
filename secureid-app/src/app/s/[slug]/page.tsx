@@ -147,7 +147,14 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
     // Sérialiser les Timestamps Firestore avant de passer au composant client
     // (les composants client ne peuvent pas recevoir d'objets non-sérialisables)
     const profileData = serializeFirestoreData(rawProfileData) as ProfileDocument;
-    const serializedBracelet = serializeFirestoreData(braceletData) as BraceletDocument;
+
+    // ⚠️ IMPORTANT: Inclure l'ID du bracelet (braceletSnap.data() ne l'inclut pas)
+    // Nécessaire pour recordScan() qui utilise bracelet.id
+    const rawBraceletData = {
+      id: slug, // slug = braceletId
+      ...braceletData,
+    };
+    const serializedBracelet = serializeFirestoreData(rawBraceletData) as BraceletDocument;
 
     return <EmergencyViewClient bracelet={serializedBracelet} profile={profileData} />;
   }
@@ -159,7 +166,12 @@ export default async function ScanPage({ params, searchParams }: PageProps) {
     const ownerContactResult = await getOwnerContact({ braceletId: slug });
     const ownerPhone = ownerContactResult.success ? ownerContactResult.phone : undefined;
 
-    const serializedBracelet = serializeFirestoreData(braceletData) as BraceletDocument;
+    // Inclure l'ID du bracelet
+    const rawBraceletData = {
+      id: slug,
+      ...braceletData,
+    };
+    const serializedBracelet = serializeFirestoreData(rawBraceletData) as BraceletDocument;
 
     return <LostModeView bracelet={serializedBracelet} ownerPhone={ownerPhone} />;
   }
