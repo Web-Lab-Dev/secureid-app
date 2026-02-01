@@ -33,12 +33,23 @@ export async function POST(request: NextRequest) {
     const { etablissement, type, responsable, email, telephone, ville, nombreEleves, message } = validation.data;
 
     // Configuration du transporteur SMTP
-    // Note: En production, utiliser des variables d'environnement sécurisées
+    // SECURITY: SMTP credentials must come from environment variables only
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+
+    if (!smtpUser || !smtpPass) {
+      logger.error('SMTP configuration missing', { hasUser: !!smtpUser, hasPass: !!smtpPass });
+      return NextResponse.json(
+        { error: 'Configuration email manquante' },
+        { status: 500 }
+      );
+    }
+
     const transporter = nodemailer.createTransport({
-      service: 'gmail', // Ou autre service SMTP
+      service: 'gmail',
       auth: {
-        user: process.env.SMTP_USER || 'tko364796@gmail.com',
-        pass: process.env.SMTP_PASS || '', // IMPORTANT: Ajouter le mot de passe dans .env.local
+        user: smtpUser,
+        pass: smtpPass,
       },
     });
 
@@ -70,9 +81,10 @@ Date : ${new Date().toLocaleString('fr-FR')}
     `.trim();
 
     // Envoi de l'email
+    const recipientEmail = process.env.PARTNERSHIP_EMAIL || smtpUser;
     const info = await transporter.sendMail({
-      from: `"SecureID Partenariats" <${process.env.SMTP_USER || 'tko364796@gmail.com'}>`,
-      to: 'tko364796@gmail.com',
+      from: `"SecureID Partenariats" <${smtpUser}>`,
+      to: recipientEmail,
       subject: `[SecureID] Nouvelle demande partenariat - ${etablissement}`,
       text: emailContent,
       html: `<pre style="font-family: monospace; white-space: pre-wrap;">${emailContent}</pre>`,
@@ -106,10 +118,10 @@ Date : ${new Date().toLocaleString('fr-FR')}
       hasBody: !!request.body,
     });
 
+    // SECURITY: Don't expose internal error details to clients
     return NextResponse.json(
       {
-        error: 'Erreur lors de l\'envoi de la demande',
-        details: error instanceof Error ? error.message : 'Erreur inconnue',
+        error: 'Erreur lors de l\'envoi de la demande. Veuillez réessayer plus tard.',
       },
       { status: 500 }
     );

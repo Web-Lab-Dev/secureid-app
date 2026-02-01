@@ -38,6 +38,8 @@ export function useNotifications(): UseNotificationsReturn {
 
   // Ref pour éviter les initialisations multiples
   const initRef = useRef(false);
+  // Ref pour éviter les mises à jour d'état après unmount
+  const isMountedRef = useRef(true);
 
   /**
    * Obtient l'instance Messaging (singleton)
@@ -150,16 +152,19 @@ export function useNotifications(): UseNotificationsReturn {
    * Initialisation
    */
   useEffect(() => {
+    // Track mount state for cleanup
+    isMountedRef.current = true;
+
     // Éviter les initialisations multiples
     if (initRef.current) return;
 
     if (!user) {
-      setLoading(false);
+      if (isMountedRef.current) setLoading(false);
       return;
     }
 
     if (typeof window === 'undefined' || !('Notification' in window)) {
-      setLoading(false);
+      if (isMountedRef.current) setLoading(false);
       return;
     }
 
@@ -169,21 +174,22 @@ export function useNotifications(): UseNotificationsReturn {
       const permission = Notification.permission;
 
       if (permission === 'granted') {
-        setHasPermission(true);
+        if (isMountedRef.current) setHasPermission(true);
         const fcmToken = await registerFCM();
-        setToken(fcmToken);
+        if (isMountedRef.current) setToken(fcmToken);
       } else if (permission === 'denied') {
-        setHasPermission(false);
+        if (isMountedRef.current) setHasPermission(false);
       }
       // permission === 'default' : on attend que l'user demande
 
-      setLoading(false);
+      if (isMountedRef.current) setLoading(false);
     };
 
     init();
 
     // Cleanup
     return () => {
+      isMountedRef.current = false;
       initRef.current = false;
     };
   }, [user, registerFCM]);
@@ -201,11 +207,11 @@ export function useNotifications(): UseNotificationsReturn {
       const permission = await Notification.requestPermission();
 
       if (permission === 'granted') {
-        setHasPermission(true);
+        if (isMountedRef.current) setHasPermission(true);
         const fcmToken = await registerFCM();
-        setToken(fcmToken);
+        if (isMountedRef.current) setToken(fcmToken);
       } else {
-        setHasPermission(false);
+        if (isMountedRef.current) setHasPermission(false);
       }
     } catch (error) {
       logger.error('Erreur requestPermission', { error });
@@ -261,7 +267,7 @@ export function useNotifications(): UseNotificationsReturn {
       const newToken = await registerFCM();
 
       if (newToken) {
-        setToken(newToken);
+        if (isMountedRef.current) setToken(newToken);
         return { success: true };
       }
 

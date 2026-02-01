@@ -23,6 +23,9 @@ export function AppLockScreen() {
   const [isUnlocking, setIsUnlocking] = useState(false);
 
   useEffect(() => {
+    // SSR guard: document and localStorage only available in browser
+    if (typeof window === 'undefined') return;
+
     // Vérifier si l'app a été verrouillée
     const lockTime = localStorage.getItem('app-lock-time');
     const isCurrentlyLocked = localStorage.getItem('app-is-locked') === 'true';

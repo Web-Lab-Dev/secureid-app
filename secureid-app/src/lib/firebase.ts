@@ -111,12 +111,12 @@ async function initializeAuth(authInstance: Auth): Promise<User | null> {
       resolve(user);
     });
 
-    // Timeout réduit à 3 secondes
+    // Timeout augmenté à 8 secondes pour connexions lentes
     setTimeout(() => {
       unsubscribe();
-      console.warn('[Firebase] Auth timeout after 3s, resolving null');
+      console.warn('[Firebase] Auth timeout after 8s, resolving null');
       resolve(null);
-    }, 3000);
+    }, 8000);
   });
 }
 

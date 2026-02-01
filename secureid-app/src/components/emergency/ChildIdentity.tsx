@@ -2,9 +2,9 @@
 
 import Image from 'next/image';
 import { User, Droplet } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import type { ProfileDocument } from '@/types/profile';
 import { ScanEffect } from './ScanEffect';
+import { calculateAge } from '@/lib/date-helpers';
 
 /**
  * PHASE 5 - CHILD IDENTITY
@@ -20,29 +20,8 @@ interface ChildIdentityProps {
   profile: ProfileDocument;
 }
 
-function calculateAge(dateOfBirth: Date | null): number | null {
-  if (!dateOfBirth) return null;
-
-  const today = new Date();
-  const birthDate = dateOfBirth instanceof Date ? dateOfBirth : new Date(dateOfBirth);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-
-  return age;
-}
-
 export function ChildIdentity({ profile }: ChildIdentityProps) {
-  const dateOfBirth = profile.dateOfBirth
-    ? profile.dateOfBirth.toDate
-      ? profile.dateOfBirth.toDate()
-      : new Date(profile.dateOfBirth as unknown as string)
-    : null;
-
-  const age = calculateAge(dateOfBirth);
+  const age = calculateAge(profile.dateOfBirth);
 
   return (
     <div className="relative rounded-2xl border border-slate-700 bg-slate-900 p-6 text-center">

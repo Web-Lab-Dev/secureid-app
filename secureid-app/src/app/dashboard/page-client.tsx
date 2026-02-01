@@ -11,6 +11,7 @@ import { ProfileCard } from '@/components/dashboard/ProfileCard';
 import { ProfileCardSkeleton } from '@/components/dashboard/ProfileCardSkeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { InstallBanner } from '@/components/pwa/InstallBanner';
+import { ErrorBoundary, DialogErrorFallback } from '@/components/ui/ErrorBoundary';
 import { getBraceletsByProfileIds } from '@/actions/bracelet-actions';
 import { sendTestNotification } from '@/actions/notification-actions';
 import type { BraceletDocument } from '@/types/bracelet';
@@ -435,46 +436,54 @@ export function DashboardPageClient() {
       {/* PWA Install Banner (PHASE 7) */}
       <InstallBanner />
 
-      {/* Dialogs Modaux - Lazy Loaded avec Suspense */}
+      {/* Dialogs Modaux - Lazy Loaded avec Suspense et Error Boundaries */}
       {editProfileDialog.profile && (
-        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-brand-orange" /></div>}>
-          <EditProfileDialog
-            isOpen={editProfileDialog.isOpen}
-            onClose={() => setEditProfileDialog({ isOpen: false, profile: null })}
-            profile={editProfileDialog.profile}
-            onUpdate={handleProfileUpdate}
-          />
-        </Suspense>
+        <ErrorBoundary fallback={<DialogErrorFallback onClose={() => setEditProfileDialog({ isOpen: false, profile: null })} />}>
+          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-brand-orange" /></div>}>
+            <EditProfileDialog
+              isOpen={editProfileDialog.isOpen}
+              onClose={() => setEditProfileDialog({ isOpen: false, profile: null })}
+              profile={editProfileDialog.profile}
+              onUpdate={handleProfileUpdate}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {medicalDocsDialog.profile && (
-        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-brand-orange" /></div>}>
-          <MedicalDocsDialog
-            isOpen={medicalDocsDialog.isOpen}
-            onClose={() => setMedicalDocsDialog({ isOpen: false, profile: null })}
-            profile={medicalDocsDialog.profile}
-          />
-        </Suspense>
+        <ErrorBoundary fallback={<DialogErrorFallback onClose={() => setMedicalDocsDialog({ isOpen: false, profile: null })} />}>
+          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-brand-orange" /></div>}>
+            <MedicalDocsDialog
+              isOpen={medicalDocsDialog.isOpen}
+              onClose={() => setMedicalDocsDialog({ isOpen: false, profile: null })}
+              profile={medicalDocsDialog.profile}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {schoolDialog.profile && (
-        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-brand-orange" /></div>}>
-          <SchoolDialog
-            isOpen={schoolDialog.isOpen}
-            onClose={() => setSchoolDialog({ isOpen: false, profile: null })}
-            profile={schoolDialog.profile}
-          />
-        </Suspense>
+        <ErrorBoundary fallback={<DialogErrorFallback onClose={() => setSchoolDialog({ isOpen: false, profile: null })} />}>
+          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-brand-orange" /></div>}>
+            <SchoolDialog
+              isOpen={schoolDialog.isOpen}
+              onClose={() => setSchoolDialog({ isOpen: false, profile: null })}
+              profile={schoolDialog.profile}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {scanHistoryDialog.profile && (
-        <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-brand-orange" /></div>}>
-          <ScanHistoryDialog
-            isOpen={scanHistoryDialog.isOpen}
-            onClose={() => setScanHistoryDialog({ isOpen: false, profile: null })}
-            profile={scanHistoryDialog.profile}
-          />
-        </Suspense>
+        <ErrorBoundary fallback={<DialogErrorFallback onClose={() => setScanHistoryDialog({ isOpen: false, profile: null })} />}>
+          <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"><Loader2 className="h-8 w-8 animate-spin text-brand-orange" /></div>}>
+            <ScanHistoryDialog
+              isOpen={scanHistoryDialog.isOpen}
+              onClose={() => setScanHistoryDialog({ isOpen: false, profile: null })}
+              profile={scanHistoryDialog.profile}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {/* Service Client Section */}

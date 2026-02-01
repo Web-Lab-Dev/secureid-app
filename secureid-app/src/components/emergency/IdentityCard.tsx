@@ -9,6 +9,7 @@ import { ScanEffect } from './ScanEffect';
 import { translateRelationship } from '@/lib/relationship-helpers';
 import { getWhatsAppUrl } from '@/lib/config';
 import { PhotoModal } from '@/components/ui/PhotoModal';
+import { calculateAge } from '@/lib/date-helpers';
 
 /**
  * PHASE 5 V2 - IDENTITY CARD (Badge Sécurité)
@@ -23,25 +24,10 @@ interface IdentityCardProps {
   profile: ProfileDocument;
 }
 
-function calculateAge(dateOfBirth: Date | string | null): number | null {
-  if (!dateOfBirth) return null;
-
-  const birthDate = typeof dateOfBirth === 'string' ? new Date(dateOfBirth) : dateOfBirth;
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-
-  return age;
-}
-
 export function IdentityCard({ profile }: IdentityCardProps) {
   const [copied, setCopied] = useState(false);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
-  const age = calculateAge(profile.dateOfBirth as Date | string | null);
+  const age = calculateAge(profile.dateOfBirth);
   const primaryContact = profile.emergencyContacts[0];
 
   // Construire l'URL WhatsApp

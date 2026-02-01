@@ -101,6 +101,8 @@ export function useAuth(): UseAuthReturn {
             await loadUserData(initialUser.uid);
           } catch (err) {
             logger.error('Failed to load initial user data', { error: err });
+            // Cleanup: reset userData on failure to prevent stale state
+            if (isMounted) setUserData(null);
           }
         } else {
           logger.info('Auth initialized without user');
@@ -125,6 +127,8 @@ export function useAuth(): UseAuthReturn {
               await loadUserData(firebaseUser.uid);
             } catch (err) {
               logger.error('Failed to load user data on change', { error: err });
+              // Cleanup: reset userData on failure to prevent stale state
+              if (isMounted) setUserData(null);
             }
           } else {
             setUserData(null);
