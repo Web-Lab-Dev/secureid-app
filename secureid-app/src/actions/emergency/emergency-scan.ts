@@ -160,38 +160,39 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
     const scanDoc = await scansCollection.add(scanData);
 
     // Envoyer notification push au parent
+    // NOTE: Utiliser console.log car logger.info ne s'affiche pas en production
     try {
-      logger.info('📱 Starting scan notification process', { braceletId, scanId: scanDoc.id });
+      console.log('📱 [SCAN-NOTIF] Starting notification process', { braceletId, scanId: scanDoc.id });
 
       // Récupérer les informations du bracelet et du profil
       const braceletDoc = await adminDb.collection('bracelets').doc(braceletId).get();
 
       if (!braceletDoc.exists) {
-        logger.warn('❌ Bracelet not found for notification', { braceletId });
+        console.log('❌ [SCAN-NOTIF] Bracelet not found', { braceletId });
       } else {
         const braceletData = braceletDoc.data();
-        const profileId = braceletData?.profileId;
-        logger.info('📱 Bracelet found', { braceletId, profileId: profileId || 'NONE' });
+        const profileId = braceletData?.linkedProfileId; // ← Correction: linkedProfileId, pas profileId
+        console.log('📱 [SCAN-NOTIF] Bracelet found', { braceletId, linkedProfileId: profileId || 'NONE' });
 
         if (!profileId) {
-          logger.warn('❌ No profileId linked to bracelet', { braceletId });
+          console.log('❌ [SCAN-NOTIF] No linkedProfileId in bracelet', { braceletId, braceletData });
         } else {
           const profileDoc = await adminDb.collection('profiles').doc(profileId).get();
 
           if (!profileDoc.exists) {
-            logger.warn('❌ Profile not found', { profileId });
+            console.log('❌ [SCAN-NOTIF] Profile not found', { profileId });
           } else {
             const profileData = profileDoc.data();
             const parentId = profileData?.parentId;
             const childName = profileData?.fullName;
-            logger.info('📱 Profile found', {
+            console.log('📱 [SCAN-NOTIF] Profile found', {
               profileId,
               parentId: parentId || 'NONE',
               childName: childName || 'NONE'
             });
 
             if (!parentId || !childName) {
-              logger.warn('❌ Missing parentId or childName in profile', {
+              console.log('❌ [SCAN-NOTIF] Missing parentId or childName', {
                 profileId,
                 hasParentId: !!parentId,
                 hasChildName: !!childName
@@ -206,12 +207,9 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
               }
 
               // Envoyer la notification
-              logger.info('📱 Sending scan notification...', { parentId, childName, locationText });
+              console.log('📱 [SCAN-NOTIF] Sending notification...', { parentId, childName, locationText });
               const notifResult = await sendEmergencyScanNotification(parentId, childName, locationText);
-              logger.info('📱 Scan notification result', {
-                parentId,
-                childName,
-                scanId: scanDoc.id,
+              console.log('📱 [SCAN-NOTIF] Result:', {
                 success: notifResult.success,
                 error: notifResult.error
               });
@@ -220,12 +218,7 @@ export async function recordScan(input: RecordScanInput): Promise<RecordScanResu
         }
       }
     } catch (notifError) {
-      // Log l'erreur mais ne pas faire échouer le scan
-      logger.error('❌ Error in scan notification process', {
-        error: notifError instanceof Error ? notifError.message : notifError,
-        braceletId,
-        scanId: scanDoc.id,
-      });
+      console.error('❌ [SCAN-NOTIF] Error:', notifError instanceof Error ? notifError.message : notifError);
     }
 
     return {
