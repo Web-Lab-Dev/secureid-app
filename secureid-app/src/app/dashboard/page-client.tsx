@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
-import { Plus, Loader2, Users, MessageCircle, Globe, Bell, BellOff, Heart, TestTube2 } from 'lucide-react';
+import { Plus, Loader2, Users, MessageCircle, Globe, Bell, BellOff, Heart, Shield, CheckCircle2, Calendar } from 'lucide-react';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -13,7 +13,6 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { InstallBanner } from '@/components/pwa/InstallBanner';
 import { ErrorBoundary, DialogErrorFallback } from '@/components/ui/ErrorBoundary';
 import { getBraceletsByProfileIds } from '@/actions/bracelet-actions';
-import { sendTestNotification } from '@/actions/notification-actions';
 import type { BraceletDocument } from '@/types/bracelet';
 import type { ProfileDocument } from '@/types/profile';
 
@@ -41,10 +40,10 @@ const FIRESTORE_PROPAGATION_DELAY_MS = 300;
  */
 
 export function DashboardPageClient() {
-  const { user } = useAuthContext();
+  const { user, userData } = useAuthContext();
   const router = useRouter();
   const { profiles, loading, refetch } = useProfiles();
-  const { hasPermission, requestPermission, loading: notifLoading, resetNotifications } = useNotifications();
+  const { hasPermission, requestPermission, loading: notifLoading } = useNotifications();
   const [bracelets, setBracelets] = useState<Record<string, BraceletDocument>>({});
   const [loadingBracelets, setLoadingBracelets] = useState(true);
 
@@ -72,10 +71,6 @@ export function DashboardPageClient() {
     profile: ProfileDocument | null;
   }>({ isOpen: false, profile: null });
 
-  // Test notification state
-  const [testingNotif, setTestingNotif] = useState(false);
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [resettingNotif, setResettingNotif] = useState(false);
 
   // ✅ FIX: Cleanup du ref au démontage
   useEffect(() => {
@@ -178,65 +173,6 @@ export function DashboardPageClient() {
     router.push('/scan');
   };
 
-  // Handler pour tester les notifications
-  const handleTestNotification = async () => {
-    if (!user) return;
-
-    setTestingNotif(true);
-    setTestResult(null);
-
-    try {
-      const result = await sendTestNotification(user.uid);
-
-      if (result.success) {
-        setTestResult({
-          success: true,
-          message: `✅ Notification envoyée ! Vérifie ton téléphone. (ID: ${result.details?.messageId})`
-        });
-      } else {
-        setTestResult({
-          success: false,
-          message: `❌ Échec: ${result.error}`
-        });
-      }
-    } catch (error) {
-      setTestResult({
-        success: false,
-        message: `❌ Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
-      });
-    } finally {
-      setTestingNotif(false);
-    }
-  };
-
-  // Handler pour réinitialiser les notifications (nouveau token)
-  const handleResetNotifications = async () => {
-    setResettingNotif(true);
-    setTestResult(null);
-
-    try {
-      const result = await resetNotifications();
-
-      if (result.success) {
-        setTestResult({
-          success: true,
-          message: '✅ Token réinitialisé ! Tu peux maintenant tester.'
-        });
-      } else {
-        setTestResult({
-          success: false,
-          message: `❌ Échec: ${result.error}`
-        });
-      }
-    } catch (error) {
-      setTestResult({
-        success: false,
-        message: `❌ Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
-      });
-    } finally {
-      setResettingNotif(false);
-    }
-  };
 
   if (loading || loadingBracelets) {
     return (
@@ -284,58 +220,70 @@ export function DashboardPageClient() {
           </div>
         )}
 
-        {/* Test Notification Button - Debug */}
-        {hasPermission && (
-          <div className="mb-6 rounded-lg border border-slate-700 bg-slate-800/50 p-4">
-            <div className="flex items-center justify-between flex-wrap gap-3">
-              <div className="flex items-center gap-3">
-                <TestTube2 className="h-5 w-5 text-blue-400" />
-                <div>
-                  <p className="text-sm font-medium text-white">Diagnostic notifications</p>
-                  <p className="text-xs text-slate-400">Réinitialiser le token si les notifs ne fonctionnent pas</p>
-                </div>
+        {/* Carte Profil Parent */}
+        <div className="mb-6 rounded-xl border border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 p-4 backdrop-blur-sm">
+          <div className="flex items-center gap-4">
+            {/* Avatar avec initiales */}
+            <div className="relative flex-shrink-0">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-brand-orange to-brand-orange-dark text-xl font-bold text-white shadow-lg shadow-brand-orange/20">
+                {(userData?.displayName || user?.displayName || 'P').charAt(0).toUpperCase()}
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleResetNotifications}
-                  disabled={resettingNotif || testingNotif}
-                  className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-500 disabled:opacity-50"
-                >
-                  {resettingNotif ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Reset...
-                    </>
-                  ) : (
-                    'Réinitialiser'
-                  )}
-                </button>
-                <button
-                  onClick={handleTestNotification}
-                  disabled={testingNotif || resettingNotif}
-                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
-                >
-                  {testingNotif ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Envoi...
-                    </>
-                  ) : (
-                    <>
-                      <Bell className="h-4 w-4" />
-                      Tester
-                    </>
-                  )}
-                </button>
+              {/* Badge notification */}
+              <div className={`absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full ${hasPermission ? 'bg-green-500' : 'bg-slate-600'}`}>
+                {hasPermission ? (
+                  <Bell className="h-3 w-3 text-white" />
+                ) : (
+                  <BellOff className="h-3 w-3 text-white" />
+                )}
               </div>
             </div>
-            {testResult && (
-              <div className={`mt-3 rounded-lg p-3 text-sm ${testResult.success ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-                {testResult.message}
+
+            {/* Infos parent */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-semibold text-white truncate">
+                {userData?.displayName || user?.displayName || 'Parent'}
+              </h3>
+              <p className="text-sm text-slate-400 truncate">
+                {userData?.phoneNumber ? `+226 ${userData.phoneNumber}` : user?.email}
+              </p>
+            </div>
+
+            {/* Badge statut */}
+            <div className="flex-shrink-0">
+              <div className="flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1.5 text-xs font-medium text-green-400">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                <span>Actif</span>
               </div>
-            )}
+            </div>
           </div>
-        )}
+
+          {/* Stats row */}
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="rounded-lg bg-slate-800/50 px-3 py-2 text-center">
+              <div className="flex items-center justify-center gap-1 text-soft-pink">
+                <Shield className="h-4 w-4" />
+                <span className="text-lg font-bold">{profiles.length}</span>
+              </div>
+              <p className="text-xs text-slate-500">Enfants</p>
+            </div>
+            <div className="rounded-lg bg-slate-800/50 px-3 py-2 text-center">
+              <div className="flex items-center justify-center gap-1 text-green-400">
+                <CheckCircle2 className="h-4 w-4" />
+                <span className="text-lg font-bold">{Object.values(bracelets).filter(b => b.status === 'ACTIVE').length}</span>
+              </div>
+              <p className="text-xs text-slate-500">Bracelets</p>
+            </div>
+            <div className="rounded-lg bg-slate-800/50 px-3 py-2 text-center">
+              <div className="flex items-center justify-center gap-1 text-brand-orange">
+                <Calendar className="h-4 w-4" />
+                <span className="text-lg font-bold">
+                  {userData?.createdAt ? new Date(userData.createdAt.seconds * 1000).toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }) : '—'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">Membre</p>
+            </div>
+          </div>
+        </div>
 
         {/* Header - Design Émotionnel Minimaliste */}
         <div className="mb-10 text-center">
