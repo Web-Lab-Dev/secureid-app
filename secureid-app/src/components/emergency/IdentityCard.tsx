@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
+import { AnimatedImage } from '@/components/ui/AnimatedImage';
 import { User, MessageCircle, Copy, Check } from 'lucide-react';
 import type { ProfileDocument } from '@/types/profile';
 import { logger } from '@/lib/logger';
@@ -59,7 +59,7 @@ export function IdentityCard({ profile }: IdentityCardProps) {
         >
           <div className="relative h-full w-full overflow-hidden rounded-lg border-2 border-slate-700 shadow-[0_0_20px_rgba(249,115,22,0.2)]">
             {profile.photoUrl ? (
-              <Image
+              <AnimatedImage
                 src={profile.photoUrl}
                 alt={profile.fullName}
                 width={96}

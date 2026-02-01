@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import { AnimatedImage } from '@/components/ui/AnimatedImage';
 import { User, Droplet } from 'lucide-react';
 import type { ProfileDocument } from '@/types/profile';
 import { ScanEffect } from './ScanEffect';
@@ -29,7 +29,7 @@ export function ChildIdentity({ profile }: ChildIdentityProps) {
       <div className="relative mx-auto mb-4 h-32 w-32">
         <div className="relative h-full w-full overflow-hidden rounded-full border-4 border-brand-orange shadow-lg shadow-brand-orange/50">
           {profile.photoUrl ? (
-            <Image
+            <AnimatedImage
               src={profile.photoUrl}
               alt={profile.fullName}
               width={128}

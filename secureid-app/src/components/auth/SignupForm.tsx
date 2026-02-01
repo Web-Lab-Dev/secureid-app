@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { signupSchema, type SignupFormData } from '@/schemas/activation';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { Eye, EyeOff, Phone, Lock, User, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, MessageCircle, Lock, User, Loader2 } from 'lucide-react';
 import { getErrorMessage } from '@/lib/error-helpers';
 import { Button } from '@/components/ui/button';
 
@@ -80,7 +80,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
             Votre nom complet
           </label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-orange" />
             <input
               id="displayName"
               type="text"
@@ -101,7 +101,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
             WhatsApp (Numéro de téléphone)
           </label>
           <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <MessageCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
             <input
               id="phoneNumber"
               type="tel"
@@ -125,7 +125,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
             Mot de passe
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-orange" />
             <input
               id="password"
               type={showPassword ? 'text' : 'password'}
@@ -153,7 +153,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
             Confirmer le mot de passe
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-orange" />
             <input
               id="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}

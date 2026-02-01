@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Calendar, UserCheck, Clock, GraduationCap } from 'lucide-react';
-import Image from 'next/image';
+import { AnimatedImage } from '@/components/ui/AnimatedImage';
 import type { PickupDocument } from '@/types/profile';
 import { getAuthorizedPickups } from '@/actions/school-actions';
 import { logger } from '@/lib/logger';
@@ -163,7 +163,7 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
                       onClick={() => setSelectedPhoto({ url: pickup.photoUrl, name: pickup.name })}
                       title="Cliquez pour agrandir"
                     >
-                      <Image
+                      <AnimatedImage
                         src={pickup.photoUrl}
                         alt={pickup.name}
                         fill
@@ -223,7 +223,7 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
               <X className="h-6 w-6" />
             </Button>
             <div className="relative h-[80vh] w-[80vw] overflow-hidden rounded-lg">
-              <Image
+              <AnimatedImage
                 src={selectedPhoto.url}
                 alt={selectedPhoto.name}
                 fill
