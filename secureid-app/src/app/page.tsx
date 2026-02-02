@@ -61,7 +61,7 @@ export default function LandingPage() {
     <>
       <PartnershipModal isOpen={isPartnerModalOpen} onClose={() => setIsPartnerModalOpen(false)} />
     <div className="overflow-x-hidden bg-[#FAFAF9]">
-      <Header braceletParams={braceletParams} />
+      <Header />
 
       {/* Bandeau confirmation bracelet détecté (après scan QR) */}
       {/* Afficher uniquement après hydration pour éviter mismatch */}

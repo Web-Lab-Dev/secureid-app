@@ -15,7 +15,10 @@
     "provision": "node scripts/generate-batch.js",
     "generate-china": "tsx scripts/generate-china-batch.js",
     "test-china": "tsx scripts/test-china-batch.js",
-    "unlock-batch": "tsx scripts/unlock-batch.js"
+    "unlock-batch": "tsx scripts/unlock-batch.js",
+    "remotion:studio": "remotion studio src/remotion/index.ts",
+    "remotion:render": "remotion render src/remotion/index.ts",
+    "remotion:render-all": "remotion render src/remotion/index.ts AlertZoneVideo --output public/videos/how-it-works/alert-zone.mp4 && remotion render src/remotion/index.ts LostChildVideo --output public/videos/how-it-works/lost-child.mp4 && remotion render src/remotion/index.ts MedicalEmergencyVideo --output public/videos/how-it-works/medical-emergency.mp4"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
@@ -24,6 +27,8 @@
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tabs": "^1.1.13",
     "@react-google-maps/api": "^2.20.8",
+    "@remotion/cli": "^4.0.417",
+    "@remotion/player": "^4.0.417",
     "@vercel/analytics": "^1.6.1",
     "@zxing/library": "^0.21.3",
     "bcryptjs": "^3.0.3",
@@ -38,6 +43,7 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-hook-form": "^7.66.1",
+    "remotion": "^4.0.417",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "use-sound": "^5.0.0",
