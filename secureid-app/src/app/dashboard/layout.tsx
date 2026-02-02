@@ -30,7 +30,7 @@ export default function DashboardLayout({
           <div
             className="absolute inset-0"
             style={{
-              background: 'linear-gradient(to bottom, rgba(210, 16, 52, 0.12) 0%, rgba(210, 16, 52, 0.08) 42%, transparent 50%, rgba(0, 151, 57, 0.08) 58%, rgba(0, 151, 57, 0.12) 100%)',
+              background: 'linear-gradient(to bottom, rgba(210, 16, 52, 0.22) 0%, rgba(210, 16, 52, 0.15) 40%, transparent 50%, rgba(0, 151, 57, 0.15) 60%, rgba(0, 151, 57, 0.22) 100%)',
               mixBlendMode: 'soft-light',
             }}
           />
@@ -39,7 +39,7 @@ export default function DashboardLayout({
             <svg
               viewBox="0 0 100 100"
               className="h-[50vh] w-[50vh] max-h-[400px] max-w-[400px]"
-              style={{ opacity: 0.06 }}
+              style={{ opacity: 0.12 }}
               fill="#FCD116"
             >
               <polygon points="50,5 61,40 98,40 68,62 79,97 50,75 21,97 32,62 2,40 39,40" />
@@ -49,7 +49,7 @@ export default function DashboardLayout({
           <div
             className="absolute inset-0"
             style={{
-              background: 'radial-gradient(circle at 50% 50%, rgba(252, 209, 22, 0.05) 0%, transparent 35%)',
+              background: 'radial-gradient(circle at 50% 50%, rgba(252, 209, 22, 0.08) 0%, transparent 40%)',
             }}
           />
         </div>
