@@ -39,7 +39,7 @@ const steps = [
     details: [
       { icon: UserPlus, text: 'Créez votre compte parent' },
       { icon: Settings, text: 'Renseignez identité, infos médicales, contacts' },
-      { icon: Download, text: 'Installez l\'application PWA' },
+      { icon: Download, text: 'Installez l\'application' },
     ],
   },
   {

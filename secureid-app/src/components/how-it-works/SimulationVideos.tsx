@@ -5,7 +5,6 @@ import { useInView } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
 import { Player, PlayerRef } from '@remotion/player';
 import {
-  Play,
   MapPin,
   UserSearch,
   Heart,
@@ -142,16 +141,6 @@ export default function SimulationVideos() {
       <div className="mx-auto max-w-7xl px-4">
         {/* Section header */}
         <div className="mb-16 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-4 inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-2"
-          >
-            <Play className="h-4 w-4 text-orange-600" />
-            <span className="text-sm font-medium text-orange-700">Vidéos de simulation</span>
-          </motion.div>
-
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

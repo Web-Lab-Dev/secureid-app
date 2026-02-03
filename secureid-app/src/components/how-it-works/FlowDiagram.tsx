@@ -36,7 +36,7 @@ const keyPoints = [
   },
   {
     title: 'Alertes Intelligentes',
-    description: 'Notifications push dès qu\'il sort d\'une zone sécurisée',
+    description: 'Notifications dès qu\'il sort d\'une zone sécurisée',
   },
   {
     title: 'Données Médicales',

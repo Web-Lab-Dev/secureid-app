@@ -1,21 +1,19 @@
 import React from 'react';
 import {
   AbsoluteFill,
-  Sequence,
   interpolate,
   useCurrentFrame,
 } from 'remotion';
-import { Phone } from '../components/Phone';
 import { MapView } from '../components/MapView';
 import { AlertNotification } from '../components/AlertNotification';
-import { COLORS, VIDEO_CONFIG } from '../helpers/constants';
+import { COLORS } from '../helpers/constants';
 
 /**
  * Vidéo 1: Alerte Sortie de Zone (~15s = 450 frames at 30fps)
  *
  * Scene 1 (0-90f): Carte avec zone sécurisée (école)
  * Scene 2 (90-180f): Enfant qui sort de la zone (point rouge)
- * Scene 3 (180-300f): Notification push sur téléphone parent
+ * Scene 3 (180-300f): Notification sur téléphone parent
  * Scene 4 (300-450f): Parent voit position en temps réel
  */
 
@@ -43,50 +41,30 @@ export const AlertZoneVideo: React.FC = () => {
   );
 
   // Alert becomes active when child leaves zone
-  const isOutsideZone = frame > scene2End - 30;
   const alertActive = frame > scene2End;
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.gray[100] }}>
-      {/* Title at start */}
-      <Sequence from={0} durationInFrames={60}>
-        <AbsoluteFill
+      {/* Phone frame - fullscreen */}
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          backgroundColor: COLORS.gray[900],
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Screen content */}
+        <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: COLORS.primary,
-            padding: 40,
+            width: '100%',
+            height: '100%',
+            backgroundColor: COLORS.white,
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          <div
-            style={{
-              fontSize: 48,
-              fontWeight: 'bold',
-              color: COLORS.white,
-              textAlign: 'center',
-              marginBottom: 20,
-            }}
-          >
-            Alerte Zone
-          </div>
-          <div
-            style={{
-              fontSize: 24,
-              color: COLORS.white,
-              opacity: 0.9,
-              textAlign: 'center',
-            }}
-          >
-            Votre enfant sort de la zone sécurisée
-          </div>
-        </AbsoluteFill>
-      </Sequence>
-
-      {/* Main content */}
-      <Sequence from={60}>
-        <Phone scale={0.9} y={50}>
           {/* Map view */}
           <MapView
             showSafeZone={true}
@@ -113,17 +91,18 @@ export const AlertZoneVideo: React.FC = () => {
               top: 0,
               left: 0,
               right: 0,
-              height: 50,
+              height: 80,
               backgroundColor: COLORS.white,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               borderBottom: `1px solid ${COLORS.gray[200]}`,
+              paddingTop: 20,
             }}
           >
             <span
               style={{
-                fontSize: 16,
+                fontSize: 24,
                 fontWeight: 'bold',
                 color: COLORS.dark,
               }}
@@ -136,27 +115,27 @@ export const AlertZoneVideo: React.FC = () => {
           <div
             style={{
               position: 'absolute',
-              bottom: 20,
-              left: 10,
-              right: 10,
+              bottom: 40,
+              left: 20,
+              right: 20,
               backgroundColor: alertActive ? COLORS.danger : COLORS.primary,
-              borderRadius: 12,
-              padding: 12,
+              borderRadius: 20,
+              padding: 20,
               display: 'flex',
               alignItems: 'center',
-              gap: 10,
+              gap: 15,
             }}
           >
             <div
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
+                width: 60,
+                height: 60,
+                borderRadius: 30,
                 backgroundColor: COLORS.white,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 20,
+                fontSize: 30,
               }}
             >
               👦
@@ -164,7 +143,7 @@ export const AlertZoneVideo: React.FC = () => {
             <div style={{ flex: 1 }}>
               <div
                 style={{
-                  fontSize: 14,
+                  fontSize: 22,
                   fontWeight: 'bold',
                   color: COLORS.white,
                 }}
@@ -173,7 +152,7 @@ export const AlertZoneVideo: React.FC = () => {
               </div>
               <div
                 style={{
-                  fontSize: 12,
+                  fontSize: 18,
                   color: COLORS.white,
                   opacity: 0.9,
                 }}
@@ -183,7 +162,7 @@ export const AlertZoneVideo: React.FC = () => {
             </div>
             <div
               style={{
-                fontSize: 12,
+                fontSize: 16,
                 color: COLORS.white,
                 opacity: 0.8,
               }}
@@ -191,8 +170,8 @@ export const AlertZoneVideo: React.FC = () => {
               En direct
             </div>
           </div>
-        </Phone>
-      </Sequence>
+        </div>
+      </div>
     </AbsoluteFill>
   );
 };
