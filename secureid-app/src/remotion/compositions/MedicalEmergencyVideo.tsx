@@ -7,19 +7,74 @@ import {
   spring,
   useVideoConfig,
 } from 'remotion';
-import { Phone } from '../components/Phone';
-import { QRScanner } from '../components/QRScanner';
 import { COLORS } from '../helpers/constants';
 
 /**
  * Vidéo 3: Malaise en Classe (~20s = 600 frames at 30fps)
- *
- * Scene 1 (0-120f): Classe, enfant ne se sent pas bien
- * Scene 2 (120-210f): Enseignante s'approche
- * Scene 3 (210-330f): Scan du bracelet
- * Scene 4 (330-480f): Affichage données médicales (allergies, groupe sanguin)
- * Scene 5 (480-600f): Enseignante informe l'infirmerie avec les bonnes infos
  */
+
+// Floating hearts for medical theme
+const FloatingHearts: React.FC = () => {
+  const frame = useCurrentFrame();
+
+  return (
+    <>
+      {[...Array(6)].map((_, i) => {
+        const baseX = 100 + (i * 150) % 800;
+        const baseY = 200 + (i * 80) % 400;
+        const floatY = interpolate(
+          Math.sin(frame * 0.04 + i * 0.8),
+          [-1, 1],
+          [-30, 30]
+        );
+        const scale = interpolate(
+          Math.sin(frame * 0.06 + i),
+          [-1, 1],
+          [0.6, 1.2]
+        );
+
+        return (
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              left: baseX,
+              top: baseY + floatY,
+              fontSize: 30,
+              opacity: 0.2,
+              transform: `scale(${scale})`,
+            }}
+          >
+            ❤️
+          </div>
+        );
+      })}
+    </>
+  );
+};
+
+// Pulse animation component
+const PulseRing: React.FC<{ delay: number; color: string }> = ({ delay, color }) => {
+  const frame = useCurrentFrame();
+  const adjustedFrame = Math.max(0, frame - delay);
+
+  const scale = interpolate(adjustedFrame % 60, [0, 60], [0.8, 2]);
+  const opacity = interpolate(adjustedFrame % 60, [0, 60], [0.6, 0]);
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        width: 100,
+        height: 100,
+        borderRadius: '50%',
+        border: `3px solid ${color}`,
+        transform: `scale(${scale})`,
+        opacity,
+      }}
+    />
+  );
+};
 
 export const MedicalEmergencyVideo: React.FC = () => {
   const frame = useCurrentFrame();
@@ -27,9 +82,9 @@ export const MedicalEmergencyVideo: React.FC = () => {
 
   // Scene timing
   const scene1End = 120;
-  const scene2End = 210;
-  const scene3End = 330;
-  const scene4End = 480;
+  const scene2End = 240;
+  const scene3End = 380;
+  const scene4End = 520;
 
   // Current scene
   const currentScene =
@@ -38,97 +93,140 @@ export const MedicalEmergencyVideo: React.FC = () => {
     frame < scene3End ? 3 :
     frame < scene4End ? 4 : 5;
 
-  // Scanning animation
-  const isScanning = currentScene === 3 && frame > scene2End + 30;
-  const scanComplete = frame > scene3End - 30;
-
-  // Medical info reveal animation
-  const infoReveal = currentScene >= 4
-    ? spring({
-        frame: frame - scene3End,
-        fps,
-        config: { damping: 15, stiffness: 80 },
-      })
+  // Child wobble when unwell
+  const childWobble = currentScene === 1
+    ? interpolate(Math.sin(frame * 0.2), [-1, 1], [-5, 5])
     : 0;
 
-  return (
-    <AbsoluteFill style={{ backgroundColor: COLORS.gray[100] }}>
-      {/* Intro title */}
-      <Sequence from={0} durationInFrames={60}>
-        <AbsoluteFill
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: COLORS.success,
-            padding: 40,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 48,
-              fontWeight: 'bold',
-              color: COLORS.white,
-              textAlign: 'center',
-              marginBottom: 20,
-            }}
-          >
-            Urgence Médicale
-          </div>
-          <div
-            style={{
-              fontSize: 24,
-              color: COLORS.white,
-              opacity: 0.9,
-              textAlign: 'center',
-            }}
-          >
-            Les données vitales toujours accessibles
-          </div>
-        </AbsoluteFill>
-      </Sequence>
+  // Teacher walking
+  const teacherX = currentScene === 2
+    ? interpolate(frame, [scene1End, scene1End + 60], [700, 500], { extrapolateRight: 'clamp' })
+    : 500;
 
-      {/* Scene 1: Child feeling unwell in classroom */}
-      <Sequence from={60} durationInFrames={scene1End - 60}>
+  // Scan progress
+  const scanProgress = currentScene === 3
+    ? interpolate(frame, [scene2End, scene3End - 40], [0, 1], { extrapolateRight: 'clamp' })
+    : currentScene > 3 ? 1 : 0;
+
+  // Medical info reveal
+  const infoReveal = spring({
+    frame: Math.max(0, frame - scene3End),
+    fps,
+    config: { damping: 12, stiffness: 80 },
+  });
+
+  // Success pulse
+  const successPulse = currentScene === 5
+    ? interpolate(Math.sin(frame * 0.15), [-1, 1], [0.95, 1.05])
+    : 1;
+
+  return (
+    <AbsoluteFill style={{ backgroundColor: '#fef3c7' }}>
+      {/* Scene 1: Classroom, child unwell */}
+      <Sequence from={0} durationInFrames={scene1End}>
         <AbsoluteFill
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#fef3c7',
-            padding: 40,
+            background: 'linear-gradient(180deg, #fef9c3 0%, #fef3c7 50%, #fde68a 100%)',
           }}
         >
-          {/* Classroom illustration */}
+          {/* Classroom elements */}
+          <div style={{ position: 'absolute', left: 50, top: 200, fontSize: 80 }}>📚</div>
+          <div style={{ position: 'absolute', right: 80, top: 180, fontSize: 90 }}>🎒</div>
+          <div style={{ position: 'absolute', left: 150, top: 280, fontSize: 70 }}>✏️</div>
+
+          {/* Blackboard */}
           <div
             style={{
-              fontSize: 80,
-              marginBottom: 30,
+              position: 'absolute',
+              top: 100,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 500,
+              height: 200,
+              background: '#166534',
+              borderRadius: 10,
+              border: '10px solid #854d0e',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            📚 😷 📝
+            <span style={{ color: 'white', fontSize: 40 }}>Mathématiques 📐</span>
           </div>
+
+          {/* Desk rows */}
+          {[0, 1].map((row) => (
+            <div
+              key={row}
+              style={{
+                position: 'absolute',
+                top: 500 + row * 200,
+                left: 100,
+                right: 100,
+                display: 'flex',
+                justifyContent: 'space-around',
+              }}
+            >
+              {[0, 1, 2].map((col) => (
+                <div
+                  key={col}
+                  style={{
+                    width: 120,
+                    height: 80,
+                    background: '#d4a574',
+                    borderRadius: 10,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: row === 0 && col === 1 ? 60 : 50,
+                    boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+                  }}
+                >
+                  {row === 0 && col === 1 ? (
+                    <span style={{ transform: `rotate(${childWobble}deg)` }}>🤒</span>
+                  ) : (
+                    '👧'
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+
+          {/* Alert indicator above sick child */}
           <div
             style={{
-              fontSize: 24,
-              fontWeight: 'bold',
-              color: COLORS.dark,
-              textAlign: 'center',
-              marginBottom: 10,
+              position: 'absolute',
+              top: 420,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
             }}
           >
-            En classe...
+            {/* Pulse rings */}
+            <div style={{ position: 'relative', width: 100, height: 100 }}>
+              <PulseRing delay={0} color={COLORS.danger} />
+              <PulseRing delay={20} color={COLORS.danger} />
+            </div>
           </div>
+
+          {/* Title */}
           <div
             style={{
-              fontSize: 18,
-              color: COLORS.gray[600],
+              position: 'absolute',
+              bottom: 150,
+              left: 0,
+              right: 0,
               textAlign: 'center',
             }}
           >
-            Awa ne se sent pas bien
+            <div style={{ fontSize: 42, fontWeight: 'bold', color: '#92400e' }}>
+              Awa ne se sent pas bien...
+            </div>
+            <div style={{ fontSize: 26, color: '#a16207', marginTop: 10 }}>
+              L'enseignante remarque le malaise
+            </div>
           </div>
         </AbsoluteFill>
       </Sequence>
@@ -137,42 +235,69 @@ export const MedicalEmergencyVideo: React.FC = () => {
       <Sequence from={scene1End} durationInFrames={scene2End - scene1End}>
         <AbsoluteFill
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#e3f2fd',
-            padding: 40,
+            background: 'linear-gradient(180deg, #dbeafe 0%, #bfdbfe 50%, #93c5fd 100%)',
           }}
         >
+          <FloatingHearts />
+
+          {/* Child */}
           <div
             style={{
-              fontSize: 80,
-              marginBottom: 30,
+              position: 'absolute',
+              left: 300,
+              top: 600,
+              fontSize: 120,
+              transform: `rotate(${interpolate(Math.sin(frame * 0.1), [-1, 1], [-3, 3])}deg)`,
             }}
           >
-            👩‍🏫 ➡️ 🤒
+            🤒
           </div>
+
+          {/* Bracelet glow */}
           <div
             style={{
-              fontSize: 24,
-              fontWeight: 'bold',
-              color: COLORS.dark,
-              textAlign: 'center',
-              marginBottom: 10,
+              position: 'absolute',
+              left: 340,
+              top: 780,
+              width: 80,
+              height: 35,
+              borderRadius: 20,
+              background: `linear-gradient(90deg, ${COLORS.primary}, ${COLORS.secondary})`,
+              boxShadow: `0 0 ${25 + interpolate(Math.sin(frame * 0.25), [-1, 1], [0, 20])}px ${COLORS.primary}`,
             }}
-          >
-            L'enseignante intervient
-          </div>
+          />
+
+          {/* Teacher */}
           <div
             style={{
-              fontSize: 18,
-              color: COLORS.gray[600],
-              textAlign: 'center',
+              position: 'absolute',
+              left: teacherX,
+              top: 550,
+              fontSize: 130,
+              transform: 'scaleX(-1)',
             }}
           >
-            "Je vais scanner son bracelet SecureID"
+            👩‍🏫
           </div>
+
+          {/* Speech bubble */}
+          {frame > scene1End + 40 && (
+            <div
+              style={{
+                position: 'absolute',
+                left: teacherX - 80,
+                top: 430,
+                background: 'white',
+                padding: '20px 30px',
+                borderRadius: 25,
+                fontSize: 26,
+                boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                transform: `scale(${spring({ frame: frame - scene1End - 40, fps, config: { damping: 10 } })})`,
+              }}
+            >
+              Je vais scanner son bracelet 💡
+            </div>
+          )}
         </AbsoluteFill>
       </Sequence>
 
@@ -180,204 +305,249 @@ export const MedicalEmergencyVideo: React.FC = () => {
       <Sequence from={scene2End} durationInFrames={scene3End - scene2End}>
         <AbsoluteFill
           style={{
+            background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: COLORS.light,
-            padding: 40,
           }}
         >
+          {/* Medical cross animation */}
           <div
             style={{
-              fontSize: 24,
-              fontWeight: 'bold',
-              color: COLORS.dark,
-              textAlign: 'center',
-              marginBottom: 40,
+              position: 'absolute',
+              top: 150,
+              left: '50%',
+              transform: `translateX(-50%) rotate(${frame * 2}deg)`,
+              fontSize: 80,
+              opacity: 0.3,
             }}
           >
-            Scan du bracelet
+            ⚕️
           </div>
-          <QRScanner
-            scanning={isScanning}
-            scanComplete={scanComplete}
-            delay={scene2End}
-          />
+
+          {/* Scan frame */}
+          <div style={{ width: 450, height: 450, position: 'relative' }}>
+            {/* Animated corners */}
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                style={{
+                  position: 'absolute',
+                  width: 70,
+                  height: 70,
+                  border: `5px solid ${scanProgress === 1 ? COLORS.success : '#ef4444'}`,
+                  borderRadius: 10,
+                  transition: 'border-color 0.3s',
+                  ...(i === 0 ? { top: 0, left: 0, borderRight: 'none', borderBottom: 'none' } : {}),
+                  ...(i === 1 ? { top: 0, right: 0, borderLeft: 'none', borderBottom: 'none' } : {}),
+                  ...(i === 2 ? { bottom: 0, left: 0, borderRight: 'none', borderTop: 'none' } : {}),
+                  ...(i === 3 ? { bottom: 0, right: 0, borderLeft: 'none', borderTop: 'none' } : {}),
+                }}
+              />
+            ))}
+
+            {/* Bracelet visualization */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 80,
+                background: 'white',
+                borderRadius: 25,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column',
+                gap: 15,
+              }}
+            >
+              <div style={{ fontSize: 80 }}>⌚</div>
+              <div
+                style={{
+                  width: 150,
+                  height: 40,
+                  borderRadius: 20,
+                  background: `linear-gradient(90deg, ${COLORS.primary}, ${COLORS.secondary})`,
+                }}
+              />
+            </div>
+
+            {/* Scanning animation */}
+            {scanProgress < 1 && (
+              <>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 30,
+                    right: 30,
+                    top: 80 + (290 * ((frame - scene2End) % 50) / 50),
+                    height: 5,
+                    background: 'linear-gradient(90deg, transparent, #ef4444, transparent)',
+                    boxShadow: '0 0 30px #ef4444',
+                  }}
+                />
+                {/* Scanning dots */}
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    style={{
+                      position: 'absolute',
+                      left: 150 + i * 50,
+                      bottom: 80,
+                      width: 15,
+                      height: 15,
+                      borderRadius: '50%',
+                      background: '#ef4444',
+                      opacity: interpolate((frame + i * 10) % 30, [0, 15, 30], [0.3, 1, 0.3]),
+                    }}
+                  />
+                ))}
+              </>
+            )}
+
+            {/* Success overlay */}
+            {scanProgress === 1 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'rgba(34, 197, 94, 0.95)',
+                  borderRadius: 25,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 150,
+                  transform: `scale(${spring({ frame: frame - scene3End + 40, fps })})`,
+                }}
+              >
+                ✅
+              </div>
+            )}
+          </div>
+
+          {/* Status */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 250,
+              fontSize: 36,
+              color: 'white',
+              fontWeight: 'bold',
+            }}
+          >
+            {scanProgress === 1 ? '✓ Données médicales chargées' : '🔍 Lecture des données...'}
+          </div>
         </AbsoluteFill>
       </Sequence>
 
-      {/* Scene 4: Medical info display */}
+      {/* Scene 4: Medical info displayed */}
       <Sequence from={scene3End} durationInFrames={scene4End - scene3End}>
-        <Phone scale={0.9} y={50}>
+        <AbsoluteFill
+          style={{
+            background: 'linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%)',
+          }}
+        >
+          {/* Medical card */}
           <div
             style={{
-              height: '100%',
-              backgroundColor: COLORS.white,
-              padding: 20,
-              paddingTop: 60,
-              overflow: 'hidden',
+              position: 'absolute',
+              top: 100,
+              left: 50,
+              right: 50,
+              background: 'white',
+              borderRadius: 35,
+              padding: 40,
+              boxShadow: '0 25px 80px rgba(239, 68, 68, 0.2)',
+              transform: `scale(${infoReveal}) translateY(${interpolate(infoReveal, [0, 1], [80, 0])}px)`,
             }}
           >
             {/* Header */}
             <div
               style={{
-                backgroundColor: COLORS.danger,
-                margin: -20,
-                marginTop: -60,
-                padding: 20,
-                paddingTop: 50,
-                marginBottom: 20,
+                background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                margin: -40,
+                marginBottom: 30,
+                padding: 35,
+                borderRadius: '35px 35px 0 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 20,
               }}
             >
-              <div
-                style={{
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                  color: COLORS.white,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                }}
-              >
-                🏥 Fiche Médicale d'Urgence
-              </div>
+              <span style={{ fontSize: 40 }}>🏥</span>
+              <span style={{ fontSize: 32, fontWeight: 'bold', color: 'white' }}>
+                Fiche Médicale d'Urgence
+              </span>
             </div>
 
             {/* Child info */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 15,
-                marginBottom: 20,
-                transform: `translateY(${interpolate(infoReveal, [0, 1], [50, 0])}px)`,
-                opacity: infoReveal,
-              }}
-            >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 25, marginBottom: 30 }}>
               <div
                 style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: 30,
-                  backgroundColor: COLORS.gray[200],
+                  width: 100,
+                  height: 100,
+                  borderRadius: 50,
+                  background: '#fef3c7',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 30,
-                  border: `3px solid ${COLORS.danger}`,
+                  fontSize: 60,
+                  border: '4px solid #ef4444',
                 }}
               >
                 👧
               </div>
               <div>
-                <div
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 'bold',
-                    color: COLORS.dark,
-                  }}
-                >
+                <div style={{ fontSize: 34, fontWeight: 'bold', color: COLORS.dark }}>
                   Awa TRAORE
                 </div>
-                <div
-                  style={{
-                    fontSize: 14,
-                    color: COLORS.gray[500],
-                  }}
-                >
-                  7 ans - CE1
-                </div>
+                <div style={{ fontSize: 22, color: COLORS.gray[500] }}>7 ans - CE1</div>
               </div>
             </div>
 
-            {/* Blood type - Critical info */}
+            {/* Blood type - Critical */}
             <div
               style={{
-                backgroundColor: '#fee2e2',
-                borderRadius: 12,
-                padding: 15,
-                marginBottom: 15,
-                border: `2px solid ${COLORS.danger}`,
-                transform: `translateY(${interpolate(infoReveal, [0, 1], [50, 0])}px)`,
-                opacity: infoReveal,
+                background: 'linear-gradient(135deg, #fee2e2, #fecaca)',
+                borderRadius: 25,
+                padding: 25,
+                marginBottom: 20,
+                border: '3px solid #ef4444',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <div>
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: COLORS.danger,
-                      fontWeight: 'bold',
-                      marginBottom: 5,
-                    }}
-                  >
-                    🩸 GROUPE SANGUIN
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 28,
-                      fontWeight: 'bold',
-                      color: COLORS.danger,
-                    }}
-                  >
-                    A+
-                  </div>
+              <div>
+                <div style={{ fontSize: 16, color: '#dc2626', fontWeight: 'bold', marginBottom: 8 }}>
+                  🩸 GROUPE SANGUIN
                 </div>
-                <div
-                  style={{
-                    fontSize: 50,
-                  }}
-                >
-                  🩸
-                </div>
+                <div style={{ fontSize: 50, fontWeight: 'bold', color: '#dc2626' }}>A+</div>
               </div>
+              <div style={{ fontSize: 70 }}>🩸</div>
             </div>
 
             {/* Allergies */}
             <div
               style={{
-                backgroundColor: '#fef3c7',
-                borderRadius: 12,
-                padding: 15,
-                marginBottom: 15,
-                transform: `translateY(${interpolate(infoReveal, [0, 1], [50, 0])}px)`,
-                opacity: infoReveal,
+                background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+                borderRadius: 25,
+                padding: 25,
+                marginBottom: 20,
               }}
             >
-              <div
-                style={{
-                  fontSize: 12,
-                  color: '#92400e',
-                  fontWeight: 'bold',
-                  marginBottom: 8,
-                }}
-              >
+              <div style={{ fontSize: 16, color: '#92400e', fontWeight: 'bold', marginBottom: 15 }}>
                 ⚠️ ALLERGIES
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 8,
-                }}
-              >
-                {['Arachides', 'Aspirine'].map((allergy) => (
+              <div style={{ display: 'flex', gap: 15, flexWrap: 'wrap' }}>
+                {['Arachides 🥜', 'Aspirine 💊'].map((allergy) => (
                   <span
                     key={allergy}
                     style={{
-                      backgroundColor: '#fcd34d',
+                      background: '#fbbf24',
                       color: '#78350f',
-                      padding: '4px 12px',
-                      borderRadius: 20,
-                      fontSize: 14,
+                      padding: '12px 25px',
+                      borderRadius: 25,
+                      fontSize: 22,
                       fontWeight: 'bold',
                     }}
                   >
@@ -387,100 +557,81 @@ export const MedicalEmergencyVideo: React.FC = () => {
               </div>
             </div>
 
-            {/* Medical conditions */}
+            {/* Medical condition */}
             <div
               style={{
-                backgroundColor: COLORS.gray[100],
-                borderRadius: 12,
-                padding: 15,
-                transform: `translateY(${interpolate(infoReveal, [0, 1], [50, 0])}px)`,
-                opacity: infoReveal,
+                background: '#f0f9ff',
+                borderRadius: 25,
+                padding: 25,
               }}
             >
-              <div
-                style={{
-                  fontSize: 12,
-                  color: COLORS.gray[500],
-                  fontWeight: 'bold',
-                  marginBottom: 8,
-                }}
-              >
+              <div style={{ fontSize: 16, color: '#0369a1', fontWeight: 'bold', marginBottom: 10 }}>
                 📋 CONDITIONS MÉDICALES
               </div>
-              <div
-                style={{
-                  fontSize: 14,
-                  color: COLORS.dark,
-                }}
-              >
-                Asthme léger - Ventoline si besoin
+              <div style={{ fontSize: 22, color: COLORS.dark }}>
+                Asthme léger - Ventoline si besoin 💨
               </div>
             </div>
           </div>
-        </Phone>
+        </AbsoluteFill>
       </Sequence>
 
       {/* Scene 5: Nurse informed */}
       <Sequence from={scene4End}>
         <AbsoluteFill
           style={{
+            background: 'linear-gradient(180deg, #22c55e 0%, #16a34a 100%)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: COLORS.success,
-            padding: 40,
           }}
         >
+          <FloatingHearts />
+
+          {/* Success icon */}
           <div
             style={{
-              width: 120,
-              height: 120,
-              borderRadius: 60,
-              backgroundColor: COLORS.white,
+              width: 200,
+              height: 200,
+              borderRadius: 100,
+              background: 'white',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 60,
-              marginBottom: 30,
-              boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+              fontSize: 100,
+              transform: `scale(${successPulse})`,
+              boxShadow: '0 25px 80px rgba(0,0,0,0.2)',
+              marginBottom: 50,
             }}
           >
             ✅
           </div>
-          <div
-            style={{
-              fontSize: 24,
-              fontWeight: 'bold',
-              color: COLORS.white,
-              textAlign: 'center',
-              marginBottom: 15,
-            }}
-          >
+
+          {/* Text */}
+          <div style={{ fontSize: 38, fontWeight: 'bold', color: 'white', marginBottom: 20, textAlign: 'center' }}>
             Infirmerie informée !
           </div>
-          <div
-            style={{
-              fontSize: 18,
-              color: COLORS.white,
-              opacity: 0.9,
-              textAlign: 'center',
-              maxWidth: 300,
-            }}
-          >
+          <div style={{ fontSize: 26, color: 'rgba(255,255,255,0.9)', textAlign: 'center', maxWidth: 600, lineHeight: 1.5 }}>
             L'infirmière connaît les allergies et le groupe sanguin d'Awa
           </div>
+
+          {/* SecureID badge */}
           <div
             style={{
-              marginTop: 40,
-              padding: '12px 24px',
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              borderRadius: 30,
-              fontSize: 14,
-              color: COLORS.white,
+              marginTop: 60,
+              padding: '20px 45px',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: 40,
+              fontSize: 26,
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 15,
             }}
           >
-            🛡️ Protégée par SecureID
+            <span style={{ fontSize: 35 }}>🛡️</span>
+            Protégée par SecureID
           </div>
         </AbsoluteFill>
       </Sequence>
