@@ -168,6 +168,7 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
                         alt={pickup.name}
                         fill
                         className="object-cover"
+                        containerClassName="h-full w-full"
                         priority
                       />
                     </div>
@@ -222,13 +223,13 @@ export function SchoolPortal({ isOpen, onClose, profileId, childName }: SchoolPo
             >
               <X className="h-6 w-6" />
             </Button>
-            <div className="relative h-[80vh] w-[80vw] overflow-hidden rounded-lg">
+            <div className="relative h-[80vh] w-[80vw] overflow-hidden rounded-lg" onClick={(e) => e.stopPropagation()}>
               <AnimatedImage
                 src={selectedPhoto.url}
                 alt={selectedPhoto.name}
                 fill
                 className="object-contain"
-                onClick={(e) => e.stopPropagation()}
+                containerClassName="h-full w-full"
               />
             </div>
             <p className="mt-4 text-center text-lg font-semibold text-white">

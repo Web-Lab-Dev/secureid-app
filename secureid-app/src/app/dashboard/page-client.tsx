@@ -244,7 +244,9 @@ export function DashboardPageClient() {
                 {userData?.displayName || user?.displayName || 'Parent'}
               </h3>
               <p className="text-sm text-slate-400 truncate">
-                {userData?.phoneNumber ? `+226 ${userData.phoneNumber}` : user?.email}
+                {userData?.phoneNumber
+                  ? (userData.phoneNumber.startsWith('+') ? userData.phoneNumber : `+226 ${userData.phoneNumber}`)
+                  : user?.email}
               </p>
             </div>
 
