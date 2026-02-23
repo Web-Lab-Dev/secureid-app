@@ -110,8 +110,6 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
     }
   };
 
-  const totalAmount = formData.quantity * PRICING.bracelet.priceInCFA;
-
   if (!isOpen) return null;
 
   // Vue de succès
@@ -221,7 +219,7 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                   <option key={num} value={num}>
-                    {num} bracelet{num > 1 ? 's' : ''} - {(num * PRICING.bracelet.priceInCFA).toLocaleString('fr-FR')} FCFA
+                    {num} bracelet{num > 1 ? 's' : ''}
                   </option>
                 ))}
               </select>
@@ -246,18 +244,6 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
               />
             </div>
 
-          </div>
-
-          {/* Total */}
-          <div className="mt-6 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 p-4">
-            <div className="flex items-center justify-between">
-              <span className="font-outfit text-lg font-semibold text-slate-700">
-                Total à payer:
-              </span>
-              <span className="font-playfair text-3xl font-bold text-orange-600">
-                {totalAmount.toLocaleString('fr-FR')} FCFA
-              </span>
-            </div>
           </div>
 
           {/* Message d'erreur */}
