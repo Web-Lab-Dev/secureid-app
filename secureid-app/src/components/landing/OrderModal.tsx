@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Loader2, ShoppingCart, CheckCircle } from 'lucide-react';
+import { X, Loader2, ShoppingCart, CheckCircle, Plus, Minus } from 'lucide-react';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { PRICING } from '@/lib/config';
@@ -42,8 +42,16 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleQuantityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData({ ...formData, quantity: parseInt(e.target.value) });
+  const incrementQuantity = () => {
+    if (formData.quantity < 20) {
+      setFormData({ ...formData, quantity: formData.quantity + 1 });
+    }
+  };
+
+  const decrementQuantity = () => {
+    if (formData.quantity > 1) {
+      setFormData({ ...formData, quantity: formData.quantity - 1 });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -203,26 +211,44 @@ export function OrderModal({ isOpen, onClose }: OrderModalProps) {
               />
             </div>
 
-            {/* Quantité */}
+            {/* Quantité - Compteur style panier */}
             <div>
-              <label
-                htmlFor="quantity"
-                className="mb-2 block font-outfit text-sm font-semibold text-slate-700"
-              >
+              <label className="mb-2 block font-outfit text-sm font-semibold text-slate-700">
                 Nombre de bracelets <span className="text-red-500">*</span>
               </label>
-              <select
-                id="quantity"
-                value={formData.quantity}
-                onChange={handleQuantityChange}
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 font-outfit text-slate-900 transition-colors focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-              >
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                  <option key={num} value={num}>
-                    {num} bracelet{num > 1 ? 's' : ''}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center justify-center gap-4 rounded-xl border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50 p-4">
+                {/* Bouton Moins */}
+                <button
+                  type="button"
+                  onClick={decrementQuantity}
+                  disabled={formData.quantity <= 1}
+                  className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-orange-300 bg-white text-orange-600 shadow-md transition-all hover:border-orange-500 hover:bg-orange-50 hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white disabled:hover:shadow-md"
+                  aria-label="Diminuer la quantité"
+                >
+                  <Minus className="h-6 w-6" />
+                </button>
+
+                {/* Affichage quantité */}
+                <div className="flex min-w-[120px] flex-col items-center">
+                  <span className="font-playfair text-4xl font-bold text-orange-600">
+                    {formData.quantity}
+                  </span>
+                  <span className="text-sm text-slate-600">
+                    bracelet{formData.quantity > 1 ? 's' : ''}
+                  </span>
+                </div>
+
+                {/* Bouton Plus */}
+                <button
+                  type="button"
+                  onClick={incrementQuantity}
+                  disabled={formData.quantity >= 20}
+                  className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-orange-300 bg-white text-orange-600 shadow-md transition-all hover:border-orange-500 hover:bg-orange-50 hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white disabled:hover:shadow-md"
+                  aria-label="Augmenter la quantité"
+                >
+                  <Plus className="h-6 w-6" />
+                </button>
+              </div>
             </div>
 
             {/* Adresse de livraison */}
