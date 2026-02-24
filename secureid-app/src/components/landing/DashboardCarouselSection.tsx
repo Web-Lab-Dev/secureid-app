@@ -169,33 +169,33 @@ export function DashboardCarouselSection() {
             </div>
           </motion.div>
 
-          {/* Carrousel Phone Mockup Droite - Taille réduite sur desktop */}
+          {/* Carrousel Phone Mockup Droite - Contenu dans la fenêtre */}
           <motion.div
             initial={{ opacity: 0, x: 50, scale: 0.9 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative mx-auto w-full max-w-60 sm:max-w-64 md:max-w-72 lg:max-w-xs"
+            className="relative mx-auto flex w-full max-w-60 flex-col items-center sm:max-w-64 lg:max-h-[70vh]"
           >
             {/* Phone Mockup statique avec carrousel interne */}
             <motion.div
               animate={{
-                y: [0, -15, 0],
+                y: [0, -10, 0],
               }}
               transition={{
                 duration: 4,
                 repeat: Infinity,
                 ease: 'easeInOut',
               }}
-              className="relative"
+              className="relative w-full lg:max-h-[55vh]"
             >
               {/* iPhone Mockup Frame */}
-              <div className="relative overflow-hidden rounded-[3rem] border-[12px] border-gray-900 bg-gray-900 shadow-2xl shadow-black/40">
+              <div className="relative overflow-hidden rounded-[2.5rem] border-[10px] border-gray-900 bg-gray-900 shadow-2xl shadow-black/40 lg:rounded-[2rem] lg:border-[8px]">
                 {/* Notch iPhone */}
-                <div className="absolute left-1/2 top-0 z-10 h-7 w-40 -translate-x-1/2 rounded-b-3xl bg-gray-900" />
+                <div className="absolute left-1/2 top-0 z-10 h-6 w-32 -translate-x-1/2 rounded-b-2xl bg-gray-900 lg:h-5 lg:w-28" />
 
                 {/* Carrousel d'images à l'intérieur */}
-                <div className="relative aspect-[9/19.5] overflow-hidden bg-white">
+                <div className="relative aspect-[9/19] overflow-hidden bg-white lg:aspect-[9/18]">
                   <AnimatePresence initial={false}>
                     <motion.div
                       key={currentSlide}
