@@ -169,13 +169,13 @@ export function DashboardCarouselSection() {
             </div>
           </motion.div>
 
-          {/* Carrousel Phone Mockup Droite */}
+          {/* Carrousel Phone Mockup Droite - Taille réduite sur desktop */}
           <motion.div
             initial={{ opacity: 0, x: 50, scale: 0.9 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative mx-auto w-full max-w-[260px] sm:max-w-[300px] md:max-w-[340px] lg:max-w-[360px]"
+            className="relative mx-auto w-full max-w-60 sm:max-w-64 md:max-w-72 lg:max-w-xs"
           >
             {/* Phone Mockup statique avec carrousel interne */}
             <motion.div

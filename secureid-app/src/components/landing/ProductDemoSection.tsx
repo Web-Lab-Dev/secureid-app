@@ -46,8 +46,8 @@ export function ProductDemoSection() {
           </p>
         </div>
 
-        {/* Vidéo Démo - Lazy loaded */}
-        <div className="relative mb-16 aspect-video overflow-hidden rounded-3xl shadow-2xl shadow-orange-500/20 bg-stone-800">
+        {/* Vidéo Démo - Lazy loaded - Taille limitée sur desktop */}
+        <div className="relative mx-auto mb-16 aspect-video max-h-[70vh] w-full max-w-4xl overflow-hidden rounded-3xl shadow-2xl shadow-orange-500/20 bg-stone-800">
           <video
             ref={videoRef}
             autoPlay={isInView}
