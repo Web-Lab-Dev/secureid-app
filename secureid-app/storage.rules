@@ -1,16 +1,35 @@
 rules_version = '2';
 
+/**
+ * SecureID - Règles de sécurité Firebase Storage
+ *
+ * Architecture de sécurité:
+ * - Photos de profil: Lecture publique (requis pour page secouriste)
+ * - Photos anges gardiens: Lecture publique (requis pour portail école)
+ * - Documents médicaux: Accès restreint au parent uniquement
+ *
+ * Justification lecture publique des photos:
+ * Le cas d'usage principal est qu'un secouriste scanne un bracelet et voit
+ * immédiatement la photo de l'enfant SANS avoir besoin de se connecter.
+ * Cette accessibilité est critique pour l'efficacité du système d'urgence.
+ */
+
 service firebase.storage {
   match /b/{bucket}/o {
-    // Règle pour les photos de profils
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PHOTOS DE PROFIL ENFANT
+    // Accessibles publiquement pour l'affichage sur la page secouriste
+    // ═══════════════════════════════════════════════════════════════════
     match /profiles/{profileId}/{fileName} {
-      // Helper function pour vérifier ownership du profil
+
       function isProfileOwner() {
         let profile = firestore.get(/databases/(default)/documents/profiles/$(profileId));
         return request.auth != null && profile.data.parentId == request.auth.uid;
       }
 
-      // Permettre la lecture à tous (pour afficher les photos sur les bracelets scannés)
+      // Lecture publique: Les secouristes doivent voir la photo sans authentification
+      // C'est un choix de conception volontaire pour le cas d'urgence
       allow read: if true;
 
       // Permettre l'écriture uniquement au parent propriétaire
@@ -18,37 +37,43 @@ service firebase.storage {
                    && request.resource.size < 10 * 1024 * 1024  // Max 10MB
                    && request.resource.contentType.matches('image/.*');  // Seulement des images
 
-      // Suppression autorisée pour le propriétaire
       allow delete: if isProfileOwner();
     }
 
-    // PHASE 4C - Règles pour les documents médicaux confidentiels
+    // ═══════════════════════════════════════════════════════════════════
+    // DOCUMENTS MÉDICAUX CONFIDENTIELS
+    // Accès strictement limité au parent propriétaire du profil
+    // ═══════════════════════════════════════════════════════════════════
     match /medical_docs/{profileId}/{fileName} {
-      // Helper function pour vérifier ownership du profil
+
       function isProfileOwner() {
         let profile = firestore.get(/databases/(default)/documents/profiles/$(profileId));
         return request.auth != null && profile.data.parentId == request.auth.uid;
       }
 
-      // Lecture/Écriture uniquement pour le parent propriétaire
+      // Documents médicaux: accès restreint au parent authentifié uniquement
+      // Formats acceptés: images et PDF jusqu'à 10MB
       allow read, write: if isProfileOwner()
-                         && request.resource.size < 10 * 1024 * 1024  // Max 10MB
+                         && request.resource.size < 10 * 1024 * 1024
                          && (request.resource.contentType.matches('image/.*')
-                             || request.resource.contentType == 'application/pdf');  // Images ou PDF
+                             || request.resource.contentType == 'application/pdf');
 
-      // Suppression autorisée pour le propriétaire
       allow delete: if isProfileOwner();
     }
 
-    // PHASE 8 - Règles pour les photos des anges gardiens (récupérateurs école)
+    // ═══════════════════════════════════════════════════════════════════
+    // PHOTOS DES ANGES GARDIENS (récupérateurs autorisés à l'école)
+    // Accessibles publiquement pour le portail de contrôle scolaire
+    // ═══════════════════════════════════════════════════════════════════
     match /pickup_photos/{profileId}/{fileName} {
-      // Helper function pour vérifier ownership du profil
+
       function isProfileOwner() {
         let profile = firestore.get(/databases/(default)/documents/profiles/$(profileId));
         return request.auth != null && profile.data.parentId == request.auth.uid;
       }
 
-      // Lecture publique (pour affichage dans portail école)
+      // Lecture publique: Le vigile de l'école doit voir les photos sans compte
+      // Permet la vérification visuelle rapide de l'identité du récupérateur
       allow read: if true;
 
       // Écriture uniquement pour le parent propriétaire
@@ -56,11 +81,13 @@ service firebase.storage {
                    && request.resource.size < 5 * 1024 * 1024  // Max 5MB
                    && request.resource.contentType.matches('image/.*');  // Seulement des images
 
-      // Suppression autorisée pour le propriétaire
       allow delete: if isProfileOwner();
     }
 
-    // Bloquer tout accès par défaut
+    // ═══════════════════════════════════════════════════════════════════
+    // RÈGLE PAR DÉFAUT - Bloquer tout accès non explicitement autorisé
+    // Principe du moindre privilège appliqué par défaut
+    // ═══════════════════════════════════════════════════════════════════
     match /{allPaths=**} {
       allow read, write: if false;
     }

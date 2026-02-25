@@ -183,18 +183,22 @@ const nextConfig: NextConfig = {
             value: 'camera=*, geolocation=*, microphone=()'
           },
           {
+            // Content Security Policy - Sécurité renforcée
+            // Note: 'unsafe-inline' requis pour Next.js (hydration scripts)
+            // 'unsafe-eval' retiré pour bloquer eval() et Function()
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://maps.googleapis.com https://www.gstatic.com https://vercel.live https://*.vercel-scripts.com https://*.vercel-insights.com",
+              "script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://www.gstatic.com https://vercel.live https://*.vercel-scripts.com https://*.vercel-insights.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: https: blob:",
               "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.cloudfunctions.net wss://*.firebaseio.com https://*.vercel-insights.com https://*.vercel-analytics.com",
-              "frame-src 'self'",
+              "frame-src 'self' https://www.google.com",
               "base-uri 'self'",
               "form-action 'self'",
               "object-src 'none'",
+              "frame-ancestors 'self'",
               "upgrade-insecure-requests"
             ].join('; ')
           },
