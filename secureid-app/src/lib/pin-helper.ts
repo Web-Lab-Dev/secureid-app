@@ -46,9 +46,8 @@ export async function verifyPin(pin: string, hashedPin: string): Promise<boolean
     // Comparer avec bcrypt
     const isMatch = await bcrypt.compare(pin, hashedPin);
     return isMatch;
-  } catch (error) {
-    // Hash corrompu ou erreur bcrypt
-    console.error('Error verifying PIN:', error);
+  } catch {
+    // Hash corrompu ou erreur bcrypt - retourne false silencieusement
     return false;
   }
 }

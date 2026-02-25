@@ -88,8 +88,8 @@ export function PWAInstallProvider({ children }: { children: ReactNode }) {
         setIsInstallable(false);
         return true;
       }
-    } catch (error) {
-      console.error('PWA install error:', error);
+    } catch {
+      // Installation PWA refusée ou erreur - silently ignore
     }
 
     return false;

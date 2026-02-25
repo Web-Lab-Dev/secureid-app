@@ -15,6 +15,7 @@ import { AIChatFab } from '@/components/emergency/AIChatFab';
 import { AIChatSheet } from '@/components/emergency/AIChatSheet';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { recordScan } from '@/actions/emergency-actions';
+import { logger } from '@/lib/logger';
 
 /**
  * PHASE 5 V2 - EMERGENCY VIEW (UX AMÉLIORÉE)
@@ -55,7 +56,7 @@ export function EmergencyViewClient({ bracelet, profile }: EmergencyViewClientPr
         }
       }).catch((error) => {
         if (!cancelled) {
-          console.error('Failed to record scan:', error);
+          logger.error('Échec enregistrement scan', { error });
         }
       });
     }

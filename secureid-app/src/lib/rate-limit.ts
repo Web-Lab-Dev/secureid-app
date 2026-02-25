@@ -15,6 +15,7 @@
  */
 
 import { adminDb } from './firebase-admin';
+import { logger } from './logger';
 
 interface RateLimitAttempt {
   count: number;
@@ -59,7 +60,7 @@ async function getRateLimitData(key: string): Promise<RateLimitAttempt | null> {
 
     return data;
   } catch (error) {
-    console.error('Error reading rate limit data:', error);
+    logger.error('Erreur lecture rate limit', { error, key });
     return null;
   }
 }
@@ -135,7 +136,7 @@ export async function recordAttempt(key: string): Promise<void> {
     // Mettre à jour le cache
     attemptCache.set(key, { data: newData, cachedAt: now });
   } catch (error) {
-    console.error('Error recording attempt:', error);
+    logger.error('Erreur enregistrement tentative', { error, key });
   }
 }
 
@@ -149,7 +150,7 @@ export async function resetAttempts(key: string): Promise<void> {
   try {
     await adminDb.collection('rate_limits').doc(key).delete();
   } catch (error) {
-    console.error('Error resetting attempts:', error);
+    logger.error('Erreur reset tentatives', { error, key });
   }
 
   // Supprimer du cache

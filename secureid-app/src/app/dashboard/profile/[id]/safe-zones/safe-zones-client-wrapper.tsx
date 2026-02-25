@@ -26,8 +26,7 @@ export function SafeZonesClientWrapper({ profileId }: SafeZonesClientWrapperProp
         } else {
           setError('Profil introuvable');
         }
-      } catch (err) {
-        console.error('Error loading profile:', err);
+      } catch {
         setError('Erreur lors du chargement du profil');
       } finally {
         setLoading(false);

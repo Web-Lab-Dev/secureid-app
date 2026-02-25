@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { GpsDisclaimerModal } from '@/components/dashboard/GpsDisclaimerModal';
 import { TrackingClient } from './tracking-client';
 import { adminDb } from '@/lib/firebase-admin';
+import { logger } from '@/lib/logger';
 import type { ProfileDocument } from '@/types/profile';
 
 /**
@@ -37,7 +38,7 @@ export default async function TrackingPage({ params }: TrackingPageProps) {
       profile = profileSnap.data() as ProfileDocument;
     }
   } catch (error) {
-    console.error('Error loading profile:', error);
+    logger.error('Erreur chargement profil tracking', { error, profileId: id });
   }
 
   return (
