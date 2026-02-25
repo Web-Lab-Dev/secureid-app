@@ -96,8 +96,7 @@ export function DocumentUpload({ profileId }: DocumentUploadProps) {
   };
 
   const handleUpload = async (files: FileList | null) => {
-    // Bloquer l'upload et afficher le modal
-    // console.log('Upload bloqué - affichage du modal');
+    // Fonctionnalité désactivée - afficher le modal d'information
     setShowUnavailableModal(true);
     return;
   };

@@ -84,15 +84,12 @@ export function useAuth(): UseAuthReturn {
 
     const initAuth = async () => {
       try {
-        console.log('[useAuth] initAuth starting...');
-
-        // ÉTAPE 1: Attendre que Firebase lise l'état depuis le storage
+        // Attendre que Firebase lise l'état depuis le storage
         const initialUser = await waitForAuthReady();
-        console.log('[useAuth] waitForAuthReady resolved:', initialUser ? 'user' : 'null');
 
         if (!isMounted) return;
 
-        // ÉTAPE 2: Appliquer l'état initial
+        // Appliquer l'état initial
         setUser(initialUser);
 
         if (initialUser) {
@@ -101,7 +98,6 @@ export function useAuth(): UseAuthReturn {
             await loadUserData(initialUser.uid);
           } catch (err) {
             logger.error('Failed to load initial user data', { error: err });
-            // Cleanup: reset userData on failure to prevent stale state
             if (isMounted) setUserData(null);
           }
         } else {
@@ -110,7 +106,6 @@ export function useAuth(): UseAuthReturn {
         }
 
         if (isMounted) {
-          console.log('[useAuth] Setting loading=false');
           setLoading(false);
         }
 

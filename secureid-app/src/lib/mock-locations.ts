@@ -64,24 +64,7 @@ function calculateApproximateDistance(point1: LatLng, point2: LatLng): number {
   return R * c;
 }
 
-// Vérification des distances (pour debug)
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  const homeToSchool = calculateApproximateDistance(
-    OUAGADOUGOU_LOCATIONS.HOME,
-    OUAGADOUGOU_LOCATIONS.SCHOOL
-  );
-  const homeToHospital = calculateApproximateDistance(
-    OUAGADOUGOU_LOCATIONS.HOME,
-    OUAGADOUGOU_LOCATIONS.HOSPITAL
-  );
-  const schoolToHospital = calculateApproximateDistance(
-    OUAGADOUGOU_LOCATIONS.SCHOOL,
-    OUAGADOUGOU_LOCATIONS.HOSPITAL
-  );
-
-  console.log('📍 Distances triangle Ouagadougou:', {
-    'Maison → École': `${Math.round(homeToSchool)}m`,
-    'Maison → Hôpital': `${Math.round(homeToHospital)}m`,
-    'École → Hôpital': `${Math.round(schoolToHospital)}m`,
-  });
-}
+/**
+ * Vérification des distances du triangle (debug désactivé en production)
+ * Maison → École: ~1000m, Maison → Hôpital: ~1200m, École → Hôpital: ~1600m
+ */

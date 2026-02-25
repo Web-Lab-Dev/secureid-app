@@ -211,14 +211,14 @@ export async function sendTestNotification(
 ): Promise<{ success: boolean; error?: string; details?: Record<string, unknown> }> {
   'use server';
 
-  console.log('🔔 [TEST-NOTIF] Starting test notification for user:', userId);
+  logger.info('Démarrage notification test', { userId });
 
   try {
-    // 1. Vérifier que l'utilisateur existe et a un token FCM
+    // Vérifier que l'utilisateur existe et a un token FCM
     const userDoc = await adminDb.collection('users').doc(userId).get();
 
     if (!userDoc.exists) {
-      console.log('❌ [TEST-NOTIF] User not found:', userId);
+      logger.warn('Utilisateur introuvable pour notification', { userId });
       return {
         success: false,
         error: 'Utilisateur introuvable',
@@ -229,14 +229,10 @@ export async function sendTestNotification(
     const userData = userDoc.data();
     const fcmToken = userData?.fcmToken;
 
-    console.log('🔔 [TEST-NOTIF] Token check:', {
-      hasToken: !!fcmToken,
-      tokenLength: fcmToken?.length || 0,
-      tokenPreview: fcmToken ? fcmToken.substring(0, 30) + '...' : 'NONE'
-    });
+    logger.info('Vérification token FCM', { hasToken: !!fcmToken });
 
     if (!fcmToken) {
-      console.log('❌ [TEST-NOTIF] No FCM token for user');
+      logger.warn('Aucun token FCM pour utilisateur', { userId });
       return {
         success: false,
         error: 'Aucun token FCM enregistré. Réactivez les notifications.',
@@ -244,18 +240,17 @@ export async function sendTestNotification(
       };
     }
 
-    // 2. Construire et envoyer le message de test
-    // Tag stable pour déduplication (les tests peuvent avoir des tags uniques)
-    const uniqueTag = `secureid-test-${Date.now()}`; // Tests: tag unique OK pour permettre multiples tests
+    // Construire et envoyer la notification de vérification
+    const uniqueTag = `secureid-verification-${Date.now()}`;
 
     const message = {
       token: fcmToken,
       notification: {
-        title: '🔔 Test SecureID',
-        body: `Test à ${new Date().toLocaleTimeString('fr-FR')}`,
+        title: '🔔 SecureID',
+        body: `Notification de vérification - ${new Date().toLocaleTimeString('fr-FR')}`,
       },
       data: {
-        type: 'test',
+        type: 'verification',
         timestamp: new Date().toISOString(),
       },
       webpush: {
@@ -263,8 +258,8 @@ export async function sendTestNotification(
           Urgency: 'high',
         },
         notification: {
-          title: '🔔 Test SecureID',
-          body: `Test à ${new Date().toLocaleTimeString('fr-FR')}`,
+          title: '🔔 SecureID',
+          body: `Notification de vérification - ${new Date().toLocaleTimeString('fr-FR')}`,
           icon: '/icon-192.png',
           badge: '/icon-72.png',
           tag: uniqueTag,
@@ -278,10 +273,8 @@ export async function sendTestNotification(
       },
     };
 
-    console.log('🔔 [TEST-NOTIF] Sending via FCM...');
     const response = await admin.messaging().send(message);
-
-    console.log('✅ [TEST-NOTIF] SUCCESS! Message ID:', response);
+    logger.info('Notification envoyée avec succès', { messageId: response });
 
     return {
       success: true,
@@ -294,9 +287,7 @@ export async function sendTestNotification(
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-
-    console.error('❌ [TEST-NOTIF] FAILED:', errorMessage);
-    console.error('❌ [TEST-NOTIF] Stack:', error instanceof Error ? error.stack : 'N/A');
+    logger.error('Échec envoi notification', { error: errorMessage });
 
     // Diagnostic détaillé selon le type d'erreur
     let diagnosis = 'Erreur inconnue';

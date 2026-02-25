@@ -85,36 +85,28 @@ async function initializeAuth(authInstance: Auth): Promise<User | null> {
     return null;
   }
 
-  console.log('[Firebase] initializeAuth starting...');
-
-  // 1. Configurer la persistence
+  // Configurer la persistence (IndexedDB préféré, localStorage en fallback)
   try {
     await setPersistence(authInstance, indexedDBLocalPersistence);
-    console.log('[Firebase] Auth persistence: IndexedDB OK');
-  } catch (indexedDBError) {
-    console.warn('[Firebase] IndexedDB failed, trying localStorage:', indexedDBError);
+  } catch {
     try {
       await setPersistence(authInstance, browserLocalPersistence);
-      console.log('[Firebase] Auth persistence: localStorage OK');
-    } catch (localStorageError) {
-      console.error('[Firebase] All persistence methods failed:', localStorageError);
+    } catch {
+      // Persistence échouée - l'auth fonctionnera mais sans persistence
     }
   }
 
-  // 2. Attendre que Firebase lise l'état auth depuis le storage
-  console.log('[Firebase] Waiting for auth state...');
+  // Attendre que Firebase lise l'état auth depuis le storage
   return new Promise<User | null>((resolve) => {
     const unsubscribe = onAuthStateChanged(authInstance, (user) => {
       unsubscribe();
       initialAuthUser = user;
-      console.log('[Firebase] Auth ready, user:', user ? user.uid : 'null');
       resolve(user);
     });
 
-    // Timeout augmenté à 8 secondes pour connexions lentes
+    // Timeout de sécurité (8 secondes pour connexions lentes)
     setTimeout(() => {
       unsubscribe();
-      console.warn('[Firebase] Auth timeout after 8s, resolving null');
       resolve(null);
     }, 8000);
   });

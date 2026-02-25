@@ -186,17 +186,6 @@ export function GpsSimulationCard({
     }
   }, [profileId]);
 
-  // Debug détaillé pour la photo enfant (console.log direct pour debug production)
-  useEffect(() => {
-    // console.log('🖼️ Photo enfant - Debug détaillé', {
-    //   childName,
-    //   childPhotoUrl,
-    //   hasPhoto: !!childPhotoUrl,
-    //   photoLength: childPhotoUrl?.length || 0,
-    //   photoTrimmed: childPhotoUrl?.trim() || '',
-    //   isValidUrl: childPhotoUrl && childPhotoUrl.trim() !== '',
-    // });
-  }, [childName, childPhotoUrl]);
 
   const onLoad = useCallback((map: google.maps.Map) => {
     setMapRef(map);
@@ -266,8 +255,8 @@ export function GpsSimulationCard({
     const isOutOfAllZones = safeZones.length > 0 && currentZoneCount === 0;
     const wasInAtLeastOneZone = previousZoneCount > 0;
 
-    // DEBUG: Log pour tracer les appels
-    console.log('🔍 [GEOFENCE] Check:', {
+    // Traçage geofencing pour diagnostic
+    logger.debug('Geofence check', {
       currentZoneCount,
       previousZoneCount,
       isOutOfAllZones,
@@ -288,13 +277,10 @@ export function GpsSimulationCard({
       const minDelay = Math.min(...safeZones.map(z => z.alertDelay));
       const delayMs = minDelay * 60 * 1000; // Minutes → millisecondes
 
-      // DEBUG: Log AVANT de créer le timer
-      console.log('🚨 [GEOFENCE] STARTING TIMER - This should only appear ONCE!', {
+      // Démarrage du timer d'alerte geofence
+      logger.info('Geofence: démarrage timer alerte', {
         delayMinutes: minDelay,
         delayMs,
-        timerExists: !!outOfZoneTimerRef.current,
-        notificationSent: notificationSentRef.current,
-        timestamp: new Date().toISOString(),
       });
 
       // Marquer IMMÉDIATEMENT qu'un timer est en cours (synchrone)
@@ -322,15 +308,11 @@ export function GpsSimulationCard({
         // Envoyer UNE SEULE notification push
         if (user?.uid) {
           try {
-            console.log('📤 [GEOFENCE] SENDING NOTIFICATION - This should only appear ONCE!', {
-              parentId: user.uid,
-              childName,
-              timestamp: new Date().toISOString(),
-            });
+            logger.info('Geofence: envoi notification', { parentId: user.uid, childName });
             await sendGeofenceExitNotification(user.uid, childName, minDelay);
-            console.log('✅ [GEOFENCE] Notification sent successfully');
+            logger.info('Geofence: notification envoyée avec succès');
           } catch (error) {
-            console.error('❌ [GEOFENCE] Error sending notification:', error);
+            logger.error('Geofence: erreur envoi notification', { error });
           }
         }
       }, delayMs);
@@ -341,10 +323,7 @@ export function GpsSimulationCard({
 
     // Si l'enfant RENTRE dans au moins une zone
     if (currentZoneCount > 0 && outOfZoneTimerRef.current) {
-      console.log('🔙 [GEOFENCE] Child re-entered zone, CANCELLING timer', {
-        currentZoneCount,
-        timestamp: new Date().toISOString(),
-      });
+      logger.info('Geofence: enfant de retour en zone, annulation timer', { currentZoneCount });
       clearTimeout(outOfZoneTimerRef.current);
       outOfZoneTimerRef.current = null;
       setShowSecurityAlert(false);
