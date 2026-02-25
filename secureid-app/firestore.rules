@@ -1,13 +1,21 @@
 rules_version = '2';
 
 /**
- * FIRESTORE SECURITY RULES - SecureID
- * Mis à jour: Phase 3A - Support collection profiles
+ * SecureID - Règles de sécurité Firestore
  *
- * Ces règles sécurisent l'accès aux données dans Firestore.
- * CRITIQUE: Ne jamais exposer les secretToken côté client!
+ * Architecture de sécurité appliquée:
+ * - Principe du moindre privilège: tout est interdit par défaut
+ * - Validation stricte des données à chaque écriture
+ * - Séparation des rôles: parent, secouriste, admin
+ * - Protection des champs sensibles (secretToken, PIN)
  *
- * Documentation: https://firebase.google.com/docs/firestore/security/rules-structure
+ * Collections protégées:
+ * - bracelets: Gérés uniquement via Admin SDK (pas d'accès client direct)
+ * - profiles: Lecture/écriture par le parent propriétaire uniquement
+ * - scans: Création publique (urgence), lecture parent seulement
+ * - users: Données utilisateur privées
+ *
+ * IMPORTANT: secretToken ne doit JAMAIS être exposé côté client
  */
 
 service cloud.firestore {
@@ -286,12 +294,23 @@ service cloud.firestore {
     }
 
     // ============================================================================
-    // COLLECTION: scans (Phase 5 - Tracking GPS)
+    // COLLECTION: scans - Historique des scans de bracelets
+    // ============================================================================
+    //
+    // JUSTIFICATION SÉCURITÉ - Création publique:
+    // Un secouriste qui trouve un enfant perdu n'est PAS authentifié.
+    // Il scanne le QR code et la géolocalisation est enregistrée pour que
+    // le parent puisse localiser son enfant. C'est le cœur du système d'urgence.
+    //
+    // PROTECTIONS EN PLACE:
+    // 1. Validation stricte de la structure des données
+    // 2. Types vérifiés (string, number, null autorisés)
+    // 3. Rate limiting au niveau middleware (5 req/min par IP)
+    // 4. Lecture réservée aux parents propriétaires du bracelet
     // ============================================================================
 
     match /scans/{scanId} {
-      // CRÉATION: Publique pour enregistrement par secouristes
-      // Validation stricte de la structure des données
+      // Création publique avec validation stricte de la structure
       allow create: if request.resource.data.keys().hasAll([
                          'braceletId',
                          'timestamp',
