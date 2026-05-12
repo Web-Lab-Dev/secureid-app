@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Loader2, MapPin } from 'lucide-react';
 import { GoogleMap, useJsApiLoader, Circle, Marker } from '@react-google-maps/api';
-import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import type { ProfileDocument } from '@/types/profile';
 import type { SafeZoneDocument } from '@/types/safe-zone';
 import { SafeZoneList } from '@/components/dashboard/SafeZoneList';
 import { SafeZoneDialog } from '@/components/dashboard/SafeZoneDialog';
-import { db } from '@/lib/firebase';
+import { getSafeZones } from '@/actions/safe-zone-actions';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { darkModeMapStyles } from '@/lib/map-styles';
 import { logger } from '@/lib/logger';
 import { DEFAULT_PARENT_LOCATION } from '@/lib/mock-locations';
@@ -34,6 +34,7 @@ const defaultCenter = DEFAULT_PARENT_LOCATION;
 
 export function SafeZonesClient({ profile }: SafeZonesClientProps) {
   const router = useRouter();
+  const { user } = useAuthContext();
   const [zones, setZones] = useState<SafeZoneDocument[]>([]);
   const [selectedZone, setSelectedZone] = useState<SafeZoneDocument | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -48,41 +49,22 @@ export function SafeZonesClient({ profile }: SafeZonesClientProps) {
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
   });
 
-  // Souscription temps réel aux zones (auto-update après create/update/delete)
+  // Charger les zones via Server Action (Admin SDK, contourne toute règle Firestore)
+  const loadZones = useCallback(async () => {
+    if (!user) return;
+    try {
+      const fetched = await getSafeZones(profile.id, user.uid);
+      setZones(fetched);
+    } catch (error) {
+      logger.error('Error loading safe zones', { error, profileId: profile.id });
+    } finally {
+      setLoading(false);
+    }
+  }, [profile.id, user]);
+
   useEffect(() => {
-    const zonesRef = collection(db, 'profiles', profile.id, 'safeZones');
-    const q = query(zonesRef, orderBy('createdAt', 'desc'), limit(50));
-
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const fetchedZones: SafeZoneDocument[] = snapshot.docs.map((doc) => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            profileId: data.profileId,
-            name: data.name,
-            icon: data.icon,
-            center: { lat: data.center.lat, lng: data.center.lng },
-            radius: data.radius,
-            color: data.color,
-            enabled: data.enabled ?? true,
-            alertDelay: data.alertDelay,
-            createdAt: data.createdAt,
-            updatedAt: data.updatedAt,
-          };
-        });
-        setZones(fetchedZones);
-        setLoading(false);
-      },
-      (error) => {
-        logger.error('Error subscribing to safe zones', { error, profileId: profile.id });
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [profile.id]);
+    loadZones();
+  }, [loadZones]);
 
   // Sélectionner la première zone par défaut une fois chargée
   useEffect(() => {
@@ -116,21 +98,17 @@ export function SafeZonesClient({ profile }: SafeZonesClientProps) {
   const handleZoneSaved = (createdZone?: SafeZoneDocument) => {
     setIsDialogOpen(false);
     setEditingZone(null);
-    // Update optimiste: ajoute immédiatement la zone créée à l'état
-    // (la souscription onSnapshot la remplacera quand elle se synchronisera)
     if (createdZone) {
-      setZones((prev) => {
-        if (prev.some((z) => z.id === createdZone.id)) return prev;
-        return [createdZone, ...prev];
-      });
       setSelectedZone(createdZone);
       setMapCenter(createdZone.center);
     }
+    // Recharger depuis le serveur (source de vérité Admin SDK)
+    loadZones();
   };
 
   const handleZoneDeleted = () => {
     setSelectedZone(null);
-    // onSnapshot mettra automatiquement à jour la liste
+    loadZones();
   };
 
   if (loadError) {
