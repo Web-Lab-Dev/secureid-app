@@ -57,10 +57,10 @@ const firebaseConfig = {
 };
 
 // Singleton Firebase App
-let app: FirebaseApp;
-let auth: Auth;
-let db: Firestore;
-let storage: FirebaseStorage;
+const app: FirebaseApp = initializeFirebase();
+const auth: Auth = getAuth(app);
+const db: Firestore = getFirestore(app);
+const storage: FirebaseStorage = getStorage(app);
 
 // État d'auth initial (lu depuis le storage)
 let initialAuthUser: User | null = null;
@@ -113,11 +113,6 @@ async function initializeAuth(authInstance: Auth): Promise<User | null> {
 }
 
 // Initialisation
-app = initializeFirebase();
-auth = getAuth(app);
-db = getFirestore(app);
-storage = getStorage(app);
-
 // Initialiser l'auth (côté client uniquement)
 if (typeof window !== 'undefined') {
   authReadyPromise = initializeAuth(auth);

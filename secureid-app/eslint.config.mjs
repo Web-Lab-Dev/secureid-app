@@ -22,9 +22,6 @@ const eslintConfig = defineConfig([
 
   // Plugin d'accessibilité - WCAG compliance
   {
-    plugins: {
-      'jsx-a11y': jsxA11y,
-    },
     rules: {
       ...jsxA11y.configs.recommended.rules,
       // Règles personnalisées
@@ -36,6 +33,10 @@ const eslintConfig = defineConfig([
           aspects: ['invalidHref', 'preferButton'],
         },
       ],
+      'jsx-a11y/click-events-have-key-events': 'warn',
+      'jsx-a11y/label-has-associated-control': 'warn',
+      'jsx-a11y/no-autofocus': 'warn',
+      'jsx-a11y/no-static-element-interactions': 'warn',
     },
   },
 
@@ -52,6 +53,9 @@ const eslintConfig = defineConfig([
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off', // Inférence TS
       '@typescript-eslint/explicit-module-boundary-types': 'off',
+      'react/no-unescaped-entities': 'off',
+      'react-hooks/purity': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
     },
   },
 

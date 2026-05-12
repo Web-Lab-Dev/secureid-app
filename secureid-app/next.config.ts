@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import withPWAInit from "@ducanh2912/next-pwa";
+import path from "node:path";
 
 // NIVEAU 3 - Bundle Analyzer pour optimisation des performances
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
@@ -87,6 +88,8 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
+  outputFileTracingRoot: path.resolve(__dirname),
+
   // Mode strict React activé pour détecter les problèmes en développement
   reactStrictMode: true,
 

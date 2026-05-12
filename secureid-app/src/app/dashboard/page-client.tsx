@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { Plus, Loader2, Users, MessageCircle, Globe, Bell, BellOff, Heart, Shield, CheckCircle2, Calendar } from 'lucide-react';
@@ -468,7 +469,7 @@ export function DashboardPageClient() {
             </a>
 
             {/* Site Web / Landing Page */}
-            <a
+            <Link
               href="/"
               className="group flex items-center gap-4 rounded-xl border border-slate-700 bg-slate-800/50 p-4 transition-all hover:border-brand-orange hover:bg-slate-800"
             >
@@ -487,7 +488,7 @@ export function DashboardPageClient() {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-            </a>
+            </Link>
           </div>
 
           {/* Footer Text */}

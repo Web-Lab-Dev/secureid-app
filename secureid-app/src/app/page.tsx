@@ -59,7 +59,9 @@ export default function LandingPage() {
 
   return (
     <>
-      <PartnershipModal isOpen={isPartnerModalOpen} onClose={() => setIsPartnerModalOpen(false)} />
+      <Suspense fallback={null}>
+        <PartnershipModal isOpen={isPartnerModalOpen} onClose={() => setIsPartnerModalOpen(false)} />
+      </Suspense>
     <div className="overflow-x-hidden bg-[#FAFAF9]">
       <Header />
 

@@ -108,35 +108,6 @@ export function GpsSimulationCard({
   });
 
   // Afficher erreur si échec de chargement
-  if (loadError) {
-    return (
-      <div className="relative h-[500px] w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 shadow-2xl">
-        <div className="flex h-full items-center justify-center p-8">
-          <div className="text-center max-w-md">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20">
-              <MapPin className="h-8 w-8 text-red-500" />
-            </div>
-            <h3 className="text-lg font-bold text-white">Erreur Google Maps</h3>
-            <p className="mt-2 text-sm text-slate-400">
-              {loadError.message?.includes('ApiTargetBlockedMapError')
-                ? "Votre clé API Google Maps a des restrictions qui bloquent cette application."
-                : "Impossible de charger Google Maps."}
-            </p>
-            <div className="mt-4 rounded-lg bg-slate-800 p-4 text-left">
-              <p className="text-xs font-semibold text-white mb-2">Solution :</p>
-              <ol className="space-y-1 text-xs text-slate-400">
-                <li>1. Allez sur Google Cloud Console</li>
-                <li>2. Credentials → Votre API Key</li>
-                <li>3. Application Restrictions → None (ou ajoutez votre domaine)</li>
-                <li>4. API Restrictions → Maps JavaScript API activée</li>
-              </ol>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Géolocalisation au chargement
   useEffect(() => {
     if (typeof window !== 'undefined' && navigator.geolocation) {
@@ -528,6 +499,35 @@ export function GpsSimulationCard({
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
   }, []);
+
+  if (loadError) {
+    return (
+      <div className="relative h-[500px] w-full overflow-hidden rounded-3xl border border-slate-200 bg-slate-950 shadow-2xl">
+        <div className="flex h-full items-center justify-center p-8">
+          <div className="text-center max-w-md">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20">
+              <MapPin className="h-8 w-8 text-red-500" />
+            </div>
+            <h3 className="text-lg font-bold text-white">Erreur Google Maps</h3>
+            <p className="mt-2 text-sm text-slate-400">
+              {loadError.message?.includes('ApiTargetBlockedMapError')
+                ? "Votre clé API Google Maps a des restrictions qui bloquent cette application."
+                : "Impossible de charger Google Maps."}
+            </p>
+            <div className="mt-4 rounded-lg bg-slate-800 p-4 text-left">
+              <p className="text-xs font-semibold text-white mb-2">Solution :</p>
+              <ol className="space-y-1 text-xs text-slate-400">
+                <li>1. Allez sur Google Cloud Console</li>
+                <li>2. Credentials vers Votre API Key</li>
+                <li>3. Application Restrictions vers None (ou ajoutez votre domaine)</li>
+                <li>4. API Restrictions vers Maps JavaScript API activée</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!isLoaded) {
     return (
