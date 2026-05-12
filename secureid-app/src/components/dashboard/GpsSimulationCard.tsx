@@ -11,7 +11,8 @@ import type { PointOfInterest, TrajectoryPoint } from '@/lib/types/gps';
 import type { SafeZoneDocument } from '@/types/safe-zone';
 import { DEFAULT_SAFE_ZONE, DEFAULT_TRAJECTORY, POI_COLORS, POI_ICONS, generatePoiSvg, encodeSvgToDataUrl } from '@/lib/constants/gps';
 import { sendGeofenceExitNotification } from '@/actions/notification-actions';
-import { getSafeZonesClient } from '@/lib/safe-zones-client';
+import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { OUAGADOUGOU_LOCATIONS, DEFAULT_PARENT_LOCATION } from '@/lib/mock-locations';
 import { DemoControls } from './DemoControls';
@@ -143,18 +144,41 @@ export function GpsSimulationCard({
     }
   }, []);
 
-  // Charger les zones de sécurité depuis Firestore
+  // Souscription temps réel aux zones de sécurité
   useEffect(() => {
-    if (profileId) {
-      getSafeZonesClient(profileId)
-        .then((zones) => {
-          setSafeZones(zones);
-          logger.info('Safe zones loaded', { count: zones.length, profileId });
-        })
-        .catch((error) => {
-          logger.error('Error loading safe zones', { error, profileId });
+    if (!profileId) return;
+
+    const zonesRef = collection(db, 'profiles', profileId, 'safeZones');
+    const q = query(zonesRef, orderBy('createdAt', 'desc'), limit(50));
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const zones: SafeZoneDocument[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            profileId: data.profileId,
+            name: data.name,
+            icon: data.icon,
+            center: { lat: data.center.lat, lng: data.center.lng },
+            radius: data.radius,
+            color: data.color,
+            enabled: data.enabled ?? true,
+            alertDelay: data.alertDelay,
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
+          };
         });
-    }
+        setSafeZones(zones);
+        logger.info('Safe zones synced', { count: zones.length, profileId });
+      },
+      (error) => {
+        logger.error('Error subscribing to safe zones', { error, profileId });
+      }
+    );
+
+    return () => unsubscribe();
   }, [profileId]);
 
 
