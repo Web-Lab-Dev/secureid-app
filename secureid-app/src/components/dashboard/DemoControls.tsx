@@ -66,7 +66,7 @@ export function DemoControls({
     return (
       <motion.button
         onClick={() => setIsDemoMode(true)}
-        className="fixed bottom-6 left-6 z-20 flex items-center gap-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 font-semibold text-white shadow-2xl transition-all hover:scale-105 hover:shadow-purple-500/50"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-purple-500/30 bg-gradient-to-r from-purple-600 to-pink-600 px-5 py-3 font-semibold text-white shadow-xl transition-all hover:shadow-purple-500/30 sm:w-auto"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ scale: 1.05 }}
@@ -80,7 +80,7 @@ export function DemoControls({
 
   return (
     <motion.div
-      className="fixed bottom-6 left-6 z-20 rounded-2xl bg-slate-900 border border-slate-800 p-4 shadow-2xl"
+      className="rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
@@ -97,12 +97,12 @@ export function DemoControls({
         </button>
       </div>
 
-      <div className="space-y-2">
+      <div className="grid gap-2 md:grid-cols-3">
         {/* Bouton: Sortir de la zone */}
         <motion.button
           onClick={moveOutOfZone}
           disabled={!safeZoneCenter}
-          className="flex w-full items-center gap-3 rounded-lg bg-red-500/20 border border-red-500/30 px-4 py-3 text-left text-sm font-medium text-red-400 transition-all hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex w-full items-center gap-3 rounded-lg border border-red-500/30 bg-red-500/20 px-4 py-3 text-left text-sm font-medium text-red-400 transition-all hover:bg-red-500/30 disabled:cursor-not-allowed disabled:opacity-50"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -117,7 +117,7 @@ export function DemoControls({
         <motion.button
           onClick={moveIntoZone}
           disabled={!safeZoneCenter}
-          className="flex w-full items-center gap-3 rounded-lg bg-green-500/20 border border-green-500/30 px-4 py-3 text-left text-sm font-medium text-green-400 transition-all hover:bg-green-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex w-full items-center gap-3 rounded-lg border border-green-500/30 bg-green-500/20 px-4 py-3 text-left text-sm font-medium text-green-400 transition-all hover:bg-green-500/30 disabled:cursor-not-allowed disabled:opacity-50"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -131,7 +131,7 @@ export function DemoControls({
         {/* Bouton: Déplacement aléatoire */}
         <motion.button
           onClick={moveRandom300m}
-          className="flex w-full items-center gap-3 rounded-lg bg-blue-500/20 border border-blue-500/30 px-4 py-3 text-left text-sm font-medium text-blue-400 transition-all hover:bg-blue-500/30"
+          className="flex w-full items-center gap-3 rounded-lg border border-blue-500/30 bg-blue-500/20 px-4 py-3 text-left text-sm font-medium text-blue-400 transition-all hover:bg-blue-500/30"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >

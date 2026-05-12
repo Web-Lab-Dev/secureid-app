@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Loader2, MapPin } from 'lucide-react';
-import { GoogleMap, useJsApiLoader, Circle } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Circle, Marker } from '@react-google-maps/api';
 import type { ProfileDocument } from '@/types/profile';
 import type { SafeZoneDocument } from '@/types/safe-zone';
 import { SafeZoneList } from '@/components/dashboard/SafeZoneList';
@@ -129,26 +129,26 @@ export function SafeZonesClient({ profile }: SafeZonesClientProps) {
   return (
     <>
       {/* Header */}
-      <div className="border-b border-slate-800 bg-slate-900 p-4">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="overflow-hidden rounded-t-2xl border border-slate-800 bg-slate-900">
+        <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
             <button
               onClick={() => router.push(`/dashboard/profile/${profile.id}/tracking`)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 text-white transition-colors hover:bg-slate-700"
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-800 text-white transition-colors hover:bg-slate-700"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <div>
-              <h1 className="text-xl font-bold text-white">
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold text-white sm:text-2xl">
                 Zones de Sécurité
               </h1>
-              <p className="text-sm text-slate-400">{profile.fullName}</p>
+              <p className="truncate text-sm text-slate-400">{profile.fullName}</p>
             </div>
           </div>
 
           <button
             onClick={handleAddZone}
-            className="flex items-center gap-2 rounded-lg bg-brand-orange px-4 py-2 font-semibold text-white transition-colors hover:bg-brand-orange/90"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-orange px-4 py-3 font-semibold text-white transition-colors hover:bg-brand-orange/90 sm:w-auto sm:py-2"
           >
             <Plus className="h-5 w-5" />
             Ajouter une Zone
@@ -156,10 +156,10 @@ export function SafeZonesClient({ profile }: SafeZonesClientProps) {
         </div>
       </div>
 
-      {/* Layout: Sidebar + Carte */}
-      <div className="flex h-[calc(100vh-73px)]">
-        {/* Sidebar Gauche - Liste des Zones (30%) */}
-        <div className="w-full md:w-[400px] border-r border-slate-800 bg-slate-900 overflow-y-auto">
+      {/* Layout: mobile empilé, desktop liste + carte */}
+      <div className="grid min-h-0 overflow-hidden rounded-b-2xl border-x border-b border-slate-800 bg-slate-950 lg:h-[calc(100vh-220px)] lg:min-h-[560px] lg:grid-cols-[380px_minmax(0,1fr)]">
+        {/* Liste des Zones */}
+        <div className="min-w-0 border-b border-slate-800 bg-slate-900 lg:border-b-0 lg:border-r">
           {loading ? (
             <div className="flex items-center justify-center p-8">
               <Loader2 className="h-6 w-6 animate-spin text-brand-orange" />
@@ -176,8 +176,8 @@ export function SafeZonesClient({ profile }: SafeZonesClientProps) {
           )}
         </div>
 
-        {/* Carte Droite (70%) */}
-        <div className="flex-1 relative">
+        {/* Carte */}
+        <div className="relative min-h-[420px] min-w-0 lg:min-h-0">
           <GoogleMap
             mapContainerStyle={mapContainerStyle}
             center={mapCenter}
@@ -212,34 +212,14 @@ export function SafeZonesClient({ profile }: SafeZonesClientProps) {
 
             {/* Marqueur centre de la zone sélectionnée */}
             {selectedZone && (
-              <div
-                style={{
-                  position: 'absolute',
-                  transform: 'translate(-50%, -50%)',
-                }}
-              >
-                <div className="flex flex-col items-center">
-                  <div
-                    className="flex h-12 w-12 items-center justify-center rounded-full text-2xl shadow-lg border-2"
-                    style={{
-                      backgroundColor: selectedZone.color,
-                      borderColor: 'white',
-                    }}
-                  >
-                    {selectedZone.icon}
-                  </div>
-                  <div className="mt-1 rounded bg-white px-2 py-1 text-xs font-semibold text-slate-800 shadow">
-                    {selectedZone.name}
-                  </div>
-                </div>
-              </div>
+              <Marker position={selectedZone.center} title={selectedZone.name} />
             )}
           </GoogleMap>
 
           {/* Message si aucune zone */}
           {zones.length === 0 && !loading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-slate-950/50 backdrop-blur-sm">
-              <div className="text-center max-w-md p-8">
+            <div className="absolute inset-0 hidden items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm lg:flex">
+              <div className="max-w-md text-center">
                 <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-brand-orange/20">
                   <MapPin className="h-10 w-10 text-brand-orange" />
                 </div>

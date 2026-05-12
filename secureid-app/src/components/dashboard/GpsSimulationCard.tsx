@@ -543,12 +543,13 @@ export function GpsSimulationCard({
   }
 
   return (
-    <div
-      id="gps-map-container"
-      className={`relative w-full overflow-hidden rounded-3xl border border-slate-200 shadow-2xl transition-all ${
-        isFullscreen ? 'h-screen' : 'h-[500px]'
-      }`}
-    >
+    <div className="space-y-4">
+      <div
+        id="gps-map-container"
+        className={`relative w-full overflow-hidden rounded-3xl border border-slate-200 shadow-2xl transition-all ${
+          isFullscreen ? 'h-screen' : 'h-[500px] sm:h-[560px]'
+        }`}
+      >
       <GoogleMap
         mapContainerStyle={{ width: '100%', height: '100%' }}
         center={parentLocation}
@@ -654,8 +655,10 @@ export function GpsSimulationCard({
         onDismiss={() => setShowSecurityAlert(false)}
       />
 
+      </div>
+
       {/* Contrôles de démo pour tests présentation */}
-      {enableDemoControls && (
+      {enableDemoControls && !isFullscreen && (
         <DemoControls
           onMoveChild={handleMoveChild}
           safeZoneCenter={safeZones.length > 0 ? safeZones[0].center : undefined}
@@ -663,7 +666,6 @@ export function GpsSimulationCard({
           currentChildLocation={childLocation}
         />
       )}
-
     </div>
   );
 }
