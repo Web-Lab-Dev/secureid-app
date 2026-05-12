@@ -113,10 +113,19 @@ export function SafeZonesClient({ profile }: SafeZonesClientProps) {
     setIsDialogOpen(true);
   };
 
-  const handleZoneSaved = () => {
+  const handleZoneSaved = (createdZone?: SafeZoneDocument) => {
     setIsDialogOpen(false);
     setEditingZone(null);
-    // onSnapshot mettra automatiquement à jour la liste
+    // Update optimiste: ajoute immédiatement la zone créée à l'état
+    // (la souscription onSnapshot la remplacera quand elle se synchronisera)
+    if (createdZone) {
+      setZones((prev) => {
+        if (prev.some((z) => z.id === createdZone.id)) return prev;
+        return [createdZone, ...prev];
+      });
+      setSelectedZone(createdZone);
+      setMapCenter(createdZone.center);
+    }
   };
 
   const handleZoneDeleted = () => {

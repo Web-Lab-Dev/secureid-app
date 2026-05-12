@@ -97,7 +97,7 @@ export async function createSafeZone(
   profileId: string,
   userId: string,
   data: SafeZoneInput
-): Promise<{ success: boolean; zoneId?: string; error?: string }> {
+): Promise<{ success: boolean; zone?: SafeZoneDocument; error?: string }> {
   try {
     // 🔒 SECURITY: Vérifier que l'utilisateur possède ce profil
     const ownership = await verifyProfileOwnership(profileId, userId);
@@ -120,29 +120,39 @@ export async function createSafeZone(
 
     // Créer la zone
     const now = Timestamp.now();
+    const zoneData = {
+      profileId,
+      name: data.name,
+      icon: data.icon,
+      center: data.center,
+      radius: data.radius,
+      color: data.color,
+      enabled: true,
+      alertDelay: data.alertDelay,
+      createdAt: now,
+      updatedAt: now,
+    };
+
     const zoneRef = await adminDb
       .collection('profiles')
       .doc(profileId)
       .collection('safeZones')
-      .add({
-        profileId,
-        name: data.name,
-        icon: data.icon,
-        center: data.center,
-        radius: data.radius,
-        color: data.color,
-        enabled: true,
-        alertDelay: data.alertDelay,
-        createdAt: now,
-        updatedAt: now,
-      });
+      .add(zoneData);
 
     logger.info('Safe zone created', { profileId, zoneId: zoneRef.id, zoneName: data.name });
 
     revalidatePath(`/dashboard/profile/${profileId}/safe-zones`);
     revalidatePath(`/dashboard/profile/${profileId}/tracking`);
 
-    return { success: true, zoneId: zoneRef.id };
+    // Sérialiser les Timestamps pour le retour vers le client
+    const createdZone = {
+      id: zoneRef.id,
+      ...zoneData,
+      createdAt: { seconds: now.seconds, nanoseconds: now.nanoseconds } as unknown as Timestamp,
+      updatedAt: { seconds: now.seconds, nanoseconds: now.nanoseconds } as unknown as Timestamp,
+    } as SafeZoneDocument;
+
+    return { success: true, zone: createdZone };
   } catch (error) {
     logger.error('Error creating safe zone', { error, profileId });
     return { success: false, error: 'Erreur lors de la création' };

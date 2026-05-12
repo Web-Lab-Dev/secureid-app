@@ -26,7 +26,7 @@ interface SafeZoneDialogProps {
   onClose: () => void;
   profileId: string;
   zone?: SafeZoneDocument | null;
-  onSaved: () => void;
+  onSaved: (createdZone?: SafeZoneDocument) => void;
 }
 
 // Schéma de validation Zod
@@ -125,23 +125,26 @@ export function SafeZoneDialog({
     const toastId = toast.loading(zone ? 'Mise à jour...' : 'Création...');
 
     try {
-      let result;
-
       if (zone) {
         // Édition - 🔒 SECURITY: Passer userId pour vérification ownership
-        result = await updateSafeZone(zone.id, profileId, user.uid, data);
+        const result = await updateSafeZone(zone.id, profileId, user.uid, data);
+        if (!result.success) {
+          toast.error(result.error || 'Une erreur est survenue', { id: toastId });
+          return;
+        }
+        toast.success('Zone mise à jour', { id: toastId });
+        onSaved();
       } else {
         // Création - 🔒 SECURITY: Passer userId pour vérification ownership
-        result = await createSafeZone(profileId, user.uid, data);
+        const result = await createSafeZone(profileId, user.uid, data);
+        if (!result.success) {
+          toast.error(result.error || 'Une erreur est survenue', { id: toastId });
+          return;
+        }
+        toast.success('Zone créée avec succès', { id: toastId });
+        onSaved(result.zone);
       }
 
-      if (!result.success) {
-        toast.error(result.error || 'Une erreur est survenue', { id: toastId });
-        return;
-      }
-
-      toast.success(zone ? 'Zone mise à jour' : 'Zone créée avec succès', { id: toastId });
-      onSaved();
       onClose();
     } catch (error) {
       logger.error('Error saving safe zone', { error, profileId });
