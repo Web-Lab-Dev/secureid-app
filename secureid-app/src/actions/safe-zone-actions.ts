@@ -13,7 +13,13 @@ import { Timestamp } from 'firebase-admin/firestore';
  * CRUD: Create, Read, Update, Delete, Toggle
  */
 
-// Convertir timestamp Firestore → SafeZoneDocument
+// Sérialise un Timestamp Admin SDK en objet plain (compatible Server Actions)
+function serializeTimestamp(ts: FirebaseFirestore.Timestamp | undefined | null): { seconds: number; nanoseconds: number } {
+  if (!ts) return { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 };
+  return { seconds: ts.seconds, nanoseconds: ts.nanoseconds };
+}
+
+// Convertir timestamp Firestore → SafeZoneDocument sérialisable pour Server Actions
 function convertSafeZone(doc: FirebaseFirestore.DocumentSnapshot): SafeZoneDocument | null {
   if (!doc.exists) return null;
 
@@ -31,8 +37,9 @@ function convertSafeZone(doc: FirebaseFirestore.DocumentSnapshot): SafeZoneDocum
     color: data.color,
     enabled: data.enabled ?? true,
     alertDelay: data.alertDelay,
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt,
+    // Sérialiser les Timestamps en objets plain pour traverser la frontière server→client
+    createdAt: serializeTimestamp(data.createdAt) as unknown as import('firebase/firestore').Timestamp,
+    updatedAt: serializeTimestamp(data.updatedAt) as unknown as import('firebase/firestore').Timestamp,
   };
 }
 
