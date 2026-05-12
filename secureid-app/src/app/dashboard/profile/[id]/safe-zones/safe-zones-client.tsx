@@ -159,7 +159,7 @@ export function SafeZonesClient({ profile }: SafeZonesClientProps) {
       {/* Layout: mobile empilé, desktop liste + carte */}
       <div className="grid min-h-0 overflow-hidden rounded-b-2xl border-x border-b border-slate-800 bg-slate-950 lg:h-[calc(100vh-220px)] lg:min-h-[560px] lg:grid-cols-[380px_minmax(0,1fr)]">
         {/* Liste des Zones */}
-        <div className="min-w-0 border-b border-slate-800 bg-slate-900 lg:border-b-0 lg:border-r">
+        <div className="min-w-0 overflow-y-auto border-b border-slate-800 bg-slate-900 lg:border-b-0 lg:border-r">
           {loading ? (
             <div className="flex items-center justify-center p-8">
               <Loader2 className="h-6 w-6 animate-spin text-brand-orange" />
@@ -218,7 +218,7 @@ export function SafeZonesClient({ profile }: SafeZonesClientProps) {
 
           {/* Message si aucune zone */}
           {zones.length === 0 && !loading && (
-            <div className="absolute inset-0 hidden items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm lg:flex">
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
               <div className="max-w-md text-center">
                 <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-brand-orange/20">
                   <MapPin className="h-10 w-10 text-brand-orange" />
