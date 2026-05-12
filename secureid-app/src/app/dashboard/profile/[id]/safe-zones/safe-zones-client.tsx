@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Loader2, MapPin } from 'lucide-react';
 import { GoogleMap, useJsApiLoader, Circle, Marker } from '@react-google-maps/api';
+import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
 import type { ProfileDocument } from '@/types/profile';
 import type { SafeZoneDocument } from '@/types/safe-zone';
 import { SafeZoneList } from '@/components/dashboard/SafeZoneList';
 import { SafeZoneDialog } from '@/components/dashboard/SafeZoneDialog';
-import { getSafeZonesClient } from '@/lib/safe-zones-client';
+import { db } from '@/lib/firebase';
 import { darkModeMapStyles } from '@/lib/map-styles';
 import { logger } from '@/lib/logger';
 import { DEFAULT_PARENT_LOCATION } from '@/lib/mock-locations';
@@ -47,28 +48,49 @@ export function SafeZonesClient({ profile }: SafeZonesClientProps) {
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
   });
 
-  // Charger les zones au mount
+  // Souscription temps réel aux zones (auto-update après create/update/delete)
   useEffect(() => {
-    loadZones();
+    const zonesRef = collection(db, 'profiles', profile.id, 'safeZones');
+    const q = query(zonesRef, orderBy('createdAt', 'desc'), limit(50));
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const fetchedZones: SafeZoneDocument[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            profileId: data.profileId,
+            name: data.name,
+            icon: data.icon,
+            center: { lat: data.center.lat, lng: data.center.lng },
+            radius: data.radius,
+            color: data.color,
+            enabled: data.enabled ?? true,
+            alertDelay: data.alertDelay,
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
+          };
+        });
+        setZones(fetchedZones);
+        setLoading(false);
+      },
+      (error) => {
+        logger.error('Error subscribing to safe zones', { error, profileId: profile.id });
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
   }, [profile.id]);
 
-  const loadZones = async () => {
-    try {
-      setLoading(true);
-      const fetchedZones = await getSafeZonesClient(profile.id);
-      setZones(fetchedZones);
-
-      // Sélectionner la première zone par défaut
-      if (fetchedZones.length > 0 && !selectedZone) {
-        setSelectedZone(fetchedZones[0]);
-        setMapCenter(fetchedZones[0].center);
-      }
-    } catch (error) {
-      logger.error('Error loading safe zones', { error, profileId: profile.id });
-    } finally {
-      setLoading(false);
+  // Sélectionner la première zone par défaut une fois chargée
+  useEffect(() => {
+    if (zones.length > 0 && !selectedZone) {
+      setSelectedZone(zones[0]);
+      setMapCenter(zones[0].center);
     }
-  };
+  }, [zones, selectedZone]);
 
   const handleZoneSelect = (zone: SafeZoneDocument) => {
     setSelectedZone(zone);
@@ -94,12 +116,12 @@ export function SafeZonesClient({ profile }: SafeZonesClientProps) {
   const handleZoneSaved = () => {
     setIsDialogOpen(false);
     setEditingZone(null);
-    loadZones(); // Recharger les zones
+    // onSnapshot mettra automatiquement à jour la liste
   };
 
   const handleZoneDeleted = () => {
     setSelectedZone(null);
-    loadZones(); // Recharger les zones
+    // onSnapshot mettra automatiquement à jour la liste
   };
 
   if (loadError) {
